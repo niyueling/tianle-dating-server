@@ -14,7 +14,7 @@ module.exports = {
     //   },
     // },
     {
-      name: "crontab",
+      name: "crontab-mahjong",
       script: "dist/schedules.js",
       env: {
         COMMON_VARIABLE: "true",
@@ -26,7 +26,7 @@ module.exports = {
     },
     {
       // 大厅服
-      name: "dating",
+      name: "dating-mahjong",
       script: "dist/server.js",
       env: {
         COMMON_VARIABLE: "true",
