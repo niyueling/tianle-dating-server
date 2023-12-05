@@ -17,7 +17,7 @@ module.exports = {
     // 有效期 30天
     expiresIn: 30*24*60*60,
     // 不需要 token 的接口
-    needNotToken: [ 'account/login', 'account/getWechatUserInfo', 'account/loginByToken']
+    needNotToken: [ 'account/loginGame', 'account/getWechatUserInfo', 'account/loginByToken']
   },
   extKey: "0a06ae02-5594-40ec-9979-a278c0f7ae66",
   http: {

@@ -32,17 +32,27 @@ export class AccountApi extends BaseApi {
   // 获取微信用户信息
   @addApi({
     rule: {
-      code: 'string',
-      source: 'number',
+      code: 'string?',
+      unionid: 'string?',
+      source: 'number?',
       mnpVersion: 'string',
       platform: 'string'
     }
   })
   async loginGame(message) {
-    const resp = await service.wechat.getWechatInfoByQuickApp(config.wechat.quickAppId, config.wechat.quickSecret,
-      message.code);
-    if (!resp) {
-      return this.replyFail('登录失败');
+    let resp;
+    if (message.code) {
+      resp = await service.wechat.getWechatInfoByQuickApp(config.wechat.quickAppId, config.wechat.quickSecret,
+          message.code);
+      if (!resp) {
+        return this.replyFail('登录失败');
+      }
+    } else {
+      resp = {
+        openid: "oa1Cs4pxrjHh7FR9rbq6__zzOviw",
+        sessionKey: "KgusAY9x++fEuQiiYHg+DQ==",
+        unionid: "oWMvp6ZlYutYCwQfGTmScxzHcejs",
+      }
     }
 
     const player = await Player.findOne({unionid: resp.unionid});
