@@ -20,7 +20,7 @@ module.exports = {
     port: 3002
   },
   websocket: {
-    port: 9529
+    port: 9599
   },
   wechat: {
     pk: '/home/lblue/cert/apiclient_key.pem',

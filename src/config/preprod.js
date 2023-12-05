@@ -7,7 +7,7 @@ module.exports = {
     host: "localhost",
   },
   websocket: {
-    port: 9529
+    port: 9599
   },
   logger: {
     "filename": "mahjong.log"

@@ -24,7 +24,7 @@ module.exports = {
     "port": 3002
   },
   websocket: {
-    "port": 9529
+    "port": 9599
   },
   // 微信支付配置
   wechat: {
