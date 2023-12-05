@@ -21,7 +21,7 @@ module.exports = {
   },
   // 大厅服 http 端口
   http: {
-    port: 3002
+    port: 4002
   },
   "gmTool": {
     port: 9528,

@@ -17,7 +17,7 @@ module.exports = {
   extKey: "0a06ae02-5594-40ec-9979-a278c0f7ae66",
   // 大厅服 http 端口
   http: {
-    port: 3002
+    port: 4002
   },
   websocket: {
     port: 9599

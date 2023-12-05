@@ -18,7 +18,7 @@ module.exports = {
     host: "172.19.148.251",
   },
   http: {
-    port: 3001,
+    port: 4001,
   },
   jwt: {
     // 密钥
