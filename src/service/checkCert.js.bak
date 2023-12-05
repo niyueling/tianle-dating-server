@@ -1,0 +1,7 @@
+const { X509Certificate } = require('crypto');
+const fs = require('fs');
+
+// nodejs版本 > v15
+const certificate = fs.readFileSync('./apiclient_cert.pem');
+const { validTo } = new X509Certificate(certificate);
+console.log('validTo', validTo)

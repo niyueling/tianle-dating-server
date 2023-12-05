@@ -1,0 +1,13 @@
+/node_modules/
+/dist/
+/logs/
+/package-lock.json
+/yarn.lock
+mahjong.log
+# 本地开发配置
+development.js
+#数据库目录
+/data/
+.idea/
+.run
+.nyc_output
