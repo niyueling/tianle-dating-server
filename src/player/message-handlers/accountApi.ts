@@ -33,7 +33,6 @@ export class AccountApi extends BaseApi {
   @addApi({
     rule: {
       code: 'string?',
-      unionid: 'string?',
       source: 'number?',
       mnpVersion: 'string',
       platform: 'string'
