@@ -11,6 +11,7 @@
     "cover": "NODE_ENV=test nyc npm run test:coverage",
     "build": "tsc",
     "prebuild": "rm -rf dist/",
+    "postbuild": "echo \\\"postBuild\\\"",
     "start": "cross-env NODE_ENV=production forever start dist/server.js",
     "salvation": "cross-env NODE_ENV=production node dist/bin/saveBlockRobots.js",
     "stop": "forever stop dist/server.js",
