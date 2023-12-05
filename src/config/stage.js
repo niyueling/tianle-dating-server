@@ -1,7 +1,7 @@
 // 内网虚拟机配置
 module.exports = {
   database: {
-    url: "mongodb://localhost:27017/mahjongStage",
+    url: "mongodb://localhost:27017/tianleServer",
     // mongo 选项
     opt: {
       // 重连间隔5s
@@ -11,7 +11,7 @@ module.exports = {
     }
   },
   redis: {
-    port: 6379,
+    port: 8389,
     host: "localhost",
   },
   extKey: "0a06ae02-5594-40ec-9979-a278c0f7ae66",
