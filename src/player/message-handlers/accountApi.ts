@@ -121,7 +121,7 @@ export class AccountApi extends BaseApi {
         shortId: model.shortId
       })
 
-      const isTest = model.name.indexOf("test") !== -1 || model.name.indexOf("tencent_game") !== -1;
+      const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
 
       openIosShopFunc = openIosShopFunc && iosRoomCount >= 10 && iosLotteryCount >= 3 && !isTest;
     }
