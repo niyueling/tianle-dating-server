@@ -34,7 +34,7 @@ import * as http from "http";
 
 const isTokenValid = async (apiName, token, player) => {
   const req = apiName.split('/');
-  if (!config.jwt.needNotToken.includes(apiName) && !config.jwt.needNotTokenContronller.includes(req[0])) {
+  if (!config.jwt.needNotToken.includes(apiName)) {
     if (!token) {
       // 没传 token
       return false;
