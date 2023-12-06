@@ -32,8 +32,7 @@ import {BattleBlockApi} from "./message-handlers/battleBlockApi";
 import {MockDataApi} from "./message-handlers/mockDataApi";
 import * as http from "http";
 
-const isTokenValid = async (apiName, token) => {
-  const player = this;
+const isTokenValid = async (apiName, token, player) => {
   if (!config.jwt.needNotToken.includes(apiName)) {
     if (!token) {
       // 没传 token
@@ -205,7 +204,7 @@ class Player extends EventEmitter {
       // 记录日志
       logger.info('get message from', packet.name, packet.message);
       // 检查 token
-      isTokenValid(packet.name, packet.token).then(isOk => {
+      isTokenValid(packet.name, packet.token, this).then(isOk => {
         if (!isOk) {
           logger.error(`invalid token for ${packet.name} ${packet.token}`);
           return this.sendMessage('global/invalidToken', '请先登录');
