@@ -87,7 +87,8 @@ export class AccountApi extends BaseApi {
 
   // 返回登录信息
   async loginSuccess(model, mnpVersion, platform) {
-    this.player.model = model;
+    const doc = JSON.parse(JSON.stringify(model));
+    this.player.model = doc;
     console.log(this.player.model);
 
     const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id);
