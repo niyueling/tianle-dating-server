@@ -39,12 +39,14 @@ const isTokenValid = async (apiName, token, player) => {
       // 没传 token
       return false;
     }
-    console.error(this);
     const { isOk, data } = await verifyWithRecord(token);
-    if (!isOk || !player.model) {
+    if (!isOk) {
       return false;
     }
-    return data.shortId === player.model.shortId;
+
+    console.error(data);
+
+    return data.playerId === player.model._id;
   }
   // 不需要检查 token
   return true;
