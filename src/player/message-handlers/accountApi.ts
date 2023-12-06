@@ -1,6 +1,5 @@
 import {UserRegistLocation} from "@fm/common/constants";
 import * as moment from "moment";
-import * as logger from "winston";
 import ChannelManager from "../../chat/channel-manager";
 import * as config from "../../config";
 import {getNewShortPlayerId} from "../../database/init";
@@ -87,8 +86,7 @@ export class AccountApi extends BaseApi {
 
   // 返回登录信息
   async loginSuccess(model, mnpVersion, platform) {
-    const doc = JSON.parse(JSON.stringify(model));
-    this.player.model = doc;
+    this.player.model = JSON.parse(JSON.stringify(model));
     console.log(this.player.model);
 
     const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id);
