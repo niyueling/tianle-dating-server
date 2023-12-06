@@ -136,7 +136,7 @@ export class AccountApi extends BaseApi {
     }
 
     // 记录玩家
-    PlayerManager.getInstance().addPlayer(this.player.model);
+    PlayerManager.getInstance().addPlayer(this.player);
 
     const channel = ChannelManager.getInstance().getChannel();
     channel.join(this.player);

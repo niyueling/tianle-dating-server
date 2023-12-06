@@ -53,20 +53,20 @@ class PlayerManager {
       return false;
     }
 
-    if (!player.unionid) {
+    if (!player.model.unionid) {
       logger.warn(`玩家未登录: ${player}`);
       return false;
     }
 
-    if (this.players[player.unionid]) {
-      logger.warn(`重复的玩家ID: ${player.unionid}, ${player.nickname}`);
+    if (this.players[player.model.unionid]) {
+      logger.warn(`重复的玩家ID: ${player.model.unionid}, ${player.model.nickname}`);
       return false;
     }
 
-    this.players[player.unionid] = player;
+    this.players[player.model.unionid] = player;
     player.once('disconnect', () => {
-      if (this.players[player.unionid] === player) {
-        this.removePlayer(player.unionid);
+      if (this.players[player.model.unionid] === player) {
+        this.removePlayer(player.model.unionid);
       }
     });
 
