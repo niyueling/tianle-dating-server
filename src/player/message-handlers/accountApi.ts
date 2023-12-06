@@ -110,31 +110,32 @@ export class AccountApi extends BaseApi {
 
     // add token
     model.token = await signAndRecord({playerId: model._id.toString()}, model._id.toString());
+    if (mnpVersion) {
+      // 是否开启商店
+      const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
+      // 1 = 开启全部商店
+      const open = await service.utils.getGlobalConfigByName('openMnpRecharge');
+      let iosRoomCount = 0;
+      let iosLotteryCount = 0;
+      let openIosShopFunc = mnpVersion && open === 1 && (mnpVersion !== checkVersion)
 
-    // 是否开启商店
-    const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
-    // 1 = 开启全部商店
-    const open = await service.utils.getGlobalConfigByName('openMnpRecharge');
-    let iosRoomCount = 0;
-    let iosLotteryCount = 0;
-    let openIosShopFunc = mnpVersion && open === 1 && (mnpVersion !== checkVersion)
+      // 如果机型是ios，查询抽奖次数和开房数
+      if (platform && platform === "ios") {
+        iosRoomCount = await RoomRecord.count({
+          creatorId: model.shortId
+        })
 
-    // 如果机型是ios，查询抽奖次数和开房数
-    if (platform === "ios") {
-      iosRoomCount = await RoomRecord.count({
-        creatorId: model.shortId
-      })
+        iosLotteryCount = await LotteryRecord.count({
+          shortId: model.shortId
+        })
 
-      iosLotteryCount = await LotteryRecord.count({
-        shortId: model.shortId
-      })
+        const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
 
-      const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
+        openIosShopFunc = openIosShopFunc && iosRoomCount >= 10 && iosLotteryCount >= 3 && !isTest;
+      }
 
-      openIosShopFunc = openIosShopFunc && iosRoomCount >= 10 && iosLotteryCount >= 3 && !isTest;
+      model.openIosShopFunc = openIosShopFunc;
     }
-
-    model.openIosShopFunc = openIosShopFunc;
 
     const notice = await Notice.findOne().sort({createAt: -1}).exec()
     if (notice) {

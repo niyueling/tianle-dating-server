@@ -46,6 +46,10 @@ const isTokenValid = async (apiName, token, player) => {
 
     console.error(data);
 
+    if(!player.model) {
+      player.model = await PlayerModel.findOne({_id: data.playerId}).lean();
+    }
+
     return data.playerId === player.model._id;
   }
   // 不需要检查 token

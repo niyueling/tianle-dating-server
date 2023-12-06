@@ -44,7 +44,6 @@ export async function verifyWithRecord(token) {
     return { isOk };
   }
   // 检查是不是最新的 token
-  console.error(data)
   const oldToken = await PlayerTokenModel.findOne({ playerId: data.playerId });
 
   if (oldToken && oldToken.tokenIndex === data.tokenIndex) {
