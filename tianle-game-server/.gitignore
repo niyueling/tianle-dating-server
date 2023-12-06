@@ -1,8 +1,0 @@
-dist/
-node_modules
-src/config/development.js
-.idea
-.run
-package-lock.json
-yarn.lock
-data/
