@@ -55,8 +55,9 @@ export class AccountApi extends BaseApi {
     if (resp.unionid) {
       player = await Player.findOne({unionid: resp.unionid});
     }
+
     if (message.unionid) {
-      player = await Player.findOne({_id: resp.unionid});
+      player = await Player.findOne({_id: message.unionid});
     }
 
     const shortId = await getNewShortPlayerId()
