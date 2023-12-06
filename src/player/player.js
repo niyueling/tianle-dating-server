@@ -39,7 +39,7 @@ const isTokenValid = async (apiName, token, player) => {
       // 没传 token
       return false;
     }
-    const { isOk, data } = await verifyWithRecord(token, player.model._id);
+    const { isOk, data } = await verifyWithRecord(token, player.model.unionid);
     if (!isOk || !player.model) {
       return false;
     }

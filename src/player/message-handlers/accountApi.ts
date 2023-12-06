@@ -74,6 +74,7 @@ export class AccountApi extends BaseApi {
     }
 
     const userInfo = await service.playerService.checkUserRegist(player, data);
+    console.error(userInfo);
 
     return this.loginSuccess(userInfo, message.mnpVersion, message.platform);
   }
