@@ -9,7 +9,7 @@ module.exports = {
     }
   },
   redis: {
-    port: 6379,
+    port: 8389,
     host: "192.168.124.20",
   },
   jwt: {
