@@ -38,19 +38,17 @@ export class AccountApi extends BaseApi {
     }
   })
   async loginGame(message) {
-    let resp;
+    let resp = {
+      openid: null,
+      sessionKey: null,
+      unionid: null,
+    };
     let player;
     if (message.code) {
       resp = await service.wechat.getWechatInfoByQuickApp(config.wechat.quickAppId, config.wechat.quickSecret,
           message.code);
       if (!resp) {
         return this.replyFail('登录失败');
-      }
-    } else {
-      resp = {
-        openid: null,
-        sessionKey: null,
-        unionid: null,
       }
     }
 
