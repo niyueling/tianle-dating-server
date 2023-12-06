@@ -18,18 +18,21 @@ import WatchAdverRecord from "../../database/models/watchAdverRecord";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
-  @addApi()
+  @addApi({
+    rule: {
+      shortId: 'number'
+    }
+  })
   async queryByShortId(message) {
     const user = await Player.findOne({shortId: message.shortId}).exec();
     if (!user) {
-      this.replyFail('用户不存在');
-      return;
+      return this.replyFail('用户不存在');
     }
-    // 下发用户昵称，头像
-    this.replySuccess({ name: user.name, shortId: user.shortId, headImgUrl: user.headImgUrl });
+
+    this.replySuccess(user);
   }
 
-  // 获取微信用户信息
+  // 微信登录
   @addApi({
     rule: {
       code: 'string?',
@@ -196,16 +199,17 @@ export class AccountApi extends BaseApi {
     return this.replySuccessWithInfo('移除成功');
   }
 
+  //更新用户头像，昵称
   @addApi({
     rule: {
-      headImgUrl: "string",
-      name: "string",
+      avatar: "string",
+      nickname: "string",
     }
   })
   async updateAvtar(msg) {
     const model = await service.playerService.getPlayerModel(this.player.model._id)
-    model.headImgUrl = msg.headImgUrl;
-    model.name = msg.name;
+    model.avatar = msg.avatar;
+    model.nickname = msg.nickname;
     await model.save()
     this.replySuccess()
   }
