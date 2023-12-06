@@ -94,12 +94,12 @@ export class AccountApi extends BaseApi {
   async loginSuccess(model, mnpVersion, platform) {
     this.player.model = model;
 
-    const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id);
+    const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
     if (disconnectedRoom) {
       model.disconnectedRoom = true;
     }
     // 下发掉线子游戏
-    const room = await service.roomRegister.getDisconnectRoomByPlayerId(model._id);
+    const room = await service.roomRegister.getDisconnectRoomByPlayerId(model._id.toString());
     if (room) {
       // 掉线的子游戏类型
       model.continueGameType = room.gameType;
@@ -109,7 +109,7 @@ export class AccountApi extends BaseApi {
     }
 
     // add token
-    model.token = await signAndRecord({playerId: model._id}, model._id);
+    model.token = await signAndRecord({playerId: model._id.toString()}, model._id.toString());
 
     // 是否开启商店
     const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
@@ -147,7 +147,7 @@ export class AccountApi extends BaseApi {
     const channel = ChannelManager.getInstance().getChannel();
     channel.join(this.player);
     this.player.isLoggingIn = false;
-    PlayerManager.getInstance().removeLoggingInPlayer(model._id);
+    PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
 
     return this.replySuccess(model);
   }
