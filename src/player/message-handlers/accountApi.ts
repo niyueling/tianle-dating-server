@@ -206,7 +206,7 @@ export class AccountApi extends BaseApi {
       nickname: "string",
     }
   })
-  async updateAvtar(msg) {
+  async updateUserInfo(msg) {
     const model = await service.playerService.getPlayerModel(this.player.model._id)
     model.avatar = msg.avatar;
     model.nickname = msg.nickname;
