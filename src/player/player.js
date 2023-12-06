@@ -40,7 +40,7 @@ const isTokenValid = async (apiName, token, player) => {
       return false;
     }
     console.error(this);
-    const { isOk, data } = await verifyWithRecord(token, player.model.unionid);
+    const { isOk, data } = await verifyWithRecord(token);
     if (!isOk || !player.model) {
       return false;
     }

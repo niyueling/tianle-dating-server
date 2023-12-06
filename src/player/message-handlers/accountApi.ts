@@ -109,7 +109,7 @@ export class AccountApi extends BaseApi {
     }
 
     // add token
-    model.token = await signAndRecord({shortId: model.shortId}, model._id);
+    model.token = await signAndRecord({playerId: model._id}, model._id);
 
     // 是否开启商店
     const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');

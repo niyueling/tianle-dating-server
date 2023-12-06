@@ -38,13 +38,13 @@ export async function signAndRecord(payload, playerId) {
   return sign(payload);
 }
 
-export async function verifyWithRecord(token, playerId) {
+export async function verifyWithRecord(token) {
   const { isOk, data } = verify(token);
   if (!isOk) {
     return { isOk };
   }
   // 检查是不是最新的 token
-  const oldToken = await PlayerTokenModel.findOne({ playerId });
+  const oldToken = await PlayerTokenModel.findOne({ playerId: data.playerId });
   if (oldToken.tokenIndex === data.tokenIndex) {
     return { isOk, data };
   }
