@@ -104,7 +104,7 @@ export class AccountApi extends BaseApi {
     }
 
     // add token
-    model.token = await signAndRecord({shortId: model.shortId}, model.unionid);
+    model.token = await signAndRecord({shortId: model.shortId}, model._id);
 
     // 是否开启商店
     const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
@@ -142,7 +142,7 @@ export class AccountApi extends BaseApi {
     const channel = ChannelManager.getInstance().getChannel();
     channel.join(this.player);
     this.player.isLoggingIn = false;
-    PlayerManager.getInstance().removeLoggingInPlayer(model.unionid);
+    PlayerManager.getInstance().removeLoggingInPlayer(model._id);
 
     return this.replySuccess(model);
   }

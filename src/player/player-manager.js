@@ -29,7 +29,7 @@ class PlayerManager {
 
   onConnect(socket) {
     if (socket.player) {
-      logger.info(`重复的连接事件: ${socket.player.unionid}, ${socket.player.nickname}`);
+      logger.info(`重复的连接事件: ${socket.player._id}, ${socket.player.nickname}`);
       return null;
     }
 
@@ -53,20 +53,20 @@ class PlayerManager {
       return false;
     }
 
-    if (!player.model.unionid) {
+    if (!player.model._id) {
       logger.warn(`玩家未登录: ${player}`);
       return false;
     }
 
-    if (this.players[player.model.unionid]) {
-      logger.warn(`重复的玩家ID: ${player.model.unionid}, ${player.model.nickname}`);
+    if (this.players[player.model._id]) {
+      logger.warn(`重复的玩家ID: ${player.model._id}, ${player.model.nickname}`);
       return false;
     }
 
-    this.players[player.model.unionid] = player.model;
+    this.players[player.model._id] = player.model;
     player.once('disconnect', () => {
-      if (this.players[player.model.unionid] === player.model) {
-        this.removePlayer(player.model.unionid);
+      if (this.players[player.model._id] === player.model) {
+        this.removePlayer(player.model._id);
       }
     });
 

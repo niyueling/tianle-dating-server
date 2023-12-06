@@ -147,9 +147,9 @@ export default class PlayerService extends BaseService {
     if (user) {
       const playerManager = PlayerManager.getInstance();
       // 检查重复登录
-      await this.checkIsLogging(user.unionid);
+      await this.checkIsLogging(user._id.toString());
       // 处理正在登录
-      playerManager.addLoggingInPlayer(user.unionid);
+      playerManager.addLoggingInPlayer(user._id.toString());
 
       // 判断昨日是否登录
       const start = moment().subtract(1, 'day').startOf('day').toDate();
@@ -184,21 +184,24 @@ export default class PlayerService extends BaseService {
           shortId: user.shortId
         })
       }
+
+
     } else {
-      const playerManager = PlayerManager.getInstance();
-      // 检查重复登录
-      await this.checkIsLogging(data.unionid);
-      // 处理正在登录
-      playerManager.addLoggingInPlayer(data.unionid);
       const result = await this.getLocation(null, data.ip);
       if (result.code === 200) {
         data["province"] = result.data.result.prov;
         data["city"] = result.data.result.city;
       }
-      await Player.create(data);
+      user = await Player.create(data);
+      const playerManager = PlayerManager.getInstance();
+      // 检查重复登录
+      await this.checkIsLogging(user._id.toString());
+      // 处理正在登录
+      playerManager.addLoggingInPlayer(user._id.toString());
+
     }
 
-    return await Player.findOne({unionid: data.unionid}).lean();
+    return await Player.findOne({_id: user._id}).lean();
   }
 
   // 检查重复登录
