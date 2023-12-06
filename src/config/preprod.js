@@ -1,9 +1,9 @@
 module.exports = {
   database: {
-    url: "mongodb://localhost:27017/mahjong"
+    url: "mongodb://localhost:27017/tianleServer"
   },
   redis: {
-    port: 6379,
+    port: 8389,
     host: "localhost",
   },
   websocket: {
