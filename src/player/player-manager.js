@@ -63,9 +63,9 @@ class PlayerManager {
       return false;
     }
 
-    this.players[player.model.unionid] = player;
+    this.players[player.model.unionid] = player.model;
     player.once('disconnect', () => {
-      if (this.players[player.model.unionid] === player) {
+      if (this.players[player.model.unionid] === player.model) {
         this.removePlayer(player.model.unionid);
       }
     });
