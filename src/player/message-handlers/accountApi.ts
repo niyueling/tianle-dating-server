@@ -46,6 +46,12 @@ export class AccountApi extends BaseApi {
       if (!resp) {
         return this.replyFail('登录失败');
       }
+    } else {
+      resp = {
+        openid: null,
+        sessionKey: null,
+        unionid: null,
+      }
     }
 
     if (resp.unionid) {
