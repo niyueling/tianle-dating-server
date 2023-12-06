@@ -86,8 +86,7 @@ export class AccountApi extends BaseApi {
 
   // 返回登录信息
   async loginSuccess(model, mnpVersion, platform) {
-    this.player.model = JSON.parse(JSON.stringify(model));
-    console.log(this.player.model);
+    this.player.model = model;
 
     const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id);
     if (disconnectedRoom) {
@@ -137,7 +136,7 @@ export class AccountApi extends BaseApi {
     }
 
     // 记录玩家
-    PlayerManager.getInstance().addPlayer(this.player);
+    PlayerManager.getInstance().addPlayer(this.player.model);
 
     const channel = ChannelManager.getInstance().getChannel();
     channel.join(this.player);
