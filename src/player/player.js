@@ -193,6 +193,7 @@ class Player extends EventEmitter {
       if (this.debugMessage) {
         logger.debug(`Player: [${this._id}, ${this.name}] receive ${data}`);
       }
+      console.log(data)
       const packet = deserializeMessage(data);
       // 记录日志
       logger.info('get message from', packet.name, packet.message);
