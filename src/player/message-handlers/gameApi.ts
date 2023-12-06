@@ -3,11 +3,7 @@ import RoomRecord from "../../database/models/roomRecord";
 import {addApi, BaseApi} from "./baseApi";
 
 const getGameName = {
-  [GameType.zd]: '浦城炸弹',
-  [GameType.bf]: '浦城标分',
-  [GameType.mj]: '浦城麻将',
-  [GameType.pdk]: '浦城跑得快',
-  [GameType.sss]: '城市大菠萝',
+  [GameType.mj]: '浦城麻将'
 }
 
 // 游戏配置

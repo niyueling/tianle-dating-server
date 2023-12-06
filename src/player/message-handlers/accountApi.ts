@@ -35,6 +35,7 @@ export class AccountApi extends BaseApi {
   @addApi({
     rule: {
       code: 'string?',
+      unionid: 'string?',
       source: 'number?',
       mnpVersion: 'string',
       platform: 'string'
@@ -50,9 +51,9 @@ export class AccountApi extends BaseApi {
       }
     } else {
       resp = {
-        openid: "oa1Cs4pxrjHh7FR9rbq6__zzOviw",
-        sessionKey: "KgusAY9x++fEuQiiYHg+DQ==",
-        unionid: "oWMvp6ZlYutYCwQfGTmScxzHcejs",
+        openid: null,
+        sessionKey: null,
+        unionid: message.unionid,
       }
     }
 
