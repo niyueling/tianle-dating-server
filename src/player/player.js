@@ -44,13 +44,13 @@ const isTokenValid = async (apiName, token, player) => {
       return false;
     }
 
-    console.error(data);
-
     if(!player.model) {
       player.model = await PlayerModel.findOne({_id: data.playerId}).lean();
     }
 
-    return data.playerId === player.model._id;
+    console.error(data.playerId, player.model._id.toString());
+
+    return data.playerId === player.model._id.toString();
   }
   // 不需要检查 token
   return true;
