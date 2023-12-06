@@ -9,6 +9,11 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // 游戏
+  gameCategory: {
+    type: String,
+    required: true,
+  },
   level: {
     type: Number,
     required: true,
@@ -18,8 +23,13 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // 倍率
-  minScore: {
+  //底注
+  Ante: {
+    type: Number,
+    required: true,
+  },
+  // 最高倍率
+  maxMultiple: {
     type: Number,
     required: true,
   },
@@ -38,17 +48,12 @@ const schema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  // 进房扣金豆
+  // 房费
   roomRate: {
     type: Number,
     required: true,
   },
-  // 类别
-  gameCategory: {
-    type: String,
-    required: true,
-  },
-  // 是否上架
+  // 是否开启
   isOpen: {
     type: Boolean,
     required: true,
@@ -57,15 +62,9 @@ const schema = new mongoose.Schema({
   createAt: {
     type: Date,
     required: true,
+    default: Date.now,
   },
-  // 是否允许翻倍
-  isOpenDouble: {
-    type: Boolean,
-    required: true
-  }
 })
 
 const GameCategory = mongoose.model('GameCategory', schema);
-module.exports = {
-  GameCategory,
-}
+export default GameCategory

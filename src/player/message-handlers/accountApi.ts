@@ -78,13 +78,13 @@ export class AccountApi extends BaseApi {
 
     const userInfo = await service.playerService.checkUserRegist(player, data);
 
-    // const lists = [
-    //   { title: "新手场", game: "majiang", level: 1, category: "gold", Ante: 100000, maxMultiple: 999999, minAmount: 1000000000, maxAmount: 400000000000, "roomRate" : 20000000, "playerCount" : 14534, "isOpen" : true },
-    //   { title: "进阶场", game: "majiang", level: 2, category: "gold", Ante: 100000, maxMultiple: 9999999, minAmount: 200000000000, maxAmount: 60000000000000000, "roomRate" : 5000000000, "playerCount" : 4529, "isOpen" : true },
-    //   { title: "高级场", game: "majiang", level: 3, category: "gold", Ante: 10000000, maxMultiple: 100000000, minAmount: 50000000000000000, maxAmount: -1, "roomRate" : 30000000, "playerCount" : 9980, "isOpen" : true },
-    //   { title: "大师场", game: "majiang", level: 4, category: "gold", Ante: 100000000, maxMultiple: 100000000000, minAmount: 200000000000000000, maxAmount: -1, "roomRate" : 30000000000, "playerCount" : 8693, "isOpen" : true },
-    //   { title: "至尊场", game: "majiang", level: 5, category: "gold", Ante: 100000000, maxMultiple: 300000000000, minAmount: 600000000000000000, maxAmount: -1, "roomRate" : 90000000000, "playerCount" : 3681, "isOpen" : true }
-    // ]
+    const lists = [
+      { title: "新手场", game: "majiang", level: 1, category: "gold", Ante: 100000, maxMultiple: 999999, minAmount: 1000000000, maxAmount: 400000000000, "roomRate" : 20000000, "playerCount" : 14534, "isOpen" : true },
+      { title: "进阶场", game: "majiang", level: 2, category: "gold", Ante: 100000, maxMultiple: 9999999, minAmount: 200000000000, maxAmount: 6000000000000, "roomRate" : 5000000000, "playerCount" : 4529, "isOpen" : true },
+      { title: "高级场", game: "majiang", level: 3, category: "gold", Ante: 10000000, maxMultiple: 99999999, minAmount: 5000000000000, maxAmount: -1, "roomRate" : 50000000000, "playerCount" : 9980, "isOpen" : true },
+      { title: "大师场", game: "majiang", level: 4, category: "gold", Ante: 100000000, maxMultiple: -1, minAmount: 20000000000000, maxAmount: -1, "roomRate" : 200000000000, "playerCount" : 8693, "isOpen" : true },
+      { title: "至尊场", game: "majiang", level: 5, category: "gold", Ante: 100000000, maxMultiple: -1, minAmount: 60000000000000, maxAmount: -1, "roomRate" : 600000000000, "playerCount" : 3681, "isOpen" : true }
+    ]
 
     return await this.loginSuccess(userInfo, message.mnpVersion, message.platform);
   }
