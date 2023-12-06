@@ -39,6 +39,7 @@ const isTokenValid = async (apiName, token, player) => {
       // 没传 token
       return false;
     }
+    console.error(player);
     const { isOk, data } = await verifyWithRecord(token, player.model.unionid);
     if (!isOk || !player.model) {
       return false;

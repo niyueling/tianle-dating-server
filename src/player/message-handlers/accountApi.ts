@@ -74,7 +74,6 @@ export class AccountApi extends BaseApi {
     }
 
     const userInfo = await service.playerService.checkUserRegist(player, data);
-    console.error(userInfo);
 
     return this.loginSuccess(userInfo, message.mnpVersion, message.platform);
   }
@@ -89,6 +88,7 @@ export class AccountApi extends BaseApi {
   // 返回登录信息
   async loginSuccess(model, mnpVersion, platform) {
     this.player.model = model;
+    console.log(this.player.model);
 
     const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id);
     if (disconnectedRoom) {
