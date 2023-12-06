@@ -33,7 +33,7 @@ import {MockDataApi} from "./message-handlers/mockDataApi";
 import * as http from "http";
 
 const isTokenValid = async (apiName, token) => {
-  const req = apiName.split('/');
+  const player = this;
   if (!config.jwt.needNotToken.includes(apiName)) {
     if (!token) {
       // 没传 token
@@ -44,13 +44,13 @@ const isTokenValid = async (apiName, token) => {
       return false;
     }
 
-    if(!this.model) {
-      this.model = await PlayerModel.findOne({_id: data.playerId}).lean();
+    if(!player.model) {
+      player.model = await PlayerModel.findOne({_id: data.playerId}).lean();
     }
 
-    console.error(data.playerId, this.model._id.toString());
+    console.error(data.playerId, player.model._id.toString());
 
-    return data.playerId === this.model._id.toString();
+    return data.playerId === player.model._id.toString();
   }
   // 不需要检查 token
   return true;
