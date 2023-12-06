@@ -43,6 +43,7 @@ export class AccountApi extends BaseApi {
   })
   async loginGame(message) {
     let resp;
+    let player;
     if (message.code) {
       resp = await service.wechat.getWechatInfoByQuickApp(config.wechat.quickAppId, config.wechat.quickSecret,
           message.code);
@@ -57,7 +58,10 @@ export class AccountApi extends BaseApi {
       }
     }
 
-    const player = await Player.findOne({unionid: resp.unionid});
+    if (resp.unionid) {
+      player = await Player.findOne({unionid: resp.unionid});
+    }
+
     const shortId = await getNewShortPlayerId()
     const avatarIndex = Math.floor(Math.random() * 10) + 1;
     const defaultAvatar = `https://phpadmin.tianle.fanmengonline.com/uploads/images/avatars/${avatarIndex}.png`;
@@ -70,7 +74,8 @@ export class AccountApi extends BaseApi {
       nickname: `用户${shortId}`,
       sessionKey: resp.sessionKey,
       source: UserRegistLocation.wechat,
-      ip: this.player.getIpAddress()
+      ip: this.player.getIpAddress(),
+      robot: !resp.unionid
     }
 
     const userInfo = await service.playerService.checkUserRegist(player, data);
