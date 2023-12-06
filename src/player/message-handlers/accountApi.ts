@@ -17,13 +17,9 @@ import WatchAdverRecord from "../../database/models/watchAdverRecord";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
-  @addApi({
-    rule: {
-      shortId: 'number'
-    }
-  })
+  @addApi()
   async queryByShortId(message) {
-    const user = await Player.findOne({shortId: message.shortId}).exec();
+    const user = await Player.findOne({shortId: this.player.model.shortId}).exec();
     if (!user) {
       return this.replyFail('用户不存在');
     }

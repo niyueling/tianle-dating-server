@@ -44,7 +44,7 @@ const isTokenValid = async (apiName, token, player) => {
       return false;
     }
 
-    if(!player.model) {
+    if(!this.model) {
       player.model = await PlayerModel.findOne({_id: data.playerId}).lean();
     }
 
