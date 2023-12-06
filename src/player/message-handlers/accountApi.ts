@@ -37,8 +37,8 @@ export class AccountApi extends BaseApi {
       code: 'string?',
       unionid: 'string?',
       source: 'number?',
-      mnpVersion: 'string',
-      platform: 'string'
+      mnpVersion: 'string?',
+      platform: 'string?'
     }
   })
   async loginGame(message) {
