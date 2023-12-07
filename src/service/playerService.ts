@@ -184,8 +184,6 @@ export default class PlayerService extends BaseService {
           shortId: user.shortId
         })
       }
-
-
     } else {
       const result = await this.getLocation(null, data.ip);
       if (result.code === 200) {
