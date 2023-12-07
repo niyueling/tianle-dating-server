@@ -23,6 +23,7 @@ const schema = new Schema({
   province: {type: String},
   city: {type: String},
   robot: {type: Boolean, default: false},
+  isUpdate: {type: Boolean, default: false},
   createAt: {type: Date, default: Date.now},
 });
 
