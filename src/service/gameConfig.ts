@@ -4,10 +4,11 @@ import BaseService from "./base";
 import {service} from "./importService";
 
 export default class GameConfig extends BaseService {
-  async getPublicRoomCategory() {
+  async getPublicRoomCategory(message) {
     const result = await GameCategory.find({
       category: 'gold',
-      isOpen: true,
+      game: message.gameType,
+      isOpen: true
     });
 
     // 获取游戏人数

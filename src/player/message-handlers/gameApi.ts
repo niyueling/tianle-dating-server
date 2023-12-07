@@ -9,9 +9,13 @@ const getGameName = {
 // 游戏配置
 export class GameApi extends BaseApi {
   // 获取金豆房配置
-  @addApi()
-  async getPublicRoomCategory() {
-    const resp = await this.service.gameConfig.getPublicRoomCategory();
+  @addApi({
+    rule: {
+      gameType: 'string'
+    }
+  })
+  async getPublicRoomCategory(message) {
+    const resp = await this.service.gameConfig.getPublicRoomCategory(message);
     this.replySuccess(resp);
   }
 

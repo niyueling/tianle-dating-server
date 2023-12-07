@@ -10,7 +10,7 @@ const schema = new mongoose.Schema({
     required: true,
   },
   // 游戏
-  gameCategory: {
+  game: {
     type: String,
     required: true,
   },
