@@ -1,4 +1,4 @@
-import {UserRegistLocation} from "@fm/common/constants";
+import {UserRegistLocation, TianleErrorCode} from "@fm/common/constants";
 import * as moment from "moment";
 import ChannelManager from "../../chat/channel-manager";
 import * as config from "../../config";
@@ -6,7 +6,6 @@ import {getNewShortPlayerId} from "../../database/init";
 import LotteryRecord from "../../database/models/lotteryRecord";
 import Notice from "../../database/models/notice";
 import Player from "../../database/models/player";
-import PlayerModel from "../../database/models/player";
 import RoomRecord from "../../database/models/roomRecord";
 import Lobby from "../../match/lobby";
 import {service} from "../../service/importService";
@@ -18,10 +17,10 @@ import WatchAdverRecord from "../../database/models/watchAdverRecord";
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
   @addApi()
-  async queryByShortId(message) {
+  async queryByShortId() {
     const user = await Player.findOne({shortId: this.player.model.shortId}).exec();
     if (!user) {
-      return this.replyFail('用户不存在');
+      return this.replyFail(TianleErrorCode.userNotFound);
     }
 
     this.replySuccess(user);
@@ -48,7 +47,7 @@ export class AccountApi extends BaseApi {
       resp = await service.wechat.getWechatInfoByQuickApp(config.wechat.quickAppId, config.wechat.quickSecret,
           message.code);
       if (!resp) {
-        return this.replyFail('登录失败');
+        return this.replyFail(TianleErrorCode.codeInvalid);
       }
     }
 
@@ -78,22 +77,7 @@ export class AccountApi extends BaseApi {
 
     const userInfo = await service.playerService.checkUserRegist(player, data);
 
-    const lists = [
-      { title: "新手场", game: "majiang", level: 1, category: "gold", Ante: 100000, maxMultiple: 999999, minAmount: 1000000000, maxAmount: 400000000000, "roomRate" : 20000000, "playerCount" : 14534, "isOpen" : true },
-      { title: "进阶场", game: "majiang", level: 2, category: "gold", Ante: 100000, maxMultiple: 9999999, minAmount: 200000000000, maxAmount: 6000000000000, "roomRate" : 5000000000, "playerCount" : 4529, "isOpen" : true },
-      { title: "高级场", game: "majiang", level: 3, category: "gold", Ante: 10000000, maxMultiple: 99999999, minAmount: 5000000000000, maxAmount: -1, "roomRate" : 50000000000, "playerCount" : 9980, "isOpen" : true },
-      { title: "大师场", game: "majiang", level: 4, category: "gold", Ante: 100000000, maxMultiple: -1, minAmount: 20000000000000, maxAmount: -1, "roomRate" : 200000000000, "playerCount" : 8693, "isOpen" : true },
-      { title: "至尊场", game: "majiang", level: 5, category: "gold", Ante: 100000000, maxMultiple: -1, minAmount: 60000000000000, maxAmount: -1, "roomRate" : 600000000000, "playerCount" : 3681, "isOpen" : true }
-    ]
-
     return await this.loginSuccess(userInfo, message.mnpVersion, message.platform);
-  }
-
-  // 用户资源
-  @addApi()
-  async resourceInfo() {
-    const playerInfo = await PlayerModel.findById(this.player.model._id);
-    this.replySuccess({ gem: playerInfo.gem, ruby: playerInfo.ruby });
   }
 
   // 返回登录信息
