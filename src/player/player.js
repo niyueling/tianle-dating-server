@@ -31,6 +31,7 @@ import {GameApi} from "./message-handlers/gameApi";
 import {BattleBlockApi} from "./message-handlers/battleBlockApi";
 import {MockDataApi} from "./message-handlers/mockDataApi";
 import * as http from "http";
+import {TianleErrorCode} from "@fm/common/constants";
 
 const isTokenValid = async (apiName, token, player) => {
   if (!config.jwt.needNotToken.includes(apiName)) {
@@ -139,21 +140,8 @@ class Player extends EventEmitter {
       }
     };
     this.debugMessage = config.debug.message || false;
-    // this.location = null;
     // TODO 查找位置
     this.location = '未知';
-    // this.getLocation((data) => {
-    //   try {
-    //     const obj = JSON.parse(data);
-    //     if (obj instanceof Object) {
-    //       this.location = `${obj.province || ''}${obj.city || ''}`;
-    //     } else {
-    //       this.location = '本地';
-    //     }
-    //   } catch (e) {
-    //     this.location = '未知';
-    //   }
-    // });
   }
 
   getDebugMessage(data) {
@@ -207,7 +195,7 @@ class Player extends EventEmitter {
       isTokenValid(packet.name, packet.token, this).then(isOk => {
         if (!isOk) {
           logger.error(`invalid token for ${packet.name} ${packet.token}`);
-          return this.sendMessage('global/invalidToken', '请先登录');
+          return this.sendMessage('global/invalidToken', TianleErrorCode.tokenInvalid);
         }
         const handler = messageHandlers[packet.name];
         if (handler) {

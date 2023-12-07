@@ -1,12 +1,9 @@
-import {GameTypeList} from "@fm/common/constants";
 import GameCategory from "../database/models/gameCategory";
-import GameItem from "../database/models/gameItem";
 import GoodsLive from "../database/models/goodsLive";
 import BaseService from "./base";
 import {service} from "./importService";
 
 export default class GameConfig extends BaseService {
-
   async getPublicRoomCategory() {
     const result = await GameCategory.find({
       category: 'gold',
