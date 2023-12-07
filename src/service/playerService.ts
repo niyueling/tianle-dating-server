@@ -196,7 +196,6 @@ export default class PlayerService extends BaseService {
       await this.checkIsLogging(user._id.toString());
       // 处理正在登录
       playerManager.addLoggingInPlayer(user._id.toString());
-
     }
 
     return await Player.findOne({_id: user._id}).lean();

@@ -206,8 +206,9 @@ export class AccountApi extends BaseApi {
     const model = await service.playerService.getPlayerModel(this.player.model._id)
     model.avatar = msg.avatar;
     model.nickname = msg.nickname;
-    await model.save()
-    this.replySuccess()
+    model.isBindWechat = true;
+    await model.save();
+    this.replySuccess(model);
   }
 
   // 记录观看视频日志
