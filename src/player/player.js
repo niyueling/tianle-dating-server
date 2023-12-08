@@ -48,8 +48,6 @@ const isTokenValid = async (apiName, token, player) => {
       player.model = await PlayerModel.findOne({_id: data.playerId}).lean();
     }
 
-    console.error(data.playerId, player.model._id.toString());
-
     return data.playerId === player.model._id.toString();
   }
   // 不需要检查 token
@@ -195,7 +193,7 @@ class Player extends EventEmitter {
       isTokenValid(packet.name, packet.token, this).then(isOk => {
         if (!isOk) {
           logger.error(`invalid token for ${packet.name} ${packet.token}`);
-          return this.sendMessage('global/invalidToken', TianleErrorCode.tokenInvalid);
+          return this.sendMessage('global/invalidToken', {ok: false, info: TianleErrorCode.tokenInvalid});
         }
         const handler = messageHandlers[packet.name];
         if (handler) {
