@@ -92,11 +92,13 @@ export class AccountApi extends BaseApi {
     this.player.model = model;
 
     const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
+    console.warn(disconnectedRoom)
     if (disconnectedRoom) {
       model.disconnectedRoom = true;
     }
     // 下发掉线子游戏
     const room = await service.roomRegister.getDisconnectRoomByPlayerId(model._id.toString());
+    console.warn(room)
     if (room) {
       // 掉线的子游戏类型
       model.continueGameType = room.gameType;
