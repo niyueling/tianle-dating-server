@@ -101,6 +101,7 @@ export class AccountApi extends BaseApi {
     console.warn(room)
     if (room) {
       // 掉线的子游戏类型
+      model.disconnectedRoom = true;
       model.continueGameType = room.gameType;
     } else {
       // 没有掉线的房间号，不要重连
