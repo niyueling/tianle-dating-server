@@ -11,6 +11,7 @@ module.exports = {
   redis: {
     port: 6379,
     host: "localhost",
+    password: "8fkaetmR@@@@"
   },
   jwt: {
     secret: 'secret',
