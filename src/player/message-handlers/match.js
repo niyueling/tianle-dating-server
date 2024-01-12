@@ -19,8 +19,8 @@ function checkRoom(player, room) {
   console.log("match.js 19 checkRoom", room.game.rule.ro.difen);
   console.log('player', player.model)
 
-  let lowestMultiplier = room.lowestMultiplier()
-  let difen = room.difen()
+  // let lowestMultiplier = room.lowestMultiplier()
+  // let difen = room.difen()
 
   // if (difen * lowestMultiplier > player.model.gold) {
   //   player.sendMessage('room/join-fail', {reason: `金豆数小于${lowestMultiplier}倍底分,\n请充值`})
