@@ -55,12 +55,12 @@ export class AccountApi extends BaseApi {
       player = await Player.findOne({unionid: resp.unionid});
     }
 
-    if (message.unionid) {
+    if (!message.code && message.unionid) {
       player = await Player.findOne({_id: message.unionid});
     }
 
     const shortId = await getNewShortPlayerId()
-    const avatarIndex = Math.floor(Math.random() * 10) + 1;
+    const avatarIndex = Math.floor(Math.random() * 19) + 1;
     const defaultAvatar = `https://phpadmin.tianle.fanmengonline.com/uploads/images/avatars/${avatarIndex}.png`;
 
     const data = {
