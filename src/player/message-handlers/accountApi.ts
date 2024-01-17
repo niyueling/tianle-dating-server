@@ -73,14 +73,14 @@ export class AccountApi extends BaseApi {
       source: UserRegistLocation.wechat,
       ip: this.player.getIpAddress(),
       robot: !resp.unionid,
-      diamond: 0,
-      gold: 0
+      diamond: 10000,
+      gold: 10000000000
     }
 
-    if (data.robot) {
-      data.diamond = 2500;
-      data.gold = 2500000000;
-    }
+    // if (data.robot) {
+    //   data.diamond = 2500;
+    //   data.gold = 2500000000;
+    // }
 
     const userInfo = await service.playerService.checkUserRegist(player, data);
 

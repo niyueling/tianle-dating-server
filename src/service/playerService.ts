@@ -176,6 +176,10 @@ export default class PlayerService extends BaseService {
         }
       }
 
+      // 测试时每次更新钻石金豆
+      user.gold = data.gold;
+      user.diamond = data.diamond;
+
       await user.save();
 
       if (todayLoginCount === 0) {
