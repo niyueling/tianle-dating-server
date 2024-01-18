@@ -29,7 +29,7 @@ import {InviteApi} from "./message-handlers/inviteApi";
 import {LotteryApi} from "./message-handlers/lotteryApi";
 import {GameApi} from "./message-handlers/gameApi";
 import {BattleBlockApi} from "./message-handlers/battleBlockApi";
-import {TurnTableApi} from "./message-handlers/TurnTableApi";
+import {TurnTableApi} from "./message-handlers/turnTableApi";
 import {LoginSignApi} from "./message-handlers/loginSignApi";
 import {MockDataApi} from "./message-handlers/mockDataApi";
 import {TianleErrorCode} from "@fm/common/constants";
