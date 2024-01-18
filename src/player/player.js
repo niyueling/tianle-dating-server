@@ -29,8 +29,8 @@ import {InviteApi} from "./message-handlers/inviteApi";
 import {LotteryApi} from "./message-handlers/lotteryApi";
 import {GameApi} from "./message-handlers/gameApi";
 import {BattleBlockApi} from "./message-handlers/battleBlockApi";
+import {TurnTableApi} from "./message-handlers/TurnTableApi";
 import {MockDataApi} from "./message-handlers/mockDataApi";
-import * as http from "http";
 import {TianleErrorCode} from "@fm/common/constants";
 
 const isTokenValid = async (apiName, token, player) => {
@@ -70,6 +70,7 @@ const apiClass = {
   lottery: LotteryApi,
   game: GameApi,
   battleBlock: BattleBlockApi,
+  turnTable: TurnTableApi,
   mockData: MockDataApi
 }
 
@@ -257,15 +258,15 @@ class Player extends EventEmitter {
 
   async addRuby(ruby) {
     if (this.model) {
-      let newRuby = this.model.ruby + ruby;
+      let newRuby = this.model.gold + ruby;
       let delta = ruby
       if (newRuby < 0) {
-        delta = -this.model.ruby
-        this.model.ruby = 0;
+        delta = -this.model.gold
+        this.model.gold = 0;
       } else {
-        this.model.ruby = newRuby
+        this.model.gold = newRuby
       }
-      await PlayerModel.update({_id: this.model._id}, {$inc: {ruby: delta}});
+      await PlayerModel.update({_id: this.model._id}, {$inc: {gold: delta}});
       await this.updateResource2Client();
     }
   }

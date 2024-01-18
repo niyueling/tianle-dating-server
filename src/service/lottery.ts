@@ -95,7 +95,8 @@ export default class Lottery extends BaseService {
       conf.residueNum--;
       await conf.save();
     }
-    const record = await LotteryRecord.create({
+
+    return await LotteryRecord.create({
       playerId,
       shortId,
       prizeConfig: conf || null,
@@ -105,13 +106,7 @@ export default class Lottery extends BaseService {
       createAt: new Date(),
       rankId: rankId || null,
       isHit,
-    })
-    // // 发送邮件
-    // if (record.isHit) {
-    //   await this.receivePrize(record._id);
-    //   // await this.sendPrizeEmail(record);
-    // }
-    return record;
+    });
   }
 
   // 查找常规抽奖配置

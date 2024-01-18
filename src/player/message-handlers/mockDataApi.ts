@@ -5,7 +5,6 @@ import BlockRoleBase from "../../database/models/blockRoleBase";
 import BlockRoleSummon from "../../database/models/blockRoleSummon";
 import BlockTask from "../../database/models/blockTask";
 import BlockTaskTotalPrize from "../../database/models/blockTaskTotalPrize";
-import BlockTurntablePrize from "../../database/models/blockTurntablePrize";
 import {addApi, BaseApi} from "./baseApi";
 import BlockSevenTask from "../../database/models/blockSevenTask";
 import BlockSevenTaskTotalPrize from "../../database/models/blockSevenTaskTotalPrize";
