@@ -12,6 +12,8 @@ import {service} from "./importService";
 import * as moment from "moment";
 import PlayerLoginRecord from "../database/models/playerLoginRecord";
 import PlayerManager from "../player/player-manager";
+import UserRechargeOrder from "../database/models/userRechargeOrder";
+import {ConsumeLogType} from "@fm/common/constants";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
@@ -216,5 +218,29 @@ export default class PlayerService extends BaseService {
       return { isFinish: false };
     }
     return { isFinish: false };
+  }
+
+  async playerRecharge(orderId, thirdOrderNo) {
+    const order = UserRechargeOrder.findOne({_id: orderId});
+    if (!order) {
+      return false;
+    }
+
+    const user = Player.findOne({_id: order.playerId});
+    if (!user) {
+      return false;
+    }
+
+    user.diamond += order.diamond;
+    user.save();
+
+    order.status = 1;
+    order.transactionId = thirdOrderNo;
+    order.save();
+
+    // 增加日志
+    await this.logGemConsume(user._id, ConsumeLogType.chargeByWechat, order.diamond, user.diamond, "微信充值");
+
+    return true;
   }
 }

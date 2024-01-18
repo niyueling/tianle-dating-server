@@ -11,12 +11,7 @@ import updateRoomCount from './bin/roomRecordLog'
 import saveClubRoomInfo from './bin/clubRoomRecordLog'
 import cleanUselessClub from "./bin/cleanUselessClub";
 import {service} from "./service/importService";
-import updateInvite from "./bin/updateInvite";
-import {
-  updateBlockRobotCurLevelRanking,
-  updateBlockTurntableTimes,
-  updateBlockUserPower
-} from "./bin/updateBlockSchedules";
+import updateMnpAccessToken from "./bin/updateMnpAccessToken";
 
 mongoose.connect(config.database.url)
 
@@ -117,36 +112,11 @@ schedule.scheduleJob('0 12 * * *', function () {
     })
 })
 
-// 每分钟更新邀请数据
-schedule.scheduleJob('*/1 * * * *', function () {
-  updateInvite()
+// 每15分钟更新accessToken
+schedule.scheduleJob('*/15 * * * *', function () {
+  updateMnpAccessToken()
     .catch(error => {
-      console.error('update invite profit error', error.stack)
-    })
-})
-
-
-// 0点更新方块战争抽奖次数
-schedule.scheduleJob('0 0 * * *', function () {
-  updateBlockTurntableTimes()
-    .catch(error => {
-      console.error('update block turntable times error', error.stack)
-    })
-})
-
-// 每分钟更新方块战争体力
-schedule.scheduleJob('*/1 * * * *', function () {
-  updateBlockUserPower()
-    .catch(error => {
-      console.error('update block user power error', error.stack)
-    })
-})
-
-// 0点更新方块战争机器人排行榜
-schedule.scheduleJob('0 0 * * *', function () {
-  updateBlockRobotCurLevelRanking()
-    .catch(error => {
-      console.error('update block robot curLevel error', error.stack)
+      console.error('update mnp accerss token error', error.stack)
     })
 })
 

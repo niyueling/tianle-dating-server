@@ -22,7 +22,7 @@ async function main() {
       "42.247.2", "1.192.204", "43.247.222", "27.152.6", "42.247.13", "59.49.116", "39.166.119",
       "14.197.241", "36.32.248", "42.100.96", "58.59.176", "36.96.223", "39.129.104"];
       data.ip = `${ipPrefix[random(0, ipPrefix.length - 1)]}.${random(1, 254)}`;
-      const result = await service.playerService.getLocation(data.ip);
+      const result = await service.playerService.getLocation(null, data.ip);
 
       if (result.code === 200) {
         data.province = result.data.result.prov;

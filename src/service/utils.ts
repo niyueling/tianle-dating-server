@@ -6,6 +6,8 @@ import playerManager from "../player/player-manager";
 import createClient, {getPubSubRedisClient} from "../utils/redis";
 import BaseService from "./base";
 import {service} from "./importService";
+const crypto = require('crypto');
+const moment = require('moment');
 
 // 玩家信息
 export default class UtilsService extends BaseService {
@@ -26,6 +28,22 @@ export default class UtilsService extends BaseService {
     }).catch(() => {
       return null;
     });
+  }
+
+  async generateOrderNumber() {
+    // 获取当前日期和时间
+    const now = moment().format('YYYYMMDDHHmmss');
+
+    // 生成随机数
+    const random = crypto.randomBytes(4).toString('hex');
+
+    // 序列号（例如：001）
+    const serial = '001';
+
+    // 组合生成18位订单号
+    const orderNumber = now + random + serial;
+
+    return orderNumber.toString().padStart(18, '0'); // 确保长度为18位
   }
 
   // 监听后台通过

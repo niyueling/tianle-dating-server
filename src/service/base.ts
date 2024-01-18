@@ -51,7 +51,7 @@ export default class BaseService {
   }
 
   // 根据 method 发送请求
-  async curl(url, opt: {method: string, headers: any, data?: any, pfx?: Buffer, passphrase?: string}) {
+  async curl(url, opt: {method: string, headers?: any, data?: any, pfx?: Buffer, passphrase?: string}) {
     const req = request[opt.method](url);
     if (opt.headers) {
       req.set(opt.headers);
