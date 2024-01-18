@@ -112,71 +112,35 @@ async function getRandomPrize() {
 }
 
 const resourceHandler = {
-  'resource/gem2gold': async (p, message) => {
-    const player = p;
-    const gem2ExchangeNum = Number(message.gemCount);
-    const gem2GoldExchangeRate = config.game.gem2GoldExchangeRate;
-    let success = false;
-    let reason = '';
-    let usedGem = 0;
-    if (message.gemCount > player.model.gem) {
-      reason = '当前所有钻石不足';
-    } else {
-      const doc = await PlayerModel.update({_id: player.model._id},
-        {
-          $inc: {
-            gem: -gem2ExchangeNum,
-            gold: gem2ExchangeNum * gem2GoldExchangeRate,
-          },
-        });
-      if (doc.ok) {
-        player.model.gem += gem2ExchangeNum;
-        player.model.gold += gem2ExchangeNum * gem2GoldExchangeRate;
-        success = true;
-        usedGem = gem2ExchangeNum;
-      } else {
-        reason = '数据存储异常';
-      }
-    }
-    player.sendMessage('gem2goldRet', {
-      success,
-      usedGem,
-      reason,
-      getGold: usedGem * gem2GoldExchangeRate,
-    });
-    return success;
-  },
-  'resource/gem2ruby': async (p, message) => {
+  'resource/diamond2gold': async (p, message) => {
     const player = p;
     const exchangeConf = await GoodsExchangeRuby.findById(message._id);
     if (!exchangeConf) {
-      return player.sendMessage('resource/gem2rubyReply', { isOk: false, info: '兑换失败'})
+      return player.sendMessage('resource/diamond2goldReply', { isOk: false, info: '兑换失败'})
     }
-    const gem2ExchangeNum = exchangeConf.gemCount;
+    const gem2ExchangeNum = exchangeConf.diamond;
     let reason;
     const model = await service.playerService.getPlayerModel(player.model._id);
-    const ruby = exchangeConf.rubyAmount
-    if (gem2ExchangeNum > model.gem && gem2ExchangeNum > 0) {
+    const gold = exchangeConf.gold
+    if (gem2ExchangeNum > model.diamond && gem2ExchangeNum > 0) {
       reason = '钻石不足';
     } else {
       await PlayerModel.update({_id: model._id},
-        {$inc: {gem: -gem2ExchangeNum, ruby}});
-      player.model.gem = model.gem - gem2ExchangeNum;
-      player.model.ruby = model.ruby + ruby;
+        {$inc: {diamond: -gem2ExchangeNum, gold}});
+      player.model.gem = model.diamond - gem2ExchangeNum;
+      player.model.gold = model.gold + gold;
       let temp = '';
-      if (ruby > 100000000) {
-        temp = (ruby / 100000000).toFixed(2) + "亿";
-      } else if (ruby > 10000) {
-        temp = (ruby / 10000).toFixed(2) + "万";
-      } else {
-        temp = ruby;
+      if (gold > 100000000) {
+        temp = (gold / 100000000).toFixed(2) + "亿";
+      } else if (gold > 1000000000000) {
+        temp = (gold / 1000000000000).toFixed(2) + "兆";
       }
       reason = `成功兑换${gem2ExchangeNum}钻石成${temp}金豆`
       // 增加日志
-      await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -gem2ExchangeNum, player.model.gem, reason);
+      await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -gem2ExchangeNum, player.model.diamond, reason);
     }
 
-    player.sendMessage('resource/exchange', {message: reason})
+    player.sendMessage('resource/diamond2goldReply', {message: reason})
     await player.updateResource2Client()
   },
 

@@ -176,7 +176,7 @@ module.exports = {
     createRoomNeedGem: 1,
     createRoomNeedGold: 0,
     initModelGemCount: 6,
-    gem2GoldExchangeRate: 5000,
+    gem2GoldExchangeRate: 100000000,
     debug: false,
     // 初始金豆数量
     initModelRuby: 200000,

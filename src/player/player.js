@@ -325,7 +325,7 @@ class Player extends EventEmitter {
       return;
     }
     const model = await service.playerService.getPlayerModel(this.model._id);
-    this.sendMessage('resource/update', pick(model, ['gold', 'gem', 'ruby']))
+    this.sendMessage('resource/update', pick(model, ['gold', 'diamond']))
   }
 
   getGameMsgHandler() {
