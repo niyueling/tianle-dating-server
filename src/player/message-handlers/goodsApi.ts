@@ -1,21 +1,55 @@
 import GoodsModel from "../../database/models/goods";
 import GoodsExchangeRuby from "../../database/models/goodsExchangeRuby";
 import {addApi, BaseApi} from "./baseApi";
-import {TianleErrorCode} from "@fm/common/constants";
+import {ConsumeLogType, TianleErrorCode} from "@fm/common/constants";
 import UserRechargeOrder from "../../database/models/userRechargeOrder";
 import PlayerModel from "../../database/models/player";
 import crypto = require('crypto');
+import {service} from "../../service/importService";
+import FreeGoldRecord from "../../database/models/freeGoldRecord";
+import * as moment from "moment";
 
 // 商品
 export class GoodsApi extends BaseApi {
   // 所有商品列表
   @addApi()
   async getGoodsList() {
-    const goodsList = await GoodsModel.find({ isOnline: true });
-    const rubyList = await GoodsExchangeRuby.find();
+    const goodsList = await GoodsModel.find({ isOnline: true }).sort({price: 1});
+    const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1});
     this.replySuccess({ goodsList, rubyList });
   }
 
+  // 钻石兑换金豆
+  @addApi()
+  async diamond2gold(message) {
+    const exchangeConf = await GoodsExchangeRuby.findById(message._id);
+    if (!exchangeConf) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+    const gem2ExchangeNum = exchangeConf.diamond;
+    const model = await service.playerService.getPlayerModel(this.player.model._id);
+    const gold = exchangeConf.gold
+    if (gem2ExchangeNum > model.diamond && gem2ExchangeNum > 0) {
+      return this.replyFail(TianleErrorCode.diamondInsufficient);
+    }
+
+    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -gem2ExchangeNum, gold}});
+    this.player.model.gem = model.diamond - gem2ExchangeNum;
+    this.player.model.gold = model.gold + gold;
+    let temp = '';
+    if (gold > 100000000) {
+      temp = (gold / 100000000).toFixed(2) + "亿";
+    } else if (gold > 1000000000000) {
+      temp = (gold / 1000000000000).toFixed(2) + "兆";
+    }
+    // 增加日志
+    await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -gem2ExchangeNum, this.player.model.diamond, `成功兑换${gem2ExchangeNum}钻石成${temp}金豆`);
+
+    this.replySuccess(`成功兑换${gem2ExchangeNum}钻石成${temp}金豆`);
+    await this.player.updateResource2Client();
+  }
+
+  // 安卓虚拟支付
   @addApi()
   async wxGameRecharge(message) {
     const template = await GoodsModel.findOne({ isOnline: true, _id: message._id }).lean();
@@ -115,5 +149,39 @@ export class GoodsApi extends BaseApi {
     pay_response.operate = 2;
 
     return this.replySuccess(pay_response);
+  }
+
+  // 免费领取金豆
+  @addApi()
+  async receiveFreeGold() {
+    const start = moment(new Date()).startOf('day').toDate();
+    const end = moment(new Date()).endOf('day').toDate();
+
+    // 判断今日是否领取
+    const count = await FreeGoldRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+    if (count > 0) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
+    }
+
+    const goodInfo = await GoodsExchangeRuby.findOne({diamond: 0}).lean();
+    if (!goodInfo) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    let user = await this.service.playerService.getPlayerModel(this.player.model._id);
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    user.gold += goodInfo.gold;
+    user.save();
+
+    // 记录日志
+    await FreeGoldRecord.create({
+      playerId: user._id.toString(),
+      shortId: user.shortId,
+      gold: goodInfo.gold,
+      config: goodInfo
+    });
   }
 }

@@ -1,8 +1,6 @@
 import {RedisKey} from "@fm/common/constants";
-import UserRecord from "../database/models/userRecord";
 import {service} from "../service/importService";
 import GlobalConfig from "../database/models/globalConfig";
-import PlayerModel from "../database/models/player";
 
 // 更新邀请人收益
 async function updateMnpAccessToken() {
