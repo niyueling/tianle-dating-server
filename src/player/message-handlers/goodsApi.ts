@@ -65,7 +65,7 @@ export class GoodsApi extends BaseApi {
     // 增加日志
     await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -gem2ExchangeNum, this.player.model.diamond, `成功兑换${gem2ExchangeNum}钻石成${temp}金豆`);
 
-    this.replySuccess(`成功兑换${gem2ExchangeNum}钻石成${temp}金豆`);
+    this.replySuccess({diamond: gem2ExchangeNum, gold, goldFormat: temp});
     await this.player.updateResource2Client();
   }
 
