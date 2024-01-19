@@ -4,7 +4,7 @@ import GlobalConfig from "../database/models/globalConfig";
 
 // 15分钟定时更新小游戏accessToken
 async function updateMnpAccessToken() {
-  const lock = await service.utils.grantLockOnce(RedisKey.updateInviteProfitLock, 600);
+  const lock = await service.utils.grantLockOnce(RedisKey.updateInviteProfitLock, 60);
   if (!lock) {
     // 有进程在处理
     console.log('another processing')
