@@ -1,7 +1,7 @@
 import {ConsumeLogType} from "@fm/common/constants";
 import DiamondRecord from "../../database/models/diamondRecord";
 import {
-  GiftState, Mail,
+  GiftState,
   MailModel,
   MailState,
   MailType,

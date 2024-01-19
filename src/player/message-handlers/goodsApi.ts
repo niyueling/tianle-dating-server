@@ -16,6 +16,17 @@ export class GoodsApi extends BaseApi {
   async getGoodsList() {
     const goodsList = await GoodsModel.find({ isOnline: true }).sort({price: 1});
     const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1});
+    const start = moment(new Date()).startOf('day').toDate();
+    const end = moment(new Date()).endOf('day').toDate();
+
+    for (let i = 0; i < rubyList.length; i++) {
+      if (rubyList[i].diamond === 0) {
+        // 判断今日是否领取
+        const count = await FreeGoldRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+        rubyList[i].receive = !!count;
+      }
+    }
+
     this.replySuccess({ goodsList, rubyList });
   }
 

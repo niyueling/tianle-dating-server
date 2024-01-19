@@ -31,6 +31,7 @@ import {GameApi} from "./message-handlers/gameApi";
 import {BattleBlockApi} from "./message-handlers/battleBlockApi";
 import {TurnTableApi} from "./message-handlers/turnTableApi";
 import {LoginSignApi} from "./message-handlers/loginSignApi";
+import {NoticeApi} from "./message-handlers/noticeApi";
 import {MockDataApi} from "./message-handlers/mockDataApi";
 import {TianleErrorCode} from "@fm/common/constants";
 
@@ -73,7 +74,8 @@ const apiClass = {
   battleBlock: BattleBlockApi,
   turnTable: TurnTableApi,
   mockData: MockDataApi,
-  loginSign: LoginSignApi
+  loginSign: LoginSignApi,
+  notice: NoticeApi
 }
 
 // 调用api
