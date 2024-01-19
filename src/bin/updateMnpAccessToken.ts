@@ -18,7 +18,7 @@ async function updateMnpAccessToken() {
   const res = await service.base.curl(url, { method: "get"});
   const response = JSON.parse(res.data);
   await GlobalConfig.update({name: "MnpAccessToken"},
-    {$inc: {value: response.access_token}});
+    {$set: {value: response.access_token}});
 
   return lock.unlock();
 }
