@@ -2,7 +2,7 @@ import {RedisKey} from "@fm/common/constants";
 import {service} from "../service/importService";
 import GlobalConfig from "../database/models/globalConfig";
 
-// 更新邀请人收益
+// 15分钟定时更新小游戏accessToken
 async function updateMnpAccessToken() {
   const lock = await service.utils.grantLockOnce(RedisKey.updateInviteProfitLock, 600);
   if (!lock) {
@@ -12,8 +12,8 @@ async function updateMnpAccessToken() {
   }
 
   //获取小程序access_token
-  const appid = await this.service.utils.getGlobalConfigByName("mini_app_id");
-  const secret = await this.service.utils.getGlobalConfigByName("mini_app_secret");
+  const appid = await service.utils.getGlobalConfigByName("mini_app_id");
+  const secret = await service.utils.getGlobalConfigByName("mini_app_secret");
   const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appid}&secret=${secret}`;
   const res = await service.base.curl(url, { method: "get"});
   const response = JSON.parse(res.data);
