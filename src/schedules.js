@@ -113,7 +113,7 @@ schedule.scheduleJob('0 12 * * *', function () {
 })
 
 // 每15分钟更新accessToken
-schedule.scheduleJob('*/3 * * * *', function () {
+schedule.scheduleJob('*/15 * * * *', function () {
   updateMnpAccessToken()
     .catch(error => {
       console.error('update mnp accerss token error', error.stack)
