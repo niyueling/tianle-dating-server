@@ -19,15 +19,21 @@ export class GoodsApi extends BaseApi {
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
 
+    let goldList = [];
     for (let i = 0; i < rubyList.length; i++) {
       if (rubyList[i].diamond === 0) {
         // 判断今日是否领取
         const count = await FreeGoldRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
-        rubyList[i].receive = !!count;
+        goldList.push({
+          _id: rubyList[i]._id,
+          diamond: rubyList[i].diamond,
+          gold: rubyList[i].gold,
+          receive: !!count
+        })
       }
     }
 
-    this.replySuccess({ goodsList, rubyList });
+    this.replySuccess({ goodsList, rubyList: goldList });
   }
 
   // 钻石兑换金豆

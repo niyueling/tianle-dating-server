@@ -17,8 +17,7 @@ async function updateMnpAccessToken() {
   const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appid}&secret=${secret}`;
   const res = await service.base.curl(url, { method: "get"});
   const response = JSON.parse(res.data);
-  await GlobalConfig.update({name: "MnpAccessToken"},
-    {$set: {value: response.access_token}});
+  await GlobalConfig.update({name: "MnpAccessToken"}, {$set: {value: response.access_token}});
 
   return lock.unlock();
 }
