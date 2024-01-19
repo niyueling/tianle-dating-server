@@ -21,16 +21,19 @@ export class GoodsApi extends BaseApi {
 
     let goldList = [];
     for (let i = 0; i < rubyList.length; i++) {
+      let params = {
+        _id: rubyList[i]._id,
+        diamond: rubyList[i].diamond,
+        gold: rubyList[i].gold,
+        receive: false
+      }
       if (rubyList[i].diamond === 0) {
         // 判断今日是否领取
         const count = await FreeGoldRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
-        goldList.push({
-          _id: rubyList[i]._id,
-          diamond: rubyList[i].diamond,
-          gold: rubyList[i].gold,
-          receive: !!count
-        })
+        params.receive = !!count;
       }
+
+      goldList.push(params);
     }
 
     this.replySuccess({ goodsList, rubyList: goldList });
