@@ -177,11 +177,13 @@ export class GoodsApi extends BaseApi {
     user.save();
 
     // 记录日志
-    await FreeGoldRecord.create({
+    const record = await FreeGoldRecord.create({
       playerId: user._id.toString(),
       shortId: user.shortId,
       gold: goodInfo.gold,
       config: goodInfo
     });
+
+    return this.replySuccess(record);
   }
 }

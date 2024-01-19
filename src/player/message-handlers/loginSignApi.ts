@@ -4,6 +4,7 @@ import * as moment from "moment";
 import SevenSignPrize from "../../database/models/SevenSignPrize";
 import SevenSignPrizeRecord from "../../database/models/SevenSignPrizeRecord";
 import {service} from "../../service/importService";
+import StartPocketRecord from "../../database/models/startPocketRecord";
 
 export class LoginSignApi extends BaseApi {
   // 7日登录列表
@@ -68,6 +69,51 @@ export class LoginSignApi extends BaseApi {
     await SevenSignPrizeRecord.create(data);
 
     return this.replySuccess(data);
+  }
+
+  // 开运红包数据接口
+  @addApi()
+  async startPocketData() {
+
+    const receive = await StartPocketRecord.findOne({playerId: this.player.model._id});
+
+    return this.replySuccess({receive: !!receive, amount: 8000000000});
+  }
+
+  // 领取开运红包
+  @addApi({
+    rule: {
+      point: 'number'
+    }
+  })
+  async receiveStartPocket(message) {
+    const start = moment(new Date()).startOf('day').toDate();
+    const end = moment(new Date()).endOf('day').toDate();
+
+    // 判断今日是否领取
+    const count = await StartPocketRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+    if (count > 0) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
+    }
+
+    const amount = 1000000000 * (message.point === 1 ? 8 : message.point);
+
+    let user = await this.service.playerService.getPlayerModel(this.player.model._id);
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    user.gold += amount;
+    user.save();
+
+    // 记录日志
+    const record = await StartPocketRecord.create({
+      playerId: user._id.toString(),
+      shortId: user.shortId,
+      amount: amount
+    });
+
+    return this.replySuccess(record);
   }
 
   async getSevenSignLists(user) {
