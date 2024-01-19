@@ -1,10 +1,4 @@
 import {ConsumeLogType} from "@fm/common/constants";
-import {pick} from 'lodash'
-import club from "../../database/models/club";
-import Club from "../../database/models/club";
-import ClubGoldRecord from "../../database/models/clubGoldRecord";
-import clubMember from "../../database/models/clubMember";
-import ConsumeRecord from "../../database/models/consumeRecord"
 import DiamondRecord from "../../database/models/diamondRecord";
 import {
   GiftState, Mail,
@@ -21,20 +15,10 @@ import {createLock} from '../../utils/lock'
 const userLock = createLock()
 
 const handler = {
-  "mail/list": async function (player) {
-    const club = await Club.findOne({owner: player._id})
-    let publicMails = null
-    if (club) {
-      publicMails = await PublicMailModel.find().sort({createAt: -1}).lean().exec()
-    } else {
-      publicMails = await PublicMailModel.find({clubOwnerOnly: {$ne: true}}).sort({createAt: -1}).lean().exec()
-    }
+  "mail/list": async function (player, {type}) {
+    let publicMails = await PublicMailModel.find({type}).sort({createAt: -1}).lean().exec();
 
-    const privateMails = await MailModel
-      .find({to: player._id})
-      .sort({createAt: -1}).lean().exec()
-
-    // const publicMails = await PublicMailModel.find().sort({createAt: -1}).lean().exec()
+    const privateMails = await MailModel.find({to: player._id, type}).sort({createAt: -1}).lean().exec()
 
     const publicMailRecords = await PublicMailRecordModel.find({
       player: player._id
@@ -69,6 +53,10 @@ const handler = {
         $set: {state: MailState.READ}
       }).exec()
 
+      await PublicMailModel.update({to: player._id, _id}, {
+        $set: {state: MailState.READ}
+      }).exec()
+
       player.sendMessage('mail/readReply', {ok: true})
     } catch (e) {
       player.sendMessage('mail/readReply', {ok: false})
@@ -76,9 +64,7 @@ const handler = {
   },
 
   'mail/readNotice': async function (player, {_id}) {
-
     try {
-
       await PublicMailRecordModel.findOneAndUpdate(
         {player: player._id, mail: _id},
         {$set: {state: MailState.READ}}, {upsert: true, setDefaultsOnInsert: true}).exec()
@@ -90,9 +76,21 @@ const handler = {
   },
 
   'mail/readAll': async function (player) {
+    // 普通邮件全部已读
     await MailModel.update({to: player._id}, {
       $set: {state: MailState.READ}
     }, {multi: true}).exec()
+
+    //获取系统邮件
+    let publicMails = await PublicMailModel.find({type: MailType.NOTICE, state: {$ne: MailState.DELETE}}).sort({createAt: -1});
+    const publicMailRecords = await PublicMailRecordModel.find({player: player._id}).lean().exec()
+    publicMails.forEach(mail => {
+      const rec = publicMailRecords.find(r => r.mail === mail._id.toString())
+      if (!rec) {
+        mail.state = MailState.READ;
+        mail.save();
+      }
+    })
 
     player.sendMessage('mail/readAllReply', {ok: true})
   },
@@ -120,7 +118,6 @@ const handler = {
   },
 
   'mail/requestGift': async function (player, {_id}) {
-
     const originalGiftMail = await MailModel.findOneAndUpdate({to: player._id, _id, type: MailType.GIFT}, {
       $set: {giftState: GiftState.REQUESTED}
     })
@@ -128,37 +125,21 @@ const handler = {
     if (!originalGiftMail) {
       player.sendMessage('mail/requestGiftReply', {ok: false, info: '没有该礼物'})
     }
+
     if (originalGiftMail.giftState === GiftState.AVAILABLE) {
-      let updatedModel;
-      const gift = originalGiftMail.gift.gift;
-      if (gift && gift.prizeRecordId) {
-        // 这个是抽奖中奖邮件
-        const res = await service.lottery.receivePrize(gift.prizeRecordId);
-        if (res.isOk) {
-          updatedModel = res.model;
-        } else {
-          return player.sendMessage('mail/requestGiftReply', {ok: false, info: '领取失败'})
-        }
-      } else {
-        // 增加钻石和金豆
-        updatedModel = await PlayerModel.findByIdAndUpdate({_id: player._id},
-          {$inc: originalGiftMail.gift},
-          {new: true, select: {gem: 1, gold: 1, ruby: 1}, rawResult: true}).lean().exec()
-      }
+      let updatedModel = await PlayerModel.findByIdAndUpdate({_id: player._id},
+        {$inc: originalGiftMail.gift},
+        {new: true, select: {diamond: 1, gold: 1}, rawResult: true}).lean().exec()
 
       if (updatedModel) {
-        // 更新玩家的金币，房卡
+        // 更新玩家的金币，钻石
         await player.updateResource2Client()
-        player.sendMessage('mail/requestGiftReply', {ok: true})
-        if (originalGiftMail.gift.gem > 0) {
-          ConsumeRecord.create({
-            ...originalGiftMail.gift, player: player._id, createAt: new Date(),
-            note: `礼物 ${JSON.stringify(originalGiftMail.gift)} => ${updatedModel.gem}/${updatedModel.ruby}/${updatedModel.gold}`
-          })
-          service.playerService.logGemConsume(player.model._id,
+        player.sendMessage('mail/requestGiftReply', {ok: true});
+        if (originalGiftMail.gift.diamond > 0) {
+          await service.playerService.logGemConsume(player.model._id,
             originalGiftMail.gift.source ? ConsumeLogType.chargeByMail : ConsumeLogType.chargeByActive,
-            originalGiftMail.gift.gem, player.model.gem + originalGiftMail.gift.gem,
-            `邮件赠送获得钻石${originalGiftMail.gift.gem}个`);
+            originalGiftMail.gift.diamond, player.model.diamond + originalGiftMail.gift.diamond,
+            `邮件赠送获得钻石${originalGiftMail.gift.diamond}个`);
         }
       }
     } else {
@@ -177,38 +158,32 @@ const handler = {
         )
 
         if (record && record.giftState === GiftState.REQUESTED) {
-          throw Error('已经领取')
+          return player.sendMessage('mail/requestNoticeGiftReply', {ok: false, info: '没有该礼物'});
         }
-        const updatedModel = await PlayerModel.findByIdAndUpdate({_id: player._id},
+        await PlayerModel.findByIdAndUpdate({_id: player._id},
           {$inc: giftMail.gift},
-          {new: true, select: {gem: 1, ruby: 1, gold: 1}, rawResult: true}).lean().exec()
+          {new: true, select: {diamond: 1, gold: 1}, rawResult: true}).lean().exec()
 
         await player.updateResource2Client()
-        player.sendMessage('mail/requestGiftReply', {ok: true})
-        if (giftMail.gift.gem > 0) {
-          ConsumeRecord.create({
-            ...giftMail.gift, player: player._id, createAt: new Date(),
-            note: `公共礼物 ${JSON.stringify(giftMail.gift)} => ${updatedModel.gem}/${updatedModel.ruby}/${updatedModel.gold}`
-          })
+        player.sendMessage('mail/requestNoticeGiftReply', {ok: true});
+        if (giftMail.gift.diamond > 0) {
           new DiamondRecord({
             player: player.model._id,
-            amount: giftMail.gift.gem,
-            residue: player.model.gem + giftMail.gift.gem,
+            amount: giftMail.gift.diamond,
+            residue: player.model.diamond + giftMail.gift.diamond,
             type: giftMail.gift.source ? ConsumeLogType.chargeByPublicMail : ConsumeLogType.chargeByActive,
-            note: `公共邮件赠送获得钻石${giftMail.gift.gem}个`,
+            note: `系统邮件赠送获得钻石${giftMail.gift.diamond}个`,
           }).save()
         }
       } catch (e) {
-
-        player.sendMessage('mail/requestGiftReply', {ok: false, info: e.message})
+        player.sendMessage('mail/requestNoticeGiftReply', {ok: false, info: e.message})
       } finally {
         await unlock()
       }
     } else {
-      player.sendMessage('mail/requestGiftReply', {ok: false, info: '没有该礼物'})
+      player.sendMessage('mail/requestNoticeGiftReply', {ok: false, info: '没有该礼物'})
     }
   }
-
 }
 
 export default handler
