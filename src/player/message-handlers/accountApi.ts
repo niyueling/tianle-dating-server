@@ -13,6 +13,7 @@ import {signAndRecord} from "../../utils/jwt";
 import PlayerManager from "../player-manager";
 import {addApi, BaseApi} from "./baseApi";
 import WatchAdverRecord from "../../database/models/watchAdverRecord";
+import {pick} from "lodash/lodash";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -37,7 +38,7 @@ export class AccountApi extends BaseApi {
       user.helpCount++;
       user.gold += 1000000000;
       user.save();
-
+      this.player.sendMessage('resource/update', pick(user, ['gold', 'diamond']))
       return this.replySuccess({gold: 1000000000, helpCount: user.helpCount});
     }
 
