@@ -1,7 +1,7 @@
 import GoodsModel from "../../database/models/goods";
 import GoodsExchangeRuby from "../../database/models/goodsExchangeRuby";
 import {addApi, BaseApi} from "./baseApi";
-import {ConsumeLogType, TianleErrorCode} from "@fm/common/constants";
+import {ConsumeLogType, RedisKey, TianleErrorCode} from "@fm/common/constants";
 import UserRechargeOrder from "../../database/models/userRechargeOrder";
 import PlayerModel from "../../database/models/player";
 import crypto = require('crypto');
@@ -72,6 +72,13 @@ export class GoodsApi extends BaseApi {
   // 安卓虚拟支付
   @addApi()
   async wxGameRecharge(message) {
+    const lock = await service.utils.grantLockOnce(RedisKey.inviteWithdraw + message.userId, 5);
+    if (!lock) {
+      // 有进程在处理
+      console.log('another processing')
+      return;
+    }
+
     const template = await GoodsModel.findOne({ isOnline: true, _id: message._id }).lean();
     if (!template) {
       return this.replyFail(TianleErrorCode.configNotFound);
