@@ -8,10 +8,11 @@ import crypto = require('crypto');
 import {service} from "../../service/importService";
 import FreeGoldRecord from "../../database/models/freeGoldRecord";
 import * as moment from "moment";
+import GoodsReviveRuby from "../../database/models/goodsReviveRuby";
 
 // 商品
 export class GoodsApi extends BaseApi {
-  // 所有商品列表
+  // 商城列表
   @addApi()
   async getGoodsList() {
     const goodsList = await GoodsModel.find({ isOnline: true }).sort({price: 1});
@@ -286,5 +287,13 @@ export class GoodsApi extends BaseApi {
     }
 
     return this.replySuccess(pay_response.data);
+  }
+
+  // 复活礼包列表
+  @addApi()
+  async getReviveList(message) {
+    const reviveList = await GoodsReviveRuby.find({ category: message.category }).sort({diamond: 1});
+
+    this.replySuccess(reviveList);
   }
 }
