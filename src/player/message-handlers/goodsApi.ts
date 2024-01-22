@@ -109,7 +109,7 @@ export class GoodsApi extends BaseApi {
       offer_id: await this.service.utils.getGlobalConfigByName("offerid"),
       ts: Math.floor(Date.now() / 1000),
       zone_id: await this.service.utils.getGlobalConfigByName("zoneid"),
-      env: message.env,
+      env: String(message.env),
       user_ip: this.player.getIpAddress()
     }
 
