@@ -55,7 +55,7 @@ export class GoodsApi extends BaseApi {
     }
 
     await PlayerModel.update({_id: model._id}, {$inc: {diamond: -gem2ExchangeNum, gold}});
-    this.player.model.gem = model.diamond - gem2ExchangeNum;
+    this.player.model.diamond = model.diamond - gem2ExchangeNum;
     this.player.model.gold = model.gold + gold;
     let temp = '';
     if (gold > 100000000) {
@@ -129,7 +129,6 @@ export class GoodsApi extends BaseApi {
     const paySign = crypto.createHmac('sha256', appKey).update(needSignMsg).digest('hex');
     // 查询用户游戏币余额
     const balanceUrl = `https://api.weixin.qq.com/wxa/game/getbalance?access_token=${accessToken}&signature=${signature}&sig_method=hmac_sha256&pay_sig=${paySign}`;
-    console.warn(balanceUrl, userPostBody);
     const response = await this.service.base.postByJson(balanceUrl, userPostBody);
     console.warn(response)
     if (response.data.errcode !== 0) {
@@ -295,5 +294,35 @@ export class GoodsApi extends BaseApi {
     const reviveList = await GoodsReviveRuby.find({ category: message.category }).sort({diamond: 1});
 
     this.replySuccess(reviveList);
+  }
+
+  // 兑换复活礼包
+  @addApi()
+  async exchangeRevive(message) {
+    const exchangeConf = await GoodsReviveRuby.findById(message._id);
+    if (!exchangeConf) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    const model = await service.playerService.getPlayerModel(this.player.model._id);
+    if (exchangeConf.diamond > model.diamond) {
+      return this.replyFail(TianleErrorCode.diamondInsufficient);
+    }
+
+    let temp = '';
+    if (exchangeConf.gold > 100000000) {
+      temp = (exchangeConf.gold / 100000000) + "亿";
+    } else if (exchangeConf.gold > 1000000000000) {
+      temp = (exchangeConf.gold / 1000000000000) + "兆";
+    }
+
+    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -exchangeConf.diamond, gold: exchangeConf.gold}});
+    this.player.model.diamond = model.diamond - exchangeConf.diamond;
+    this.player.model.gold = model.gold + exchangeConf.gold;
+    // 增加日志
+    await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -exchangeConf.diamond, this.player.model.diamond, `成功兑换${exchangeConf.diamond}钻石成${temp}金豆`);
+
+    this.replySuccess({diamond: exchangeConf.diamond, gold: exchangeConf.gold});
+    await this.player.updateResource2Client();
   }
 }
