@@ -122,6 +122,7 @@ export class GoodsApi extends BaseApi {
     const res = await this.service.base.curl(balanceUrl, { method: "post", data: userPostBody});
     const response = JSON.parse(res.data);
     if (response.errcode !== 0) {
+      console.warn(response);
       return this.replyFail(TianleErrorCode.payFail);
     }
     // 如果用户游戏币小于充值数量，通知客户端充值，operate=1
