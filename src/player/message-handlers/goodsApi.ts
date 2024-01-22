@@ -58,9 +58,9 @@ export class GoodsApi extends BaseApi {
     this.player.model.gold = model.gold + gold;
     let temp = '';
     if (gold > 100000000) {
-      temp = (gold / 100000000).toFixed(2) + "亿";
+      temp = (gold / 100000000) + "亿";
     } else if (gold > 1000000000000) {
-      temp = (gold / 1000000000000).toFixed(2) + "兆";
+      temp = (gold / 1000000000000) + "兆";
     }
     // 增加日志
     await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -gem2ExchangeNum, this.player.model.diamond, `成功兑换${gem2ExchangeNum}钻石成${temp}金豆`);

@@ -209,15 +209,19 @@ export default class PlayerService extends BaseService {
 
   // 检查重复登录
   async checkIsLogging(playerId) {
-    const playerManager = PlayerManager.getInstance();
-    const oldPlayer = playerManager.getPlayer(playerId);
-    if (oldPlayer) {
-      // 下线旧账号
-      await oldPlayer.disconnect();
-      playerManager.removePlayer(playerId);
+    try {
+      const playerManager = PlayerManager.getInstance();
+      const oldPlayer = playerManager.getPlayer(playerId);
+      if (oldPlayer) {
+        // 下线旧账号
+        await oldPlayer.disconnect();
+        playerManager.removePlayer(playerId);
+        return { isFinish: false };
+      }
+      return { isFinish: false };
+    } catch (e) {
       return { isFinish: false };
     }
-    return { isFinish: false };
   }
 
   async playerRecharge(orderId, thirdOrderNo) {
