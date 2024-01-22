@@ -38,7 +38,7 @@ export class AccountApi extends BaseApi {
       user.gold += 1000000000;
       user.save();
 
-      return this.replySuccess({});
+      return this.replySuccess({gold: 1000000000, helpCount: user.helpCount});
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);
