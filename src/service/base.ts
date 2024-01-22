@@ -57,7 +57,6 @@ export default class BaseService {
       req.set(opt.headers);
     }
     if (opt.data) {
-      console.warn(opt.data)
       req.send(opt.data);
     }
     if (opt.pfx) {
