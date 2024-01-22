@@ -170,6 +170,7 @@ module.exports = {
 
   },
   game: {
+    helpCount: 5,
     initModelGoldCount: 0,
     luckyDrawNeedGold: 500,
     lobbyFee: 1000,

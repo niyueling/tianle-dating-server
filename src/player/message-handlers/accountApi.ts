@@ -26,6 +26,24 @@ export class AccountApi extends BaseApi {
     this.replySuccess(user);
   }
 
+  // 发放救济金
+  @addApi()
+  async benefit() {
+    const user = await Player.findOne({shortId: this.player.model.shortId});
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+    if (user.helpCount < config.game.helpCount) {
+      user.helpCount++;
+      user.gold += 1000000000;
+      user.save();
+
+      return this.replySuccess({});
+    }
+
+    return this.replyFail(TianleErrorCode.receiveFail);
+  }
+
   // 微信登录
   @addApi({
     rule: {

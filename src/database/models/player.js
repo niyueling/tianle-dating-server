@@ -19,6 +19,7 @@ const schema = new Schema({
   sessionKey: {type: String},
   guideSteps: {type: Number, default: 1001},
   source: {type: Number, required: true, default: 1},
+  helpCount: {type: Number, required: true, default: 0},
   ip: {type: String},
   province: {type: String},
   city: {type: String},
