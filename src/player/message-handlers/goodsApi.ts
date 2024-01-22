@@ -115,7 +115,7 @@ export class GoodsApi extends BaseApi {
 
     console.warn(userPostBody);
     const userPostBodyString = JSON.stringify(userPostBody);
-    console.warn(userPostBodyString);
+    console.warn(player.sessionKey, appKey, userPostBodyString);
 
     // 生成登录态签名和支付请求签名
     const signature = crypto.createHmac('sha256', player.sessionKey).update(userPostBodyString).digest('hex');
