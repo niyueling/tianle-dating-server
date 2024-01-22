@@ -98,7 +98,7 @@ export class GoodsApi extends BaseApi {
       price: template.price,
       goodsId: template._id,
       source: "wechat",
-      sn: this.service.utils.generateOrderNumber(),
+      sn: await this.service.utils.generateOrderNumber(),
       status: 0
     }
     const record = await UserRechargeOrder.create(data);
