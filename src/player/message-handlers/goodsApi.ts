@@ -114,10 +114,12 @@ export class GoodsApi extends BaseApi {
     }
 
     console.warn(userPostBody);
+    const userPostBodyString = JSON.stringify(userPostBody);
+    console.warn(userPostBodyString);
 
     // 生成登录态签名和支付请求签名
-    const signature = crypto.createHmac('sha256', player.sessionKey).update(JSON.stringify(userPostBody)).digest('hex');
-    const needSignMsg = "/wxa/game/getbalance&" + JSON.stringify(userPostBody);
+    const signature = crypto.createHmac('sha256', player.sessionKey).update(userPostBodyString).digest('hex');
+    const needSignMsg = `/wxa/game/getbalance&${userPostBodyString}`;
     const paySign = crypto.createHmac('sha256', appKey).update(needSignMsg).digest('hex');
     // 查询用户游戏币余额
     const balanceUrl = `https://api.weixin.qq.com/wxa/game/getbalance?access_token=${accessToken}&signature=${signature}&sig_method=hmac_sha256&pay_sig=${paySign}`;
