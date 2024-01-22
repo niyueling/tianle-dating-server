@@ -182,6 +182,9 @@ export default class PlayerService extends BaseService {
       user.gold = data.gold;
       user.diamond = data.diamond;
 
+      // 更新sessionKey
+      user.sessionKey = data.sessionKey;
+
       await user.save();
 
       if (todayLoginCount === 0) {
