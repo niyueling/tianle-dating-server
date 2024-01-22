@@ -113,6 +113,8 @@ export class GoodsApi extends BaseApi {
       user_ip: this.player.getIpAddress()
     }
 
+    console.warn(userPostBody);
+
     // 生成登录态签名和支付请求签名
     const signature = crypto.createHmac('sha256', player.sessionKey).update(JSON.stringify(userPostBody)).digest('hex');
     const needSignMsg = "/wxa/game/getbalance&" + JSON.stringify(userPostBody);
