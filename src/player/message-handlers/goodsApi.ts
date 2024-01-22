@@ -127,14 +127,13 @@ export class GoodsApi extends BaseApi {
     console.warn("accessToken:", accessToken);
     // 查询用户游戏币余额
     const balanceUrl = `https://api.weixin.qq.com/wxa/game/getbalance?access_token=${accessToken}&signature=${signature}&sig_method=hmac_sha256&pay_sig=${paySign}`;
-    const res = await this.service.base.curl(balanceUrl, { method: "post", data: userPostBody});
-    const response = JSON.parse(res.data);
-    if (response.errcode !== 0) {
+    const response = await this.service.base.postByJson(balanceUrl, userPostBody);
+    if (response.data.errcode !== 0) {
       console.warn(response);
       return this.replyFail(TianleErrorCode.payFail);
     }
     // 如果用户游戏币小于充值数量，通知客户端充值，operate=1
-    if (response.balance < data.price * 10) {
+    if (response.data.balance < data.price * 10) {
       return this.replySuccess({
         "orderId": record["_id"],
         'orderSn': record["sn"],
