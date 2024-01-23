@@ -38,7 +38,7 @@ export class AccountApi extends BaseApi {
       user.helpCount++;
       user.gold += 1000000000;
       user.save();
-      this.player.sendMessage('resource/update', pick(user, ['gold', 'diamond']))
+      this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond'])})
       return this.replySuccess({gold: 1000000000, helpCount: user.helpCount});
     }
 
