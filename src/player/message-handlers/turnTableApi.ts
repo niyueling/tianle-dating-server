@@ -10,6 +10,7 @@ import {addApi, BaseApi} from "./baseApi";
 import TurntablePrize from "../../database/models/turntablePrize";
 import TurntablePrizeRecord from "../../database/models/turntablePrizeRecord";
 import Player from "../../database/models/player";
+import {pick} from "lodash/lodash";
 
 export class TurnTableApi extends BaseApi {
   // 获取转盘列表
@@ -82,6 +83,9 @@ export class TurnTableApi extends BaseApi {
     if (!resp.isOk) {
       return this.replyFail(TianleErrorCode.receiveFail)
     }
+
+    const user = await service.playerService.getPlayerModel(this.player._id);
+    this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond'])});
 
     this.replySuccess({});
   }
