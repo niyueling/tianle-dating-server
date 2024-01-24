@@ -1,4 +1,4 @@
-import {UserRegistLocation, TianleErrorCode} from "@fm/common/constants";
+import {UserRegistLocation, TianleErrorCode, GameType} from "@fm/common/constants";
 import * as moment from "moment";
 import ChannelManager from "../../chat/channel-manager";
 import * as config from "../../config";
@@ -106,18 +106,18 @@ export class AccountApi extends BaseApi {
   async loginSuccess(model, mnpVersion, platform) {
     this.player.model = model;
 
-    const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
-    console.warn(disconnectedRoom)
-    if (disconnectedRoom) {
-      model.disconnectedRoom = true;
-    }
+    // const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
+    // console.warn(disconnectedRoom)
+    // if (disconnectedRoom) {
+    //   model.disconnectedRoom = true;
+    // }
     // 下发掉线子游戏
     const room = await service.roomRegister.getDisconnectRoomByPlayerId(model._id.toString());
     console.warn(room)
     if (room) {
       // 掉线的子游戏类型
       model.disconnectedRoom = true;
-      model.continueGameType = room.gameType;
+      model.continueGameType = GameType.mj;
     } else {
       // 没有掉线的房间号，不要重连
       model.disconnectedRoom = false
