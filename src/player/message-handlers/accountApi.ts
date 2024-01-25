@@ -39,7 +39,7 @@ export class AccountApi extends BaseApi {
       user.gold += 1000000000;
       user.save();
       this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond'])})
-      return this.replySuccess({gold: 1000000000, helpCount: user.helpCount});
+      return this.replySuccess({gold: 1000000000, helpCount: user.helpCount, totalCount: config.game.helpCount});
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);
