@@ -93,7 +93,7 @@ export class AccountApi extends BaseApi {
       ip: this.player.getIpAddress(),
       robot: !resp.unionid,
       diamond: 1000,
-      gold: 1000000000000
+      gold: 10000000000
     }
 
 
