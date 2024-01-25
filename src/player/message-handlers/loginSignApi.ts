@@ -5,6 +5,7 @@ import SevenSignPrize from "../../database/models/SevenSignPrize";
 import SevenSignPrizeRecord from "../../database/models/SevenSignPrizeRecord";
 import {service} from "../../service/importService";
 import StartPocketRecord from "../../database/models/startPocketRecord";
+import {pick} from "lodash/lodash";
 
 export class LoginSignApi extends BaseApi {
   // 7日登录列表
@@ -68,6 +69,8 @@ export class LoginSignApi extends BaseApi {
 
     await SevenSignPrizeRecord.create(data);
 
+    this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond'])});
+
     return this.replySuccess(data);
   }
 
@@ -106,6 +109,8 @@ export class LoginSignApi extends BaseApi {
     user.gold += amount;
     user.save();
 
+    this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond'])});
+
     // 记录日志
     const record = await StartPocketRecord.create({
       playerId: user._id.toString(),
@@ -136,10 +141,16 @@ export class LoginSignApi extends BaseApi {
   }
 
   async receivePrize(prize, user, type, multiple = 1) {
-    user.diamond += prize.diamond * multiple;
-    user.gold += prize.gold * multiple;
+    if (prize.type === 1) {
+      user.diamond += prize.number * multiple;
+      await service.playerService.logGemConsume(user._id, ConsumeLogType.chargeByActive, prize.number * multiple,
+        user.diamond, `每日签到获得${prize.number * multiple}钻石`);
+    }
+
+    if (prize.type === 2) {
+      user.gold += prize.number * multiple;
+    }
+
     user.save();
-    await service.playerService.logGemConsume(user._id, ConsumeLogType.chargeByActive, prize.diamond * multiple,
-      user.diamond, `每日签到获得${prize.diamond * multiple}钻石`);
   }
 }
