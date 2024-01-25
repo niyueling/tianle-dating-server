@@ -69,7 +69,8 @@ export class LoginSignApi extends BaseApi {
 
     await SevenSignPrizeRecord.create(data);
 
-    this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond'])});
+    const player = await this.service.playerService.getPlayerModel(this.player.model._id);
+    this.player.sendMessage('resource/update', {ok: true, data: pick(player, ['gold', 'diamond'])});
 
     return this.replySuccess(data);
   }
