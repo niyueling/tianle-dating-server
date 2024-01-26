@@ -1,4 +1,4 @@
-import {ConsumeLogType} from "@fm/common/constants";
+import {ConsumeLogType, TianleErrorCode} from "@fm/common/constants";
 import DiamondRecord from "../../database/models/diamondRecord";
 import {
   GiftState,
@@ -16,9 +16,9 @@ const userLock = createLock()
 
 const handler = {
   "mail/list": async function (player, {type}) {
-    let publicMails = await PublicMailModel.find({type}).sort({createAt: -1}).lean().exec();
+    let publicMails = await PublicMailModel.find().sort({createAt: -1}).lean().exec();
 
-    const privateMails = await MailModel.find({to: player._id, type}).sort({createAt: -1}).lean().exec()
+    const privateMails = await MailModel.find({to: player._id}).sort({createAt: -1}).lean().exec()
 
     const publicMailRecords = await PublicMailRecordModel.find({
       player: player._id
@@ -43,7 +43,7 @@ const handler = {
       return b.createAt.getTime() - a.createAt.getTime()
     })
 
-    player.sendMessage('mail/listReply', {mails})
+    player.sendMessage('mail/listReply', {ok: true, data: mails})
   },
 
   'mail/read': async function (player, {_id}) {
@@ -123,7 +123,7 @@ const handler = {
     })
 
     if (!originalGiftMail) {
-      player.sendMessage('mail/requestGiftReply', {ok: false, info: '没有该礼物'})
+      player.sendMessage('mail/requestGiftReply', {ok: false, data: TianleErrorCode.configNotFound})
     }
 
     if (originalGiftMail.giftState === GiftState.AVAILABLE) {
@@ -143,7 +143,7 @@ const handler = {
         }
       }
     } else {
-      player.sendMessage('mail/requestGiftReply', {ok: false, info: '已经领取'})
+      player.sendMessage('mail/requestGiftReply', {ok: false, data: originalGiftMail.gift})
     }
   },
   'mail/requestNoticeGift': async function (player, {_id}) {
@@ -158,7 +158,7 @@ const handler = {
         )
 
         if (record && record.giftState === GiftState.REQUESTED) {
-          return player.sendMessage('mail/requestNoticeGiftReply', {ok: false, info: '没有该礼物'});
+          return player.sendMessage('mail/requestNoticeGiftReply', {ok: false, data: TianleErrorCode.configNotFound});
         }
         await PlayerModel.findByIdAndUpdate({_id: player._id},
           {$inc: giftMail.gift},
@@ -176,12 +176,12 @@ const handler = {
           }).save()
         }
       } catch (e) {
-        player.sendMessage('mail/requestNoticeGiftReply', {ok: false, info: e.message})
+        player.sendMessage('mail/requestNoticeGiftReply', {ok: false, data: TianleErrorCode.systemError})
       } finally {
-        await unlock()
+        unlock()
       }
     } else {
-      player.sendMessage('mail/requestNoticeGiftReply', {ok: false, info: '没有该礼物'})
+      player.sendMessage('mail/requestNoticeGiftReply', {ok: false, data: TianleErrorCode.configNotFound})
     }
   }
 }
