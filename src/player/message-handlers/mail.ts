@@ -20,6 +20,21 @@ const handler = {
 
     const privateMails = await MailModel.find({to: player._id}).sort({createAt: -1}).lean().exec()
 
+    const publicMailRecords = await PublicMailRecordModel.find({
+      player: player._id
+    }).lean().exec()
+
+    publicMails.forEach(mail => {
+      const rec = publicMailRecords.find(r => r.mail === mail._id.toString())
+      if (!rec) {
+        mail.state = MailState.UNREAD
+        mail.giftState = GiftState.AVAILABLE
+      } else {
+        mail.state = rec.state
+        mail.giftState = rec.giftState || GiftState.AVAILABLE
+      }
+    })
+
     const mails = publicMails
       .filter(m => m.state !== MailState.DELETE)
       .concat(privateMails)
@@ -50,10 +65,6 @@ const handler = {
         {player: player._id, mail: _id},
         {$set: {state: MailState.READ}}, {upsert: true, setDefaultsOnInsert: true}).exec()
 
-      await PublicMailModel.update({_id}, {
-        $set: {state: MailState.READ}
-      }).exec()
-
       player.sendMessage('mail/readNoticeReply', {ok: true})
     } catch (e) {
       player.sendMessage('mail/readNoticeReply', {ok: false})
@@ -67,9 +78,18 @@ const handler = {
     }, {multi: true}).exec()
 
     //获取系统邮件
-    await PublicMailModel.update({type: MailType.NOTICE, state: MailState.UNREAD}, {
-      $set: {state: MailState.READ}
-    }).exec()
+    let publicMails = await PublicMailModel.find({type: MailType.NOTICE, state: {$ne: MailState.DELETE}}).sort({createAt: -1});
+    const publicMailRecords = await PublicMailRecordModel.find({player: player._id}).lean().exec()
+    for (const mail of publicMails) {
+      const rec = publicMailRecords.find(r => r.mail === mail._id.toString())
+      if (!rec) {
+        mail.state = MailState.READ;
+        mail.save();
+        await PublicMailRecordModel.findOneAndUpdate(
+          {player: player._id, mail: mail._id.toString()},
+          {$set: {state: MailState.READ}}, {upsert: true, setDefaultsOnInsert: true}).exec()
+      }
+    }
 
     player.sendMessage('mail/readAllReply', {ok: true})
   },
@@ -126,9 +146,7 @@ const handler = {
     }
   },
   'mail/requestNoticeGift': async function (player, {_id}) {
-    const giftMail = await PublicMailModel.findOneAndUpdate({_id, type: MailType.NOTICEGIFT}, {
-      $set: {giftState: GiftState.REQUESTED}
-    })
+    const giftMail = await PublicMailModel.findOne({_id, type: MailType.NOTICEGIFT})
 
     if (giftMail) {
       const unlock = await userLock(`gr${player._id}`, 3000)
@@ -159,7 +177,7 @@ const handler = {
       } catch (e) {
         player.sendMessage('mail/requestNoticeGiftReply', {ok: false, data: TianleErrorCode.systemError})
       } finally {
-        unlock()
+        await unlock()
       }
     } else {
       player.sendMessage('mail/requestNoticeGiftReply', {ok: false, data: TianleErrorCode.configNotFound})
