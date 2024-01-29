@@ -38,10 +38,6 @@ const handler = {
         $set: {state: MailState.READ}
       }).exec()
 
-      await PublicMailModel.update({to: player._id, _id}, {
-        $set: {state: MailState.READ}
-      }).exec()
-
       player.sendMessage('mail/readReply', {ok: true})
     } catch (e) {
       player.sendMessage('mail/readReply', {ok: false})
@@ -53,6 +49,10 @@ const handler = {
       await PublicMailRecordModel.findOneAndUpdate(
         {player: player._id, mail: _id},
         {$set: {state: MailState.READ}}, {upsert: true, setDefaultsOnInsert: true}).exec()
+
+      await PublicMailModel.update({_id}, {
+        $set: {state: MailState.READ}
+      }).exec()
 
       player.sendMessage('mail/readNoticeReply', {ok: true})
     } catch (e) {
@@ -67,7 +67,7 @@ const handler = {
     }, {multi: true}).exec()
 
     //获取系统邮件
-    let publicMails = await PublicMailModel.find({type: MailType.NOTICE, state: {$ne: MailState.DELETE}}).sort({createAt: -1});
+    let publicMails = await PublicMailModel.find({type: MailType.NOTICE, state: {$ne: MailState.UNREAD}}).sort({createAt: -1});
     publicMails.forEach(mail => {
       mail.state = MailState.READ;
       mail.save();
