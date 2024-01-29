@@ -67,7 +67,7 @@ const handler = {
     }, {multi: true}).exec()
 
     //获取系统邮件
-    await PublicMailModel.update({type: MailType.NOTICE, state: {$ne: MailState.UNREAD}}, {
+    await PublicMailModel.update({type: MailType.NOTICE, state: MailState.UNREAD}, {
       $set: {state: MailState.READ}
     }).exec()
 
