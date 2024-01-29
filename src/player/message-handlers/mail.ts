@@ -165,7 +165,7 @@ const handler = {
           {new: true, select: {diamond: 1, gold: 1}, rawResult: true}).lean().exec()
 
         await player.updateResource2Client()
-        player.sendMessage('mail/requestNoticeGiftReply', {ok: true});
+        player.sendMessage('mail/requestNoticeGiftReply', {ok: true, data: giftMail.gift});
         if (giftMail.gift.diamond > 0) {
           new DiamondRecord({
             player: player.model._id,
