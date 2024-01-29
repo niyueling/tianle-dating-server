@@ -67,11 +67,9 @@ const handler = {
     }, {multi: true}).exec()
 
     //获取系统邮件
-    let publicMails = await PublicMailModel.find({type: MailType.NOTICE, state: {$ne: MailState.UNREAD}}).sort({createAt: -1});
-    publicMails.forEach(mail => {
-      mail.state = MailState.READ;
-      mail.save();
-    })
+    await PublicMailModel.update({type: MailType.NOTICE, state: {$ne: MailState.UNREAD}}, {
+      $set: {state: MailState.READ}
+    }).exec()
 
     player.sendMessage('mail/readAllReply', {ok: true})
   },
