@@ -75,6 +75,7 @@ export class GameApi extends BaseApi {
         room: roomRecord[i].room,
         gameName: "十二星座",
         caregoryName: category.title,
+        time: roomRecord[i].createAt,
         score: roomRecord[i].scores[index].score
       })
     }
