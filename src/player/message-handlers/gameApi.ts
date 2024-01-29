@@ -1,6 +1,9 @@
 import {GameType} from "@fm/common/constants";
 import RoomRecord from "../../database/models/roomRecord";
 import {addApi, BaseApi} from "./baseApi";
+import moment = require("moment");
+import {service} from "../../service/importService";
+import GameCategory from "../../database/models/gameCategory";
 
 const getGameName = {
   [GameType.mj]: '浦城麻将'
@@ -51,5 +54,30 @@ export class GameApi extends BaseApi {
       gameName,
     };
     this.replySuccess(resp);
+  }
+
+  @addApi({
+    rule: {
+      day: "number"
+    }
+  })
+  async recordList(msg) {
+    const startTime = moment().subtract(msg.day, 'days').startOf('day').toDate();
+    const endTime = moment().subtract(msg.day, 'days').endOf('day').toDate();
+    const roomRecord = await RoomRecord.find({creatorId: this.player.model.shortId, createAt: {$gte: startTime, $lt: endTime}})
+    const datas = [];
+
+    for (let i = 0; i< roomRecord.length; i++) {
+      const category = await GameCategory.findOne({_id: roomRecord[i].rule.categoryId}).lean();
+      datas.push({
+        uid: roomRecord[i].roomNum,
+        room: roomRecord[i].room,
+        gameName: "十二星座",
+        caregoryName: category.title,
+        score: roomRecord[i].scores
+      })
+    }
+
+    return this.replySuccess(datas);
   }
 }
