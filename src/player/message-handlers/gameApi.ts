@@ -69,12 +69,13 @@ export class GameApi extends BaseApi {
 
     for (let i = 0; i< roomRecord.length; i++) {
       const category = await GameCategory.findOne({_id: roomRecord[i].rule.categoryId}).lean();
+      const index = roomRecord[i].scores.findIndex(s => s.shortId === this.player.model.shortId)
       datas.push({
         uid: roomRecord[i].roomNum,
         room: roomRecord[i].room,
         gameName: "十二星座",
         caregoryName: category.title,
-        score: roomRecord[i].scores
+        score: roomRecord[i].scores[index].score
       })
     }
 
