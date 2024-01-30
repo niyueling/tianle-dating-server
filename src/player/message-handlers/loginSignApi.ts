@@ -119,7 +119,7 @@ export class LoginSignApi extends BaseApi {
       rank,
     });
 
-    return this.replySuccess({point, rank, amount});
+    return this.replySuccess({point, rank, amount, base: 1000000000});
   }
 
   async getSevenSignLists(user) {
