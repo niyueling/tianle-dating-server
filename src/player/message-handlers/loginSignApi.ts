@@ -81,7 +81,7 @@ export class LoginSignApi extends BaseApi {
 
     const receive = await StartPocketRecord.findOne({playerId: this.player.model._id});
 
-    return this.replySuccess({receive: !!receive, amount: 8000000000});
+    return this.replySuccess({receive: !!receive, amount: 8000000000, base: 1000000000});
   }
 
   // 领取开运红包
