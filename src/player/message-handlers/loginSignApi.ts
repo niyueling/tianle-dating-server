@@ -85,14 +85,11 @@ export class LoginSignApi extends BaseApi {
   }
 
   // 领取开运红包
-  @addApi({
-    rule: {
-      point: 'number'
-    }
-  })
-  async receiveStartPocket(message) {
+  @addApi()
+  async receiveStartPocket() {
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
+    const point = Math.floor(Math.random() * 6) + 1;
 
     // 判断今日是否领取
     const count = await StartPocketRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
@@ -100,7 +97,8 @@ export class LoginSignApi extends BaseApi {
       return this.replyFail(TianleErrorCode.prizeIsReceive);
     }
 
-    const amount = 1000000000 * (message.point === 1 ? 8 : message.point);
+    const rank = point === 1 ? 8 : point;
+    const amount = 1000000000 * rank;
 
     let user = await this.service.playerService.getPlayerModel(this.player.model._id);
     if (!user) {
@@ -113,13 +111,15 @@ export class LoginSignApi extends BaseApi {
     this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond'])});
 
     // 记录日志
-    const record = await StartPocketRecord.create({
+    await StartPocketRecord.create({
       playerId: user._id.toString(),
       shortId: user.shortId,
-      amount: amount
+      amount: amount,
+      point,
+      rank,
     });
 
-    return this.replySuccess(record);
+    return this.replySuccess({point, rank, amount});
   }
 
   async getSevenSignLists(user) {

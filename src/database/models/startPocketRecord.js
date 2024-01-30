@@ -22,6 +22,16 @@ const schema = new mongoose.Schema({
     required: true,
     default: 1
   },
+  point: {
+    type: Number,
+    required: true,
+    default: 1
+  },
+  rank: {
+    type: Number,
+    required: true,
+    default: 1
+  },
 });
 
 const StartPocketRecord = mongoose.model('StartPocketRecord', schema);
