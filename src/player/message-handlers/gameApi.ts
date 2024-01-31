@@ -4,6 +4,7 @@ import {addApi, BaseApi} from "./baseApi";
 import moment = require("moment");
 import {service} from "../../service/importService";
 import GameCategory from "../../database/models/gameCategory";
+import CombatGain from "../../database/models/combatGain";
 
 const getGameName = {
   [GameType.mj]: '浦城麻将'
@@ -64,22 +65,8 @@ export class GameApi extends BaseApi {
   async recordList(msg) {
     const startTime = moment().subtract(msg.day, 'days').startOf('day').toDate();
     const endTime = moment().subtract(msg.day, 'days').endOf('day').toDate();
-    const roomRecord = await RoomRecord.find({creatorId: this.player.model.shortId, createAt: {$gte: startTime, $lt: endTime}, scores: {$ne: []}})
-    const datas = [];
+    const roomRecord = await CombatGain.find({playerId: this.player.model._id, time: {$gte: startTime, $lt: endTime}})
 
-    for (let i = 0; i< roomRecord.length; i++) {
-      const category = await GameCategory.findOne({_id: roomRecord[i].rule.categoryId}).lean();
-      const index = roomRecord[i].scores.findIndex(s => s.shortId === this.player.model.shortId)
-      datas.push({
-        uid: roomRecord[i].roomNum,
-        room: roomRecord[i].room,
-        gameName: "十二星座",
-        caregoryName: category.title,
-        time: roomRecord[i].createAt,
-        score: roomRecord[i].scores[index].score
-      })
-    }
-
-    return this.replySuccess(datas);
+    return this.replySuccess(roomRecord);
   }
 }
