@@ -64,7 +64,7 @@ export class GameApi extends BaseApi {
   async recordList(msg) {
     const startTime = moment().subtract(msg.day, 'days').startOf('day').toDate();
     const endTime = moment().subtract(msg.day, 'days').endOf('day').toDate();
-    const roomRecord = await RoomRecord.find({creatorId: this.player.model.shortId, createAt: {$gte: startTime, $lt: endTime}})
+    const roomRecord = await RoomRecord.find({creatorId: this.player.model.shortId, createAt: {$gte: startTime, $lt: endTime}, scores: {$ne: []}})
     const datas = [];
 
     for (let i = 0; i< roomRecord.length; i++) {

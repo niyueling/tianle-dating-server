@@ -180,7 +180,7 @@ export default class PlayerService extends BaseService {
 
       // 测试时每次更新钻石金豆
       user.diamond = data.diamond;
-      user.gold = data.gold;
+      // user.gold = data.gold;
 
       // 更新sessionKey
       user.sessionKey = data.sessionKey;
