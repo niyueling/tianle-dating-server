@@ -137,7 +137,8 @@ export class LoginSignApi extends BaseApi {
   }
 
   async receivePrize(prize, playerId, multiple = 1) {
-    const user = await Player.findById(playerId);
+    const user = await Player.findOne({_id: playerId});
+    console.warn(prize)
     if (prize.type === 1) {
       user.diamond += prize.number * multiple;
       await service.playerService.logGemConsume(user._id, ConsumeLogType.chargeByActive, prize.number * multiple,
