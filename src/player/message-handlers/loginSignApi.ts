@@ -50,7 +50,7 @@ export class LoginSignApi extends BaseApi {
     }
 
     // 按照奖励类型领取奖励
-    await this.receivePrize(prizeInfo, this.player._id, ConsumeLogType.chargeByActive, message.multiple);
+    await this.receivePrize(prizeInfo, this.player._id, message.multiple);
 
     // 创建领取记录
     const data = {
@@ -136,7 +136,7 @@ export class LoginSignApi extends BaseApi {
     return {isTodaySign: !!isTodaySign, days, datas: prizeList};
   }
 
-  async receivePrize(prize, playerId, type, multiple = 1) {
+  async receivePrize(prize, playerId, multiple = 1) {
     const user = await Player.findById(playerId);
     if (prize.type === 1) {
       user.diamond += prize.number * multiple;
