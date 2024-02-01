@@ -12,6 +12,7 @@ import saveClubRoomInfo from './bin/clubRoomRecordLog'
 import cleanUselessClub from "./bin/cleanUselessClub";
 import {service} from "./service/importService";
 import updateMnpAccessToken from "./bin/updateMnpAccessToken";
+import {updateTurntableTimes} from "./bin/updateMahjongSchedules";
 
 mongoose.connect(config.database.url)
 
@@ -117,6 +118,14 @@ schedule.scheduleJob('*/15 * * * *', function () {
   updateMnpAccessToken()
     .catch(error => {
       console.error('update mnp accerss token error', error.stack)
+    })
+})
+
+// 0点更新更新抽奖次数
+schedule.scheduleJob('0 0 * * *', function () {
+  updateTurntableTimes()
+    .catch(error => {
+      console.error('update player turntabletimes error', error.stack)
     })
 })
 
