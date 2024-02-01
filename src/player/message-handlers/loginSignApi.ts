@@ -6,6 +6,7 @@ import SevenSignPrizeRecord from "../../database/models/SevenSignPrizeRecord";
 import {service} from "../../service/importService";
 import StartPocketRecord from "../../database/models/startPocketRecord";
 import {pick} from "lodash/lodash";
+import Player from "../../database/models/player";
 
 export class LoginSignApi extends BaseApi {
   // 7日登录列表
@@ -30,12 +31,6 @@ export class LoginSignApi extends BaseApi {
     }
   })
   async sevenSignIn(message) {
-    const user = await this.service.playerService.getPlayerModel(this.player.model._id);
-
-    if (!user) {
-      return this.replyFail(TianleErrorCode.userNotFound);
-    }
-
     // 兼容旧版本
     if (!message.multiple) {
       message.multiple = 1;
@@ -48,19 +43,19 @@ export class LoginSignApi extends BaseApi {
     }
 
     // 判断是否领取
-    const receive = await SevenSignPrizeRecord.findOne({shortId: user.shortId, "prizeConfig.day": prizeInfo.day});
+    const receive = await SevenSignPrizeRecord.findOne({playerId: this.player._id, "prizeConfig.day": prizeInfo.day});
 
     if (receive) {
       return this.replyFail(TianleErrorCode.prizeIsReceive);
     }
 
     // 按照奖励类型领取奖励
-    await this.receivePrize(prizeInfo, user, ConsumeLogType.chargeByActive, message.multiple);
+    await this.receivePrize(prizeInfo, this.player._id, ConsumeLogType.chargeByActive, message.multiple);
 
     // 创建领取记录
     const data = {
-      playerId: user._id.toString(),
-      shortId: user.shortId,
+      playerId: this.player._id.toString(),
+      shortId: this.player.model.shortId,
       prizeId: prizeInfo._id,
       prizeConfig: prizeInfo,
       multiple: message.multiple,
@@ -108,7 +103,7 @@ export class LoginSignApi extends BaseApi {
     user.gold += amount;
     user.save();
 
-    this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond'])});
+    await this.player.updateResource2Client();
 
     // 记录日志
     await StartPocketRecord.create({
@@ -141,7 +136,8 @@ export class LoginSignApi extends BaseApi {
     return {isTodaySign: !!isTodaySign, days, datas: prizeList};
   }
 
-  async receivePrize(prize, user, type, multiple = 1) {
+  async receivePrize(prize, playerId, type, multiple = 1) {
+    const user = await Player.findById(playerId);
     if (prize.type === 1) {
       user.diamond += prize.number * multiple;
       await service.playerService.logGemConsume(user._id, ConsumeLogType.chargeByActive, prize.number * multiple,
