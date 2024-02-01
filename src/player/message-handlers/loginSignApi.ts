@@ -64,8 +64,7 @@ export class LoginSignApi extends BaseApi {
 
     await SevenSignPrizeRecord.create(data);
 
-    const player = await this.service.playerService.getPlayerModel(this.player.model._id);
-    this.player.sendMessage('resource/update', {ok: true, data: pick(player, ['gold', 'diamond'])});
+    await this.player.updateResource2Client();
 
     return this.replySuccess(data);
   }
@@ -138,7 +137,7 @@ export class LoginSignApi extends BaseApi {
 
   async receivePrize(prize, playerId, multiple = 1) {
     const user = await Player.findOne({_id: playerId});
-    console.warn(prize)
+    console.warn(prize.type === 1, prize.number * multiple);
     if (prize.type === 1) {
       user.diamond += prize.number * multiple;
       await service.playerService.logGemConsume(user._id, ConsumeLogType.chargeByActive, prize.number * multiple,
@@ -149,6 +148,6 @@ export class LoginSignApi extends BaseApi {
       user.gold += prize.number * multiple;
     }
 
-    user.save();
+    await user.save();
   }
 }
