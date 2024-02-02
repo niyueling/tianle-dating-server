@@ -36,10 +36,10 @@ export class AccountApi extends BaseApi {
     }
     if (user.helpCount < config.game.helpCount) {
       user.helpCount++;
-      user.gold += 1000000000;
+      user.gold += 100000;
       user.save();
       this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond'])})
-      return this.replySuccess({gold: 1000000000, helpCount: user.helpCount, totalCount: config.game.helpCount});
+      return this.replySuccess({gold: 100000, helpCount: user.helpCount, totalCount: config.game.helpCount});
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);
