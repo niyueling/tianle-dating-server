@@ -229,7 +229,6 @@ export class GoodsApi extends BaseApi {
     }
 
     const player = await PlayerModel.findOne({_id: order.playerId});
-    console.warn(order.playerId, player, player.openid, player.sessionKey);
     if (!player || !player.openid || !player.sessionKey) {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
@@ -290,7 +289,7 @@ export class GoodsApi extends BaseApi {
 
     await this.player.updateResource2Client();
 
-    return this.replySuccess(pay_response.data);
+    return this.replySuccess(order);
   }
 
 }
