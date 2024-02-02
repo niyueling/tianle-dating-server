@@ -75,7 +75,7 @@ export class LoginSignApi extends BaseApi {
 
     const receive = await StartPocketRecord.findOne({playerId: this.player.model._id});
 
-    return this.replySuccess({receive: !!receive, amount: 8000000000, base: 1000000000});
+    return this.replySuccess({receive: !!receive, amount: 800000, base: 100000});
   }
 
   // 领取开运红包
@@ -92,7 +92,7 @@ export class LoginSignApi extends BaseApi {
     }
 
     const rank = point === 1 ? 8 : point;
-    const amount = 1000000000 * rank;
+    const amount = 100000 * rank;
 
     let user = await this.service.playerService.getPlayerModel(this.player.model._id);
     if (!user) {
@@ -116,7 +116,7 @@ export class LoginSignApi extends BaseApi {
       rank,
     });
 
-    return this.replySuccess({point, rank, amount, base: 1000000000});
+    return this.replySuccess({point, rank, amount, base: 100000});
   }
 
   async getSevenSignLists(user) {
