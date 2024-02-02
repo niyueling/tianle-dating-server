@@ -24,6 +24,7 @@ const schema = new Schema({
   province: {type: String},
   city: {type: String},
   robot: {type: Boolean, default: false},
+  tourist: {type: Boolean, default: false},
   isBindWechat: {type: Boolean, default: false, required: true},
   createAt: {type: Date, default: Date.now},
 });
