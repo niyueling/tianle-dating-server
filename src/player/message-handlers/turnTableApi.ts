@@ -168,11 +168,13 @@ export class TurnTableApi extends BaseApi {
       case TurntablePrizeType.diamond:
         await Player.update({_id: model._id }, {$inc: { diamond: record.prizeConfig.num }});
         await service.playerService.logGemConsume(model._id, ConsumeLogType.chargeByActive, record.prizeConfig.num,
-          model.diamond, `转盘抽中${record.prizeConfig.num}钻石`);
+          model.diamond + record.prizeConfig.num, `转盘抽中${record.prizeConfig.num}钻石`);
         break;
 
       case TurntablePrizeType.gold:
         await Player.update({_id: model._id }, {$inc: { gold: record.prizeConfig.num }});
+        await service.playerService.logGoldConsume(model._id, ConsumeLogType.receiveDraw, record.prizeConfig.num,
+          model.diamond + record.prizeConfig.num, `转盘抽奖获得`);
         break;
     }
 

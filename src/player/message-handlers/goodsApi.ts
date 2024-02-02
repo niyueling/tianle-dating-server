@@ -65,6 +65,9 @@ export class GoodsApi extends BaseApi {
     }
     // 增加日志
     await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -gem2ExchangeNum, this.player.model.diamond, `成功兑换${gem2ExchangeNum}钻石成${temp}金豆`);
+    // 记录金豆日志
+    await service.playerService.logGoldConsume(model._id, ConsumeLogType.diamondToGold, gold,
+      this.player.model.gold, `钻石兑换金豆`);
 
     this.replySuccess({diamond: gem2ExchangeNum, gold, goldFormat: temp});
     await this.player.updateResource2Client();
@@ -206,6 +209,9 @@ export class GoodsApi extends BaseApi {
 
     user.gold += goodInfo.gold;
     user.save();
+
+    await service.playerService.logGoldConsume(user._id, ConsumeLogType.freeShopGold, goodInfo.gold,
+      user.gold, `每日领取免费金豆`);
 
     // 记录日志
     const record = await FreeGoldRecord.create({

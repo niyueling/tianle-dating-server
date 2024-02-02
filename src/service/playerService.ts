@@ -14,6 +14,7 @@ import PlayerLoginRecord from "../database/models/playerLoginRecord";
 import PlayerManager from "../player/player-manager";
 import UserRechargeOrder from "../database/models/userRechargeOrder";
 import {ConsumeLogType} from "@fm/common/constants";
+import GoldRecord from "../database/models/goldRecord";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
@@ -121,6 +122,18 @@ export default class PlayerService extends BaseService {
     })
   }
 
+  // 记录金豆消耗
+  async logGoldConsume(playerId, type, amount, totalAmount, note) {
+    await GoldRecord.create({
+      player: playerId,
+      amount,
+      residue: totalAmount,
+      type,
+      note,
+      createAt: new Date(),
+    })
+  }
+
   // 根据邀请码获取用户
   async getPlayerByInviteCode(inviteCode: number) {
     const result = await Player.findOne({inviteCode});
@@ -180,7 +193,6 @@ export default class PlayerService extends BaseService {
 
       // 测试时每次更新钻石金豆
       user.diamond = data.diamond;
-      // user.gold = data.gold;
 
       // 更新sessionKey
       user.sessionKey = data.sessionKey;

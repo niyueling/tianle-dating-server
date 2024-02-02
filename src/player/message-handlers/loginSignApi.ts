@@ -102,6 +102,9 @@ export class LoginSignApi extends BaseApi {
     user.gold += amount;
     await user.save();
 
+    await service.playerService.logGoldConsume(user._id, ConsumeLogType.receiveStartPocket, amount,
+      user.gold, `领取开运红包`);
+
     await this.player.updateResource2Client();
 
     // 记录日志
@@ -145,6 +148,8 @@ export class LoginSignApi extends BaseApi {
 
     if (prize.type === 2) {
       user.gold += prize.number * multiple;
+      await service.playerService.logGoldConsume(user._id, ConsumeLogType.receiveSevenLogin, prize.number * multiple,
+        user.gold, `领取7日登陆`);
     }
 
     await user.save();
