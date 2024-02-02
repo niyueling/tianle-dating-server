@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const SevenSignPrizeSchema = new Schema({
-  diamond: {type: Number, default: 0},//奖励钻石
-  gold: {type: Number, default: 0},//奖励金豆
+  type: {type: Number, default: 0},//1奖励钻石,2奖励金豆
+  number: {type: Number, default: 0},//奖励数量
   day: {type: Number},//第几天奖励
   createAt: {type: Date, default: Date.now}
 });
