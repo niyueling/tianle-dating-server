@@ -100,7 +100,7 @@ export class LoginSignApi extends BaseApi {
     }
 
     user.gold += amount;
-    user.save();
+    await user.save();
 
     await this.player.updateResource2Client();
 
