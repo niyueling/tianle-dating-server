@@ -228,7 +228,7 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.orderNotExistOrPay);
     }
 
-    const player = PlayerModel.findOne({_id: order.playerId});
+    const player = await PlayerModel.findOne({_id: order.playerId});
     console.warn(order.playerId, player, player.openid, player.sessionKey);
     if (!player || !player.openid || !player.sessionKey) {
       return this.replyFail(TianleErrorCode.userNotFound);
