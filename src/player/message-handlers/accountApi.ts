@@ -79,8 +79,8 @@ export class AccountApi extends BaseApi {
     }
 
     const shortId = await getNewShortPlayerId()
-    const avatarIndex = Math.floor(Math.random() * 19) + 1;
-    const defaultAvatar = `https://phpadmin.tianle.fanmengonline.com/uploads/images/avatars/${avatarIndex}.png`;
+    const index = Math.floor(Math.random() * (215 - 1 + 1)) + 1;
+    const defaultAvatar = `https://im-serve.oss-cn-beijing.aliyuncs.com/uploads/images/${index}.png`;
 
     const data = {
       unionid: resp.unionid,
