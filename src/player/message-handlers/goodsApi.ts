@@ -288,7 +288,7 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.payFail);
     }
 
-    const result = this.service.playerService.playerRecharge(order._id, pay_response.data.bill_no);
+    const result = await this.service.playerService.playerRecharge(order._id, pay_response.data.bill_no);
     if(!result) {
       return this.replyFail(TianleErrorCode.payFail);
     }
