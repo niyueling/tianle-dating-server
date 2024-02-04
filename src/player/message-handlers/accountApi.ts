@@ -24,6 +24,17 @@ export class AccountApi extends BaseApi {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
+    // 下发掉线子游戏
+    const room = await service.roomRegister.getDisconnectRoomByPlayerId(user._id.toString());
+    if (room) {
+      // 掉线的子游戏类型
+      user.disconnectedRoom = true;
+      user.continueGameType = GameType.mj;
+    } else {
+      // 没有掉线的房间号，不要重连
+      user.disconnectedRoom = false
+    }
+
     this.replySuccess(user);
   }
 
