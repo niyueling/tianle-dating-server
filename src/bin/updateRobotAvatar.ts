@@ -19,7 +19,7 @@ async function main() {
     await players[i].save();
   }
 
-  console.log(datas);
+  console.warn(datas);
 }
 
 main()
