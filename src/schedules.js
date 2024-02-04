@@ -13,6 +13,7 @@ import cleanUselessClub from "./bin/cleanUselessClub";
 import {service} from "./service/importService";
 import updateMnpAccessToken from "./bin/updateMnpAccessToken";
 import {updateTurntableTimes} from "./bin/updateMahjongSchedules";
+import updateRobotAvatar from "./bin/updateRobotAvatar";
 
 mongoose.connect(config.database.url)
 
@@ -129,3 +130,10 @@ schedule.scheduleJob('0 0 * * *', function () {
     })
 })
 
+// 每3分钟更新机器人头像
+schedule.scheduleJob('*/3 * * * *', function () {
+  updateRobotAvatar()
+    .catch(error => {
+      console.error('update robot avatar error', error.stack)
+    })
+})

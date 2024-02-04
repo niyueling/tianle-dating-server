@@ -1,5 +1,6 @@
 import Player from "../database/models/player";
-async function main() {
+
+async function updateRobotAvatar() {
   const players = await Player.find({robot: true});
   const url = "https://im-serve.oss-cn-beijing.aliyuncs.com/uploads/images/";
   const datas = [];
@@ -22,5 +23,6 @@ async function main() {
   console.warn(datas);
 }
 
-main()
+
+export default updateRobotAvatar;
 
