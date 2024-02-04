@@ -15,6 +15,8 @@ async function main() {
       players[i].avatar = avatar;
       datas.push(avatar);
     }
+
+    await players[i].save();
   }
 
   console.log(datas);
