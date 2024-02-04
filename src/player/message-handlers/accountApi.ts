@@ -14,6 +14,7 @@ import PlayerManager from "../player-manager";
 import {addApi, BaseApi} from "./baseApi";
 import WatchAdverRecord from "../../database/models/watchAdverRecord";
 import {pick} from "lodash/lodash";
+import Mail from "../../database/models/mail";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -163,9 +164,17 @@ export class AccountApi extends BaseApi {
       model.openIosShopFunc = openIosShopFunc;
     }
 
-    const notice = await Notice.findOne().sort({createAt: -1}).exec()
-    if (notice) {
-      this.player.sendMessage('global/notice', notice.message);
+    const mails = await Mail.findOne({to: model._id}).lean()
+    if (!mails) {
+      await Mail.create({
+        type: "message",
+        state: 1,
+        giftState: 1,
+        to: model._id,
+        title: "欢迎来到天乐麻将",
+        content: "欢迎来到天乐麻将,如果您在游戏过程中遇到任何问题，可以通过客服联系我们，我们会第一时间给你提供必要的帮助!",
+        gift: { diamond : 0, gold : 0 },
+        createAt: new Date() });
     }
 
     // 记录玩家
