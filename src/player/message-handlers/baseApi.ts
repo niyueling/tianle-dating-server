@@ -57,8 +57,8 @@ export class BaseApi {
   }
 
   // 查询失败
-  replyFail(info: string) {
-    return this.player.sendMessage(this.apiRoute + 'Reply', {ok: false, info})
+  replyFail(info: string, data = {}) {
+    return this.player.sendMessage(this.apiRoute + 'Reply', {ok: false, info, data})
   }
 
   // 失败下发 data

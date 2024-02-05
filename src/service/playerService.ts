@@ -13,8 +13,10 @@ import * as moment from "moment";
 import PlayerLoginRecord from "../database/models/playerLoginRecord";
 import PlayerManager from "../player/player-manager";
 import UserRechargeOrder from "../database/models/userRechargeOrder";
-import {ConsumeLogType} from "@fm/common/constants";
+import {ConsumeLogType, TianleErrorCode} from "@fm/common/constants";
 import GoldRecord from "../database/models/goldRecord";
+import GoodsReviveRuby from "../database/models/goodsReviveRuby";
+import GoodsModel from "../database/models/goods";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
