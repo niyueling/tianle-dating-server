@@ -16,6 +16,7 @@ const schema = new Schema({
   activityTimes: {type: Number, default: 0}, // 在线时长
   turntableTimes: {type: Number, default: 20}, // 转盘次数
   consecutiveLoginDays: {type: Number, default: 1}, // 连续登陆天数
+  signLoginDays: {type: Number, default: 0}, // 签到天数
   sessionKey: {type: String},
   guideSteps: {type: Number, default: 1001},
   source: {type: Number, required: true, default: 1},

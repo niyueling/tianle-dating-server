@@ -126,7 +126,8 @@ export class LoginSignApi extends BaseApi {
     const end = moment(new Date()).endOf('day').toDate()
     const isTodaySign = await SevenSignPrizeRecord.count({shortId: user.shortId,
       createAt: {$gte: start, $lt: end}});
-    let days = await SevenSignPrizeRecord.count({shortId: user.shortId});
+    let player = await service.playerService.getPlayerModel(user._id);
+    let days = player.signLoginDays;
     if (!isTodaySign) {
       days++;
     }
@@ -151,6 +152,11 @@ export class LoginSignApi extends BaseApi {
       user.gold += prize.number * multiple;
       await service.playerService.logGoldConsume(user._id, ConsumeLogType.receiveSevenLogin, prize.number * multiple,
         user.gold, `领取7日登陆`);
+    }
+
+    user.signLoginDays = prize.day === 7 ? 0 : prize.day;
+    if (prize.day === 7) {
+      await SevenSignPrizeRecord.remove({shortId: user.shortId});
     }
 
     await user.save();
