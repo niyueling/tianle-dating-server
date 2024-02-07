@@ -18,6 +18,7 @@ async function updateTurntableTimes() {
 
   for (const user of users) {
     user.turntableTimes = 10;
+    user.helpCount = 0;
     await user.save();
   }
   return lock.unlock();

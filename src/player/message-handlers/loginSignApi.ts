@@ -63,9 +63,7 @@ export class LoginSignApi extends BaseApi {
     };
 
     await SevenSignPrizeRecord.create(data);
-
     await this.player.updateResource2Client();
-
     return this.replySuccess(data);
   }
 
