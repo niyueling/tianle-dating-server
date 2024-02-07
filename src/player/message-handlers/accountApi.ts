@@ -105,7 +105,6 @@ export class AccountApi extends BaseApi {
       ip: this.player.getIpAddress(),
       robot: false,
       tourist: !resp.unionid,
-      diamond: 1000,
     }
 
 
