@@ -36,6 +36,8 @@ export class AccountApi extends BaseApi {
       user.disconnectedRoom = false
     }
 
+    user.openIosShopFunc = true;
+
     this.replySuccess(user);
   }
 
