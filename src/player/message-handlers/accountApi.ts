@@ -160,7 +160,8 @@ export class AccountApi extends BaseApi {
         openIosShopFunc = openIosShopFunc && iosRoomCount >= 10 && iosLotteryCount >= 3 && !isTest;
       }
 
-      model.openIosShopFunc = openIosShopFunc;
+      // model.openIosShopFunc = openIosShopFunc;
+      model.openIosShopFunc = true;
     }
 
     const mails = await Mail.findOne({to: model._id}).lean()
