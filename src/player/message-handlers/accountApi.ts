@@ -20,7 +20,7 @@ export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
   @addApi()
   async queryByShortId() {
-    const user = await Player.findOne({shortId: this.player.model.shortId}).exec();
+    const user = await Player.findOne({shortId: this.player.model.shortId}).lean();
     if (!user) {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
