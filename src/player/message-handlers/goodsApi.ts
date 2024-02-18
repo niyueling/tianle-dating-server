@@ -19,7 +19,7 @@ export class GoodsApi extends BaseApi {
   @addApi()
   async getGoodsList() {
     const goodsList = await GoodsModel.find({ isOnline: true, goodsType: 1 }).sort({price: 1});
-    const voucherList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1});
+    const voucherList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1}).lean();
     const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1});
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
@@ -39,6 +39,12 @@ export class GoodsApi extends BaseApi {
       }
 
       goldList.push(params);
+    }
+
+    for (let i = 0; i < voucherList.length; i++) {
+      //判断用户是否首次充值该模板
+      const orderCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1, goodsId: voucherList[i]._id });
+      voucherList[i].isFirst = orderCount === 0;
     }
 
     this.replySuccess({ goodsList, voucherList, rubyList: goldList });

@@ -350,4 +350,51 @@ export class MockDataApi extends BaseApi {
 
     return this.replySuccess(avatars);
   }
+
+  // 录入任务数据
+  @addApi()
+  async saveTaskData() {
+    const result = await BlockTask.find();
+
+    if (result.length) {
+      await BlockTask.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      // 成长成就-钻石王老五
+      {taskName: "钻石王老五", taskDescribe: "拥有钻石数大于?/88", taskType: 1, taskId: 1001, taskTimes: 88,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {title: "钻石王老五", name: "zswlw", taskTimes: 8888}, liveness: 5},
+      {taskName: "钻石王老五", taskDescribe: "拥有钻石数大于?/388", taskType: 1, taskId: 1002, taskTimes: 388,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {title: "钻石王老五", name: "zswlw", taskTimes: 8888}, liveness: 5},
+      {taskName: "钻石王老五", taskDescribe: "拥有钻石数大于?/888", taskType: 1, taskId: 1003, taskTimes: 388,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {title: "钻石王老五", name: "zswlw", taskTimes: 8888}, liveness: 5},
+      {taskName: "钻石王老五", taskDescribe: "拥有钻石数大于?/2888", taskType: 1, taskId: 1004, taskTimes: 2888,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {title: "钻石王老五", name: "zswlw", taskTimes: 8888}, liveness: 5},
+      {taskName: "钻石王老五", taskDescribe: "拥有钻石数大于?/5888", taskType: 1, taskId: 1005, taskTimes: 5888,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {title: "钻石王老五", name: "zswlw", taskTimes: 8888}, liveness: 5},
+      {taskName: "钻石王老五", taskDescribe: "拥有钻石数大于?/8888", taskType: 1, taskId: 1006, taskTimes: 8888,
+        taskPrizes: {name: "zswlw", number: 1, type: 3}, taskDesignates: {title: "钻石王老五", name: "zswlw", taskTimes: 8888}, liveness: 5},
+
+    ];
+
+    BlockTask.insertMany(datas);
+
+    const result1 = await BlockTaskTotalPrize.find();
+
+    if (result1.length) {
+      await BlockTaskTotalPrize.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas1 = [
+      {name: "10个体力", number: 5, level: 1, type: 2, propId: 101, liveness: 20},
+      {name: "200个金币", number: 200, level: 1, type: 0, propId: 103, liveness: 40},
+      {name: "20个钻石", number: 20, level: 1, type: 1, propId: 102, liveness: 60},
+      {name: "300个金币", number: 300, level: 1, type: 0, propId: 103, liveness: 80},
+      {name: "英灵神箭手碎片*1", number: 1, level: 1, type: 3, propId: 110, liveness: 100}
+    ];
+
+    BlockTaskTotalPrize.insertMany(datas1);
+
+    return this.replySuccess({datas, datas1});
+  }
 }
