@@ -15,6 +15,7 @@ import {addApi, BaseApi} from "./baseApi";
 import WatchAdverRecord from "../../database/models/watchAdverRecord";
 import {pick} from "lodash/lodash";
 import Mail from "../../database/models/mail";
+import roomScoreRecord from "../../database/models/roomScoreRecord";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -47,7 +48,7 @@ export class AccountApi extends BaseApi {
 
       // 如果机型是ios，查询抽奖次数和开房数
       if (message.platform && message.platform === "ios") {
-        iosRoomCount = await RoomRecord.count({
+        iosRoomCount = await roomScoreRecord.count({
           creatorId: user.shortId
         })
 
@@ -174,7 +175,7 @@ export class AccountApi extends BaseApi {
 
       // 如果机型是ios，查询抽奖次数和开房数
       if (platform && platform === "ios") {
-        iosRoomCount = await RoomRecord.count({
+        iosRoomCount = await roomScoreRecord.count({
           creatorId: model.shortId
         })
 
