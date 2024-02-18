@@ -262,4 +262,29 @@ export default class PlayerService extends BaseService {
 
     return true;
   }
+
+  async playerVoucherRecharge(orderId, thirdOrderNo) {
+    const order = await UserRechargeOrder.findOne({_id: orderId});
+    if (!order) {
+      return false;
+    }
+
+    const user = await Player.findOne({_id: order.playerId});
+    if (!user) {
+      return false;
+    }
+
+    user.voucher += order.diamond;
+    user.dominateCount = Math.floor(Math.random() * 5) + 1;
+    await user.save();
+
+    order.status = 1;
+    order.transactionId = thirdOrderNo;
+    await order.save();
+
+    // 增加日志
+    // await this.logGemConsume(user._id, ConsumeLogType.chargeByWechat, order.diamond, user.diamond, "微信充值");
+
+    return true;
+  }
 }

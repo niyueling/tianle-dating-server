@@ -15,7 +15,7 @@ const schema = new Schema({
   juRank: {type: Number, default: 1}, // 胜率
   redPocket: {type: Number, default: 0}, // 红包
   activityTimes: {type: Number, default: 0}, // 在线时长
-  turntableTimes: {type: Number, default: 20}, // 转盘次数
+  turntableTimes: {type: Number, default: 10}, // 转盘次数
   consecutiveLoginDays: {type: Number, default: 1}, // 连续登陆天数
   signLoginDays: {type: Number, default: 0}, // 签到天数
   sessionKey: {type: String},
