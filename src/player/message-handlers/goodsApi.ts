@@ -17,7 +17,7 @@ export class GoodsApi extends BaseApi {
   // 商城列表
   @addApi()
   async getGoodsList() {
-    const goodsList = await GoodsModel.find({ isOnline: true }).sort({price: 1});
+    const goodsList = await GoodsModel.find({ isOnline: true, goodsType: 1 }).sort({price: 1});
     const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1});
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();

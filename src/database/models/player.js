@@ -10,6 +10,7 @@ const schema = new Schema({
   nickname: {type: String, required: true},
   diamond: {type: Number, default: 0}, // 钻石
   gold: {type: Number, default: 0}, // 金豆
+  voucher: {type: Number, default: 0}, // 代金券
   juCount: {type: Number, default: 0}, // 累计局数
   juRank: {type: Number, default: 1}, // 胜率
   redPocket: {type: Number, default: 0}, // 红包
