@@ -19,7 +19,7 @@ import Mail from "../../database/models/mail";
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
   @addApi()
-  async queryByShortId() {
+  async queryByShortId(message) {
     const user = await Player.findOne({shortId: this.player.model.shortId}).lean();
     if (!user) {
       return this.replyFail(TianleErrorCode.userNotFound);
@@ -36,7 +36,32 @@ export class AccountApi extends BaseApi {
       user.disconnectedRoom = false
     }
 
-    user.openIosShopFunc = true;
+    if (message.mnpVersion) {
+      // 是否开启商店
+      const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
+      // 1 = 开启全部商店
+      const open = await service.utils.getGlobalConfigByName('openMnpRecharge');
+      let iosRoomCount = 0;
+      let iosLotteryCount = 0;
+      let openIosShopFunc = message.mnpVersion && open === 1 && (message.mnpVersion !== checkVersion)
+
+      // 如果机型是ios，查询抽奖次数和开房数
+      if (message.platform && message.platform === "ios") {
+        iosRoomCount = await RoomRecord.count({
+          creatorId: user.shortId
+        })
+
+        iosLotteryCount = await LotteryRecord.count({
+          shortId: user.shortId
+        })
+
+        const isTest = user.nickname.indexOf("test") !== -1 || user.nickname.indexOf("tencent_game") !== -1;
+
+        openIosShopFunc = openIosShopFunc && iosRoomCount >= 10 && iosLotteryCount >= 3 && !isTest;
+      }
+
+      user.openIosShopFunc = openIosShopFunc;
+    }
 
     this.replySuccess(user);
   }
@@ -162,8 +187,8 @@ export class AccountApi extends BaseApi {
         openIosShopFunc = openIosShopFunc && iosRoomCount >= 10 && iosLotteryCount >= 3 && !isTest;
       }
 
-      // model.openIosShopFunc = openIosShopFunc;
-      model.openIosShopFunc = true;
+      model.openIosShopFunc = openIosShopFunc;
+      // model.openIosShopFunc = true;
     }
 
     const mails = await Mail.findOne({to: model._id}).lean()
