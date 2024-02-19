@@ -61,7 +61,7 @@ export class AccountApi extends BaseApi {
         openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
       }
 
-      user.openIosShopFunc = openIosShopFunc;
+      user.openIosShopFunc = true;
     }
 
     this.replySuccess(user);
