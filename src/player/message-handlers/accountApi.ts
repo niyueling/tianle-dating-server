@@ -15,6 +15,7 @@ import {addApi, BaseApi} from "./baseApi";
 import WatchAdverRecord from "../../database/models/watchAdverRecord";
 import {pick} from "lodash/lodash";
 import Mail from "../../database/models/mail";
+import TurntablePrizeRecord from "../../database/models/turntablePrizeRecord";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -51,8 +52,8 @@ export class AccountApi extends BaseApi {
           creatorId: user.shortId
         })
 
-        iosLotteryCount = await LotteryRecord.count({
-          shortId: user.shortId
+        iosLotteryCount = await TurntablePrizeRecord.count({
+          playerId: user._id
         })
 
         const isTest = user.nickname.indexOf("test") !== -1 || user.nickname.indexOf("tencent_game") !== -1;
@@ -178,8 +179,8 @@ export class AccountApi extends BaseApi {
           creatorId: model.shortId
         })
 
-        iosLotteryCount = await LotteryRecord.count({
-          shortId: model.shortId
+        iosLotteryCount = await TurntablePrizeRecord.count({
+          playerId: model._id
         })
 
         const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
