@@ -91,7 +91,7 @@ export class NewSignApi extends BaseApi {
   // 领取新手指引奖励
   @addApi({
     rule: {
-      prizeId: 'string',
+      taskId: 'number',
       multiple: "number?"
     }
   })
