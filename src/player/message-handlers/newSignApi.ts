@@ -32,7 +32,7 @@ export class NewSignApi extends BaseApi {
       multiple: "number?"
     }
   })
-  async sevenSignIn(message) {
+  async signIn(message) {
     // 兼容旧版本
     if (!message.multiple) {
       message.multiple = 1;
