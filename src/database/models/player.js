@@ -12,8 +12,10 @@ const schema = new Schema({
   gold: {type: Number, default: 0}, // 金豆
   voucher: {type: Number, default: 0}, // 代金券
   juCount: {type: Number, default: 0}, // 累计局数
+  juWinCount: {type: Number, default: 0}, // 胜利局数
   juRank: {type: Number, default: 1}, // 胜率
   redPocket: {type: Number, default: 0}, // 红包
+  gangCount: {type: Number, default: 0}, // 杠牌次数
   activityTimes: {type: Number, default: 0}, // 在线时长
   turntableTimes: {type: Number, default: 10}, // 转盘次数
   consecutiveLoginDays: {type: Number, default: 1}, // 连续登陆天数
