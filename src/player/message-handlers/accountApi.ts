@@ -343,6 +343,28 @@ export class AccountApi extends BaseApi {
     return this.replySuccess(lists);
   }
 
+  // 更换背包使用
+  @addApi()
+  async changeBackPackUse(message) {
+    let record = {};
+    // 牌桌
+    if (message.type === 1) {
+      record = await this.changeBackPackByCardTable(message.propId);
+    }
+
+    // 称号
+    if (message.type === 2) {
+      record = await this.changeBackPackByMedal(message.propId);
+    }
+
+    // 头像框
+    if (message.type === 3) {
+      record = await this.changeBackPackByHeader(message.propId);
+    }
+
+    return this.replySuccess(record);
+  }
+
   async getBackPackByCardTable() {
     const lists = await CardTable.find().lean();
 
@@ -392,5 +414,68 @@ export class AccountApi extends BaseApi {
     }
 
     return lists;
+  }
+
+  async changeBackPackByCardTable(propId) {
+    const config = await CardTable.findOne({propId}).lean();
+    const playerCardTable = await PlayerCardTable.findOne({playerId: this.player._id, propId});
+
+    if (!config) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+    if (!playerCardTable || (playerCardTable && playerCardTable.times !== -1 && playerCardTable.times < new Date().getTime())) {
+      return this.replyFail(TianleErrorCode.cardTableInvaid);
+    }
+
+    // 设置其他牌桌为未使用状态
+    await PlayerCardTable.update({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
+
+    // 设置当前牌桌为使用状态
+    playerCardTable.isUse = true;
+    await playerCardTable.save();
+
+    return playerCardTable;
+  }
+
+  async changeBackPackByMedal(propId) {
+    const config = await Medal.findOne({propId}).lean();
+    const playerMedal = await PlayerMedal.findOne({playerId: this.player._id, propId});
+
+    if (!config) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+    if (!playerMedal || (playerMedal && playerMedal.times !== -1 && playerMedal.times < new Date().getTime())) {
+      return this.replyFail(TianleErrorCode.cardTableInvaid);
+    }
+
+    // 设置其他牌桌为未使用状态
+    await PlayerMedal.update({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
+
+    // 设置当前牌桌为使用状态
+    playerMedal.isUse = true;
+    await playerMedal.save();
+
+    return playerMedal;
+  }
+
+  async changeBackPackByHeader(propId) {
+    const config = await HeadBorder.findOne({propId}).lean();
+    const playerHeadBorder = await PlayerHeadBorder.findOne({playerId: this.player._id, propId});
+
+    if (!config) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+    if (!playerHeadBorder || (playerHeadBorder && playerHeadBorder.times !== -1 && playerHeadBorder.times < new Date().getTime())) {
+      return this.replyFail(TianleErrorCode.cardTableInvaid);
+    }
+
+    // 设置其他牌桌为未使用状态
+    await PlayerHeadBorder.update({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
+
+    // 设置当前牌桌为使用状态
+    playerHeadBorder.isUse = true;
+    await playerHeadBorder.save();
+
+    return playerHeadBorder;
   }
 }
