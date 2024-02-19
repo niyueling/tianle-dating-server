@@ -64,7 +64,7 @@ export class AccountApi extends BaseApi {
       }
 
       user.openIosShopFunc = openIosShopFunc;
-    }//
+    }
 
     this.replySuccess(user);
   }

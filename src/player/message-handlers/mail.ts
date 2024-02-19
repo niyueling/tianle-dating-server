@@ -133,7 +133,7 @@ const handler = {
       if (updatedModel) {
         // 更新玩家的金币，钻石
         await player.updateResource2Client()
-        player.sendMessage('mail/requestGiftReply', {ok: true});
+        player.sendMessage('mail/requestGiftReply', {ok: true, data: originalGiftMail.gift});
         if (originalGiftMail.gift.diamond > 0) {
           await service.playerService.logGemConsume(player.model._id,
             originalGiftMail.gift.source ? ConsumeLogType.chargeByMail : ConsumeLogType.chargeByActive,
