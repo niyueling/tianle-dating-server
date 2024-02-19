@@ -12,6 +12,11 @@ import PlayerMedal from "../../database/models/PlayerMedal";
 import NewTask from "../../database/models/newTask";
 import NewTaskRecord from "../../database/models/NewTaskRecord";
 import DiamondRecord from "../../database/models/diamondRecord";
+import UserRechargeOrder from "../../database/models/userRechargeOrder";
+import NewFirstRecharge from "../../database/models/NewFirstRecharge";
+import NewFirstRechargeRecord from "../../database/models/NewFirstRechargeRecord";
+import CardTable from "../../database/models/CardTable";
+import PlayerCardTable from "../../database/models/PlayerCardTable";
 
 export class NewSignApi extends BaseApi {
   // 新人签到列表
@@ -147,6 +152,66 @@ export class NewSignApi extends BaseApi {
     return this.replySuccess(data);
   }
 
+  // 新人首充列表
+  @addApi()
+  async firstRechargeList() {
+    const user = await this.service.playerService.getPlayerModel(this.player.model._id);
+
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    const data = await this.getFirstRechargeList(user);
+
+    return this.replySuccess(data);
+  }
+
+  // 领取新人首充奖励
+  @addApi({
+    rule: {
+      prizeId: 'string',
+      multiple: "number?"
+    }
+  })
+  async receiveFirstRecharge(message) {
+    // 兼容旧版本
+    if (!message.multiple) {
+      message.multiple = 1;
+    }
+
+    // 获取奖励配置
+    const prizeInfo = await NewFirstRecharge.findOne({_id: message.prizeId});
+    if (!prizeInfo) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    // 判断是否领取
+    const receive = await NewFirstRechargeRecord.findOne({playerId: this.player._id, "prizeConfig.day": prizeInfo.day});
+
+    if (receive) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
+    }
+
+    // 按照奖励类型领取奖励
+    for (let i = 0; i < prizeInfo.prizeList.length; i++) {
+      await this.receivePrize(prizeInfo.prizeList[i], this.player._id, message.multiple, ConsumeLogType.receiveNewSign);
+    }
+
+    // 创建领取记录
+    const data = {
+      playerId: this.player._id.toString(),
+      shortId: this.player.model.shortId,
+      prizeId: prizeInfo._id,
+      prizeConfig: prizeInfo,
+      multiple: message.multiple,
+      createAt: new Date()
+    };
+
+    await NewFirstRechargeRecord.create(data);
+    await this.player.updateResource2Client();
+    return this.replySuccess(data);
+  }
+
   async getGuideLists(user) {
     const taskList = await NewTask.find().lean();
     let tasks = [];
@@ -159,7 +224,31 @@ export class NewSignApi extends BaseApi {
     const startTime = user.createAt;
     const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 10);
 
-    return {taskList, activityTimes: {startTime, endTime}};
+    return {tasks, activityTimes: {startTime, endTime}};
+  }
+
+  async getFirstRechargeList(user) {
+    const summary = await UserRechargeOrder.aggregate([
+      { $match: { playerId: user._id.toString(), status: 1 } },
+      { $group: { _id: null, sum: { $sum: "$price" } } }
+    ]).exec();
+    let rechargeAmount = 0;
+    if (summary.length > 0) {
+      rechargeAmount = summary[0].sum;
+    }
+
+    const taskList = await NewFirstRecharge.find().lean();
+    let tasks = [];
+
+    for (let i = 0; i < taskList.length; i++) {
+      const receive = await NewFirstRechargeRecord.count({playerId: user._id, "prizeConfig.day": taskList[i].day});
+      taskList[i].receive = !!receive;
+    }
+
+    const startTime = user.createAt;
+    const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 10);
+
+    return {taskList, activityTimes: {startTime, endTime}, isPay: rechargeAmount >= 6};
   }
 
   // 判断任务是否完成
@@ -263,7 +352,7 @@ export class NewSignApi extends BaseApi {
       const config = await Medal.findOne({propId: prize.propId}).lean();
       const playerMedal = await PlayerMedal.findOne({propId: prize.propId, playerId}).lean();
 
-      // 如果头像框已过期，删除头像框
+      // 如果称号已过期，删除称号
       if (playerMedal && playerMedal.times !== -1 && playerMedal.times <= new Date().getTime()) {
         await PlayerMedal.remove({_id: playerMedal._id});
       }
@@ -278,6 +367,28 @@ export class NewSignApi extends BaseApi {
         }
 
         await PlayerHeadBorder.create(data);
+      }
+    }
+
+    if (prize.type === 5) {
+      const config = await CardTable.findOne({propId: prize.propId}).lean();
+      const playerCardTable = await PlayerCardTable.findOne({propId: prize.propId, playerId}).lean();
+
+      // 如果称号已过期，删除称号
+      if (playerCardTable && playerCardTable.times !== -1 && playerCardTable.times <= new Date().getTime()) {
+        await playerCardTable.remove({_id: playerCardTable._id});
+      }
+
+      if (config && !playerCardTable) {
+        const data = {
+          propId: prize.propId,
+          playerId: user._id,
+          shortId: user.shortId,
+          times: -1,
+          isUse: false
+        }
+
+        await playerCardTable.create(data);
       }
     }
 
