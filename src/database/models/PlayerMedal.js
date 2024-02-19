@@ -10,7 +10,7 @@ const schema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  // 头像框ID
+  // 称号ID
   propId: {
     type: Number,
     required: true
@@ -36,6 +36,6 @@ const schema = new mongoose.Schema({
 
 schema.index({propId: 1});
 
-const PlayerHeadBorder = mongoose.model('PlayerHeadBorder', schema);
+const PlayerMedal = mongoose.model('PlayerMedal', schema);
 
-export default PlayerHeadBorder
+export default PlayerMedal
