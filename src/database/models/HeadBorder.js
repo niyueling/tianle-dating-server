@@ -2,25 +2,20 @@
 const mongoose = require('mongoose');
 
 const schema = new mongoose.Schema({
-  playerId: {
-    type: String,
-    required: true
-  },
-  shortId: {
-    type: Number,
-    required: true
-  },
-  // 头像框ID
   propId: {
     type: Number,
     required: true
   },
-  // 有效期
-  times: {
-    type: Number,
+  name: {
+    type: String,
     required: true
   },
-  // 获得时间
+  // 描述
+  describe: {
+    type: String,
+    required: true
+  },
+  // 更新时间
   createAt: {
     type: Date,
     required: true,
@@ -30,6 +25,6 @@ const schema = new mongoose.Schema({
 
 schema.index({propId: 1});
 
-const PlayerHeadBorder = mongoose.model('PlayerHeadBorder', schema);
+const HeadBorder = mongoose.model('HeadBorder', schema);
 
-export default PlayerHeadBorder
+export default HeadBorder
