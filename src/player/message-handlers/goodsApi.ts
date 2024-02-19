@@ -20,7 +20,7 @@ export class GoodsApi extends BaseApi {
   @addApi()
   async getGoodsList() {
     const goodsList = await GoodsModel.find({ isOnline: true, goodsType: 1 }).sort({price: 1}).lean();
-    const voucherList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1}).lean();
+    const voucherList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1});
     const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1});
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
@@ -44,8 +44,7 @@ export class GoodsApi extends BaseApi {
 
     for (let i = 0; i < voucherList.length; i++) {
       //判断用户是否首次充值该模板
-      const orderCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1, goodsId: voucherList[i]._id });
-      voucherList[i].isFirst = orderCount === 0;
+      const orderCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1, goodsId: voucherList._id });
     }
 
     for (let i = 0; i < goodsList.length; i++) {
@@ -388,8 +387,6 @@ export class GoodsApi extends BaseApi {
 
     //判断用户是否首次充值该模板
     const orderCount = await UserRechargeOrder.count({playerId: message.userId, status: 1, goodsId: message._id });
-    message.award = orderCount > 0 ? 0 : template.firstTimeAmount;
-    message.price = template.price;
 
     // 获取用户信息，判断openid和session_key是否绑定
     const player = await PlayerModel.findOne({_id: message.userId}).lean();
@@ -403,7 +400,7 @@ export class GoodsApi extends BaseApi {
     const data = {
       playerId: message.userId,
       shortId: player.shortId,
-      diamond: template.amount,
+      diamond: template.amount + (orderCount > 0 ? 0 : template.firstTimeAmount) + template.originPrice,
       price: template.price,
       goodsId: template._id,
       source: "wechat",
@@ -568,12 +565,18 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.voucherInsufficient);
     }
 
-    await PlayerModel.update({_id: model._id}, {$inc: {voucher: -exchangeConf.price, diamond: exchangeConf.amount}});
-    this.player.model.diamond = model.diamond + exchangeConf.amount;
-    // 增加日志
-    await service.playerService.logGemConsume(model._id, ConsumeLogType.voucherForDiamond, exchangeConf.amount, this.player.model.diamond, `成功兑换${exchangeConf.price}代金券成${exchangeConf.amount}钻石`);
+    const orderCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.voucherForDiamond, amount: exchangeConf.amount });
+    let diamond = exchangeConf.amount + exchangeConf.originPrice;
+    if (orderCount === 0) {
+      diamond += exchangeConf.firstTimeAmount;
+    }
 
-    this.replySuccess({diamond: exchangeConf.amount, voucher: exchangeConf.price});
+    await PlayerModel.update({_id: model._id}, {$inc: {voucher: -exchangeConf.price, diamond}});
+    this.player.model.diamond = model.diamond + diamond;
+    // 增加日志
+    await service.playerService.logGemConsume(model._id, ConsumeLogType.voucherForDiamond, diamond, this.player.model.diamond, `成功兑换${exchangeConf.price}代金券成${diamond}钻石`);
+
+    this.replySuccess({diamond: diamond, voucher: exchangeConf.price});
     await this.player.updateResource2Client();
   }
 }
