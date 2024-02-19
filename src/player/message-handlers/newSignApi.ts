@@ -9,6 +9,8 @@ import HeadBorder from "../../database/models/HeadBorder";
 import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
 import Medal from "../../database/models/Medal";
 import PlayerMedal from "../../database/models/PlayerMedal";
+import NewTask from "../../database/models/newTask";
+import NewTaskRecord from "../../database/models/NewTaskRecord";
 
 export class NewSignApi extends BaseApi {
   // 新人签到列表
@@ -20,7 +22,7 @@ export class NewSignApi extends BaseApi {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
-    const data = await this.getSevenSignLists(user);
+    const data = await this.getNewSignLists(user);
 
     return this.replySuccess(data);
   }
@@ -71,7 +73,40 @@ export class NewSignApi extends BaseApi {
     return this.replySuccess(data);
   }
 
-  async getSevenSignLists(user) {
+  // 新人签到列表
+  @addApi()
+  async guideLists() {
+    const user = await this.service.playerService.getPlayerModel(this.player.model._id);
+
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    const data = await this.getGuideLists(user);
+
+    return this.replySuccess(data);
+  }
+
+  async getGuideLists(user) {
+    const taskList = await NewTask.find().lean();
+
+    for (let i = 0; i < taskList.length; i++) {
+      const receive = await NewTaskRecord.count({playerId: user._id, taskId: taskList[i].taskId});
+      taskList[i].receive = !!receive;
+    }
+
+    const startTime = user.createAt;
+    const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 10);
+
+    return {taskList, activityTimes: {startTime, endTime}};
+  }
+
+  // 判断任务是否完成
+  async checkTaskState(task) {
+    // 判断任务是否完成
+  }
+
+  async getNewSignLists(user) {
     const prizeList = await NewSignPrize.find().lean();
     const start = moment(new Date()).startOf('day').toDate()
     const end = moment(new Date()).endOf('day').toDate()

@@ -12,6 +12,7 @@ import GoodsReviveRuby from "../../database/models/goodsReviveRuby";
 import GameCategory from "../../database/models/gameCategory";
 import Player from "../../database/models/player";
 import Goods from "../../database/models/goods";
+import DiamondRecord from "../../database/models/diamondRecord";
 
 // 商品
 export class GoodsApi extends BaseApi {
@@ -45,6 +46,12 @@ export class GoodsApi extends BaseApi {
       //判断用户是否首次充值该模板
       const orderCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1, goodsId: voucherList[i]._id });
       voucherList[i].isFirst = orderCount === 0;
+    }
+
+    for (let i = 0; i < goodsList.length; i++) {
+      //判断用户是否兑换钻石
+      const orderCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.voucherForDiamond, amount: goodsList[i].amount });
+      goodsList[i].isFirst = orderCount === 0;
     }
 
     this.replySuccess({ goodsList, voucherList, rubyList: goldList });
