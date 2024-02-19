@@ -113,13 +113,14 @@ export default class PlayerService extends BaseService {
   }
 
   // 记录房卡消耗
-  async logGemConsume(playerId, type, amount, totalAmount, note) {
+  async logGemConsume(playerId, type, amount, totalAmount, note, propId = null) {
     await DiamondRecord.create({
       player: playerId,
       amount,
       residue: totalAmount,
       type,
       note,
+      propId,
       createAt: new Date(),
     })
   }

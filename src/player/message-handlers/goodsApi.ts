@@ -49,7 +49,7 @@ export class GoodsApi extends BaseApi {
 
     for (let i = 0; i < goodsList.length; i++) {
       //判断用户是否兑换钻石
-      const orderCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.voucherForDiamond, amount: goodsList[i].amount });
+      const orderCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.voucherForDiamond, propId: goodsList[i]._id });
       goodsList[i].isFirst = orderCount === 0;
     }
 
@@ -565,7 +565,7 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.voucherInsufficient);
     }
 
-    const orderCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.voucherForDiamond, amount: exchangeConf.amount });
+    const orderCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.voucherForDiamond, propId: exchangeConf._id });
     let diamond = exchangeConf.amount + exchangeConf.originPrice;
     if (orderCount === 0) {
       diamond += exchangeConf.firstTimeAmount;
@@ -574,7 +574,7 @@ export class GoodsApi extends BaseApi {
     await PlayerModel.update({_id: model._id}, {$inc: {voucher: -exchangeConf.price, diamond}});
     this.player.model.diamond = model.diamond + diamond;
     // 增加日志
-    await service.playerService.logGemConsume(model._id, ConsumeLogType.voucherForDiamond, diamond, this.player.model.diamond, `成功兑换${exchangeConf.price}代金券成${diamond}钻石`);
+    await service.playerService.logGemConsume(model._id, ConsumeLogType.voucherForDiamond, diamond, this.player.model.diamond, `成功兑换${exchangeConf.price}代金券成${diamond}钻石`, exchangeConf._id);
 
     this.replySuccess({diamond: diamond, voucher: exchangeConf.price});
     await this.player.updateResource2Client();
