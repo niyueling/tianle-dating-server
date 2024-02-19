@@ -16,6 +16,12 @@ import WatchAdverRecord from "../../database/models/watchAdverRecord";
 import {pick} from "lodash/lodash";
 import Mail from "../../database/models/mail";
 import TurntablePrizeRecord from "../../database/models/turntablePrizeRecord";
+import CardTable from "../../database/models/CardTable";
+import PlayerCardTable from "../../database/models/PlayerCardTable";
+import Medal from "../../database/models/Medal";
+import PlayerMedal from "../../database/models/PlayerMedal";
+import HeadBorder from "../../database/models/HeadBorder";
+import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -312,5 +318,79 @@ export class AccountApi extends BaseApi {
     const record = await WatchAdverRecord.create(data);
 
     return this.replySuccess(record);
+  }
+
+  // 背包
+  @addApi()
+  async backpack(message) {
+    let lists = [];
+
+    // 牌桌
+    if (message.type === 1) {
+      lists = await this.getBackPackByCardTable();
+    }
+
+    // 称号
+    if (message.type === 2) {
+      lists = await this.getBackPackByMedal();
+    }
+
+    // 头像框
+    if (message.type === 3) {
+      lists = await this.getBackPackByHeader();
+    }
+
+    return this.replySuccess(lists);
+  }
+
+  async getBackPackByCardTable() {
+    const lists = await CardTable.find().lean();
+
+    for (let i = 0; i < lists.length; i++) {
+      const playerCardTable = await PlayerCardTable.findOne({playerId: this.player._id, propId: lists[i].propId});
+
+      // 用户是否拥有该牌桌
+      lists[i].isHave = playerCardTable && (playerCardTable.times === -1 || playerCardTable.times >= new Date().getTime());
+      // 牌桌有效期
+      lists[i].times = playerCardTable.times;
+      // 牌桌是否正在使用
+      lists[i].isUse = playerCardTable.isUse;
+    }
+
+    return lists;
+  }
+
+  async getBackPackByMedal() {
+    const lists = await Medal.find().lean();
+
+    for (let i = 0; i < lists.length; i++) {
+      const playerMedal = await PlayerMedal.findOne({playerId: this.player._id, propId: lists[i].propId});
+
+      // 用户是否拥有该称号
+      lists[i].isHave = playerMedal && (playerMedal.times === -1 || playerMedal.times >= new Date().getTime());
+      // 称号有效期
+      lists[i].times = playerMedal.times;
+      // 称号是否正在使用
+      lists[i].isUse = playerMedal.isUse;
+    }
+
+    return lists;
+  }
+
+  async getBackPackByHeader() {
+    const lists = await HeadBorder.find().lean();
+
+    for (let i = 0; i < lists.length; i++) {
+      const playerHeadBorder = await PlayerHeadBorder.findOne({playerId: this.player._id, propId: lists[i].propId});
+
+      // 用户是否拥有该头像框
+      lists[i].isHave = playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime());
+      // 头像框有效期
+      lists[i].times = playerHeadBorder.times;
+      // 头像框是否正在使用
+      lists[i].isUse = playerHeadBorder.isUse;
+    }
+
+    return lists;
   }
 }
