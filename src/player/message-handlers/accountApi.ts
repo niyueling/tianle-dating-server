@@ -55,10 +55,12 @@ export class AccountApi extends BaseApi {
         iosLotteryCount = await TurntablePrizeRecord.count({
           playerId: user._id
         })
+        user.iosRoomCount = iosRoomCount;
+        user.iosLotteryCount = iosLotteryCount;
 
         const isTest = user.nickname.indexOf("test") !== -1 || user.nickname.indexOf("tencent_game") !== -1;
 
-        openIosShopFunc = openIosShopFunc && iosRoomCount >= 10 && iosLotteryCount >= 3 && !isTest;
+        openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
       }
 
       user.openIosShopFunc = openIosShopFunc;
@@ -185,7 +187,7 @@ export class AccountApi extends BaseApi {
 
         const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
 
-        openIosShopFunc = openIosShopFunc && iosRoomCount >= 10 && iosLotteryCount >= 3 && !isTest;
+        openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
       }
 
       model.openIosShopFunc = openIosShopFunc;
