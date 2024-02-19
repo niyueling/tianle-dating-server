@@ -15,7 +15,6 @@ import {addApi, BaseApi} from "./baseApi";
 import WatchAdverRecord from "../../database/models/watchAdverRecord";
 import {pick} from "lodash/lodash";
 import Mail from "../../database/models/mail";
-import roomScoreRecord from "../../database/models/roomScoreRecord";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -47,8 +46,8 @@ export class AccountApi extends BaseApi {
       let openIosShopFunc = message.mnpVersion && open === 1 && (message.mnpVersion !== checkVersion)
 
       // 如果机型是ios，查询抽奖次数和开房数
-      if (message.platform && message.platform === "ios") {
-        iosRoomCount = await roomScoreRecord.count({
+      if (message.platform && message.platform === "iOS") {
+        iosRoomCount = await RoomRecord.count({
           creatorId: user.shortId
         })
 
@@ -58,13 +57,11 @@ export class AccountApi extends BaseApi {
 
         const isTest = user.nickname.indexOf("test") !== -1 || user.nickname.indexOf("tencent_game") !== -1;
 
-        openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
+        openIosShopFunc = openIosShopFunc && iosRoomCount >= 10 && iosLotteryCount >= 3 && !isTest;
       }
 
       user.openIosShopFunc = openIosShopFunc;
-    }
-
-    // user.openIosShopFunc = true;
+    }//
 
     this.replySuccess(user);
   }
@@ -176,8 +173,8 @@ export class AccountApi extends BaseApi {
       let openIosShopFunc = mnpVersion && open === 1 && (mnpVersion !== checkVersion)
 
       // 如果机型是ios，查询抽奖次数和开房数
-      if (platform && platform === "ios") {
-        iosRoomCount = await roomScoreRecord.count({
+      if (platform && platform === "iOS") {
+        iosRoomCount = await RoomRecord.count({
           creatorId: model.shortId
         })
 
@@ -187,7 +184,7 @@ export class AccountApi extends BaseApi {
 
         const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
 
-        openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
+        openIosShopFunc = openIosShopFunc && iosRoomCount >= 10 && iosLotteryCount >= 3 && !isTest;
       }
 
       model.openIosShopFunc = openIosShopFunc;
