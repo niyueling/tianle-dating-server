@@ -16,6 +16,9 @@ import Player from "../../database/models/player";
 import BlockCurLevel from "../../database/models/blockCurLevel";
 import TurntablePrize from "../../database/models/turntablePrize";
 import SevenSignPrize from "../../database/models/SevenSignPrize";
+import HeadBorder from "../../database/models/HeadBorder";
+import Medal from "../../database/models/Medal";
+import CardTable from "../../database/models/CardTable";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -375,7 +378,7 @@ export class MockDataApi extends BaseApi {
       {taskName: "钻石王老五", taskDescribe: "拥有钻石数大于?/8888", taskType: 1, taskId: 1006, taskTimes: 8888,
         taskPrizes: {name: "zswlw", number: 1, type: 3}, taskDesignates: {title: "钻石王老五", name: "zswlw", taskTimes: 8888}, liveness: 5},
 
-      // 成长成就-
+
     ];
 
     BlockTask.insertMany(datas);
@@ -397,5 +400,100 @@ export class MockDataApi extends BaseApi {
     BlockTaskTotalPrize.insertMany(datas1);
 
     return this.replySuccess({datas, datas1});
+  }
+
+  // 录入头像框
+  @addApi()
+  async saveHeadBorder() {
+    const result = await HeadBorder.find();
+
+    if (result.length) {
+      await HeadBorder.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      {propId: 1001, name: "圣诞头像框", describe: "圣诞狂欢"},
+      {propId: 1002, name: "招财进宝", describe: "招财进宝"},
+      {propId: 1003, name: "熊猫憨憨", describe: "熊猫憨憨"},
+      {propId: 1004, name: "麻辣英雄", describe: "麻辣英雄"},
+      {propId: 1005, name: "锦鲤破浪", describe: "锦鲤破浪"},
+      {propId: 1006, name: "金属时代", describe: "金属时代"},
+      {propId: 1007, name: "机械之心", describe: "机械之心"},
+      {propId: 1008, name: "招财猫", describe: "招财猫"},
+      {propId: 1009, name: "黄金之风", describe: "黄金之风"},
+      {propId: 1010, name: "恭喜发财", describe: "恭喜发财"},
+      {propId: 1011, name: "贵族气质", describe: "贵族气质"},
+      {propId: 1012, name: "初出茅庐", describe: "初出茅庐"},
+    ];
+
+    await HeadBorder.insertMany(datas);
+
+    return this.replySuccess(datas);
+  }
+
+  // 录入称号
+  @addApi()
+  async saveMedal() {
+    const result = await Medal.find();
+
+    if (result.length) {
+      await Medal.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      {propId: 1101, name: "天道酬勤", describe: "当日累计对局数达到3局"},
+      {propId: 1102, name: "颜值担当", describe: "累计拥有10个永久头像框"},
+      {propId: 1103, name: "收藏家", describe: "累计拥有永久牌桌10个"},
+      {propId: 1104, name: "收割机器", describe: "对局结算时赢豆数量达到1999.99万豆"},
+      {propId: 1105, name: "散财童子", describe: "对局结算时输豆数量达到999.99万豆"},
+      {propId: 1106, name: "高处不胜寒", describe: "封顶次数(21万倍以上)达到199次"},
+      {propId: 1107, name: "赛诸葛", describe: "对局连胜达到15局"},
+      {propId: 1108, name: "回村的诱惑", describe: "累计对局结束破产次数达到100次"},
+      {propId: 1109, name: "疯狂屠夫", describe: "累计使认输人数达到300人"},
+      {propId: 1110, name: "我能翻盘", describe: "对剧中因海底捞月或者妙手回春由输转赢达到20次"},
+      {propId: 1111, name: "高岭之花", describe: "累计杠上开花次数达到100次"},
+      {propId: 1112, name: "落地成盒", describe: "累计被天胡破产44次"},
+      {propId: 1113, name: "潘达守护者", describe: "累计胡四节高达到100局"},
+      {propId: 1114, name: "青青草原", describe: "累计胡绿一色达到100局"},
+      {propId: 1115, name: "天选之人", describe: "累计天胡次数达到66次"},
+      {propId: 1116, name: "铁头功", describe: "对局中购买/兑换礼包次数累计达到3次"},
+      {propId: 1117, name: "闻名雀坛", describe: "成就点数达到1500"},
+      {propId: 1118, name: "零号玩家", describe: "累计签到天数达到100天"},
+      {propId: 1119, name: "快枪手", describe: "累计对局中最先胡牌达到111局"},
+      {propId: 1120, name: "禁止划水", describe: "累计流局达到50次"},
+      {propId: 1121, name: "嘎嘎乱杀", describe: "累计66局中首次胡牌就清空三个对手"},
+      {propId: 1122, name: "钻石王老五", describe: "拥有钻石数大于8888"},
+      {propId: 1123, name: "点金手", describe: "在商城用钻石兑换金豆30次"},
+      {propId: 1124, name: "持之以恒", describe: "新手宝典活动中签到7天"},
+      {propId: 1124, name: "氪金玩家", describe: "新手宝典完成首充活动"},
+    ];
+
+    await Medal.insertMany(datas);
+
+    return this.replySuccess(datas);
+  }
+
+  // 录入牌桌
+  @addApi()
+  async saveCardTable() {
+    const result = await CardTable.find();
+
+    if (result.length) {
+      await CardTable.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      {propId: 1201, name: "天宫", describe: "天宫"},
+      {propId: 1202, name: "四季常春", describe: "四季常春"},
+      {propId: 1203, name: "圣诞狂欢", describe: "圣诞狂欢"},
+      {propId: 1204, name: "金銮凤舞", describe: "金銮凤舞"},
+      {propId: 1205, name: "熊猫幻想乡", describe: "熊猫幻想乡"},
+      {propId: 1206, name: "赛博朋克", describe: "赛博朋克"},
+      {propId: 1207, name: "贵族气质", describe: "贵族气质"},
+    ];
+
+    await CardTable.insertMany(datas);
+
+    return this.replySuccess(datas);
   }
 }

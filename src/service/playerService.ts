@@ -17,6 +17,12 @@ import {ConsumeLogType, TianleErrorCode} from "@fm/common/constants";
 import GoldRecord from "../database/models/goldRecord";
 import GoodsReviveRuby from "../database/models/goodsReviveRuby";
 import GoodsModel from "../database/models/goods";
+import HeadBorder from "../database/models/HeadBorder";
+import PlayerHeadBorder from "../database/models/PlayerHeadBorder";
+import Medal from "../database/models/Medal";
+import PlayerMedal from "../database/models/PlayerMedal";
+import CardTable from "../database/models/CardTable";
+import PlayerCardTable from "../database/models/PlayerCardTable";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
@@ -287,5 +293,92 @@ export default class PlayerService extends BaseService {
     // await this.logGemConsume(user._id, ConsumeLogType.chargeByWechat, order.diamond, user.diamond, "微信充值");
 
     return true;
+  }
+
+  async receivePrize(prize, playerId, multiple = 1, type) {
+    const user = await Player.findOne({_id: playerId});
+    if (prize.type === 1) {
+      user.diamond += prize.number * multiple;
+      await service.playerService.logGemConsume(user._id, type, prize.number * multiple,
+        user.diamond, `获得${prize.number * multiple}钻石`);
+    }
+
+    if (prize.type === 2) {
+      user.gold += prize.number * multiple;
+      await service.playerService.logGoldConsume(user._id, type, prize.number * multiple,
+        user.gold, `获得${prize.number * multiple}金豆`);
+    }
+
+    if (prize.type === 3) {
+      const config = await HeadBorder.findOne({propId: prize.propId}).lean();
+      const playerHeadBorder = await PlayerHeadBorder.findOne({propId: prize.propId, playerId}).lean();
+
+      // 如果头像框已过期，删除头像框
+      if (playerHeadBorder && playerHeadBorder.times !== -1 && playerHeadBorder.times <= new Date().getTime()) {
+        await PlayerHeadBorder.remove({_id: playerHeadBorder._id});
+      }
+
+      if (config && !playerHeadBorder) {
+        const data = {
+          propId: prize.propId,
+          playerId: user._id,
+          shortId: user.shortId,
+          times: -1,
+          isUse: false
+        }
+
+        await PlayerHeadBorder.create(data);
+      }
+    }
+
+    if (prize.type === 4) {
+      const config = await Medal.findOne({propId: prize.propId}).lean();
+      const playerMedal = await PlayerMedal.findOne({propId: prize.propId, playerId}).lean();
+
+      // 如果称号已过期，删除称号
+      if (playerMedal && playerMedal.times !== -1 && playerMedal.times <= new Date().getTime()) {
+        await PlayerMedal.remove({_id: playerMedal._id});
+      }
+
+      if (config && !playerMedal) {
+        const data = {
+          propId: prize.propId,
+          playerId: user._id,
+          shortId: user.shortId,
+          times: -1,
+          isUse: false
+        }
+
+        await PlayerHeadBorder.create(data);
+      }
+    }
+
+    if (prize.type === 5) {
+      const config = await CardTable.findOne({propId: prize.propId}).lean();
+      const playerCardTable = await PlayerCardTable.findOne({propId: prize.propId, playerId}).lean();
+
+      // 如果称号已过期，删除称号
+      if (playerCardTable && playerCardTable.times !== -1 && playerCardTable.times <= new Date().getTime()) {
+        await playerCardTable.remove({_id: playerCardTable._id});
+      }
+
+      if (config && !playerCardTable) {
+        const data = {
+          propId: prize.propId,
+          playerId: user._id,
+          shortId: user.shortId,
+          times: -1,
+          isUse: false
+        }
+
+        await playerCardTable.create(data);
+      }
+    }
+
+    if (prize.type === 6) {
+      user.dominateCount += prize.number * multiple;
+    }
+
+    await user.save();
   }
 }

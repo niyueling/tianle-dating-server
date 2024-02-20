@@ -13,6 +13,12 @@ import GameCategory from "../../database/models/gameCategory";
 import Player from "../../database/models/player";
 import Goods from "../../database/models/goods";
 import DiamondRecord from "../../database/models/diamondRecord";
+import NewDiscountGift from "../../database/models/NewDiscountGift";
+import NewFirstRechargeRecord from "../../database/models/NewFirstRechargeRecord";
+import NewDiscountGiftRecord from "../../database/models/NewDiscountGiftRecord";
+import HeadBorder from "../../database/models/HeadBorder";
+import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
+import GoodsHeadBorder from "../../database/models/GoodsHeadBorder";
 
 // 商品
 export class GoodsApi extends BaseApi {
@@ -22,6 +28,8 @@ export class GoodsApi extends BaseApi {
     const goodsList = await GoodsModel.find({ isOnline: true, goodsType: 1 }).sort({price: 1}).lean();
     const voucherList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1});
     const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1});
+    const headLists = await GoodsHeadBorder.find().lean();
+
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
 
@@ -45,6 +53,7 @@ export class GoodsApi extends BaseApi {
     for (let i = 0; i < voucherList.length; i++) {
       //判断用户是否首次充值该模板
       const orderCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1, goodsId: voucherList._id });
+      voucherList[i].isFirst = orderCount === 0;
     }
 
     for (let i = 0; i < goodsList.length; i++) {
@@ -53,7 +62,23 @@ export class GoodsApi extends BaseApi {
       goodsList[i].isFirst = orderCount === 0;
     }
 
-    this.replySuccess({ goodsList, voucherList, rubyList: goldList });
+    for (let i = 0; i < headLists.length; i++) {
+      headLists[i].isUse = false;
+      headLists[i].isGive = false;
+      //判断用户是否拥有头像框
+      const playerHeadBorder = await PlayerHeadBorder.count({playerId: this.player._id, propId: headLists[i]._id });
+      if (playerHeadBorder && playerHeadBorder.times !== -1 && playerHeadBorder.times <= new Date().getTime()) {
+        await PlayerHeadBorder.remove({playerId: this.player._id, propId: headLists[i]._id });
+      }
+
+      if (playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime())) {
+        headLists[i].isUse = playerHeadBorder.isUse;
+        headLists[i].isGive = true;
+        headLists[i].times = playerHeadBorder.times;
+      }
+    }
+
+    this.replySuccess({ goodsList, voucherList, rubyList: goldList, headLists });
   }
 
   // 钻石兑换金豆
@@ -578,5 +603,48 @@ export class GoodsApi extends BaseApi {
 
     this.replySuccess({diamond: diamond, voucher: exchangeConf.price});
     await this.player.updateResource2Client();
+  }
+
+  // 新人礼包
+  @addApi()
+  async getNewDisCountGift() {
+    const giftInfo = await NewDiscountGift.findOne();
+
+    this.replySuccess(giftInfo);
+  }
+
+  // 代金券购买新手礼包
+  @addApi()
+  async payNewDisCountGift(message) {
+    const exchangeConf = await NewDiscountGift.findById(message._id);
+    if (!exchangeConf) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    const model = await service.playerService.getPlayerModel(this.player.model._id);
+    if (model.voucher < exchangeConf.price) {
+      return this.replyFail(TianleErrorCode.voucherInsufficient);
+    }
+
+    model.voucher -= exchangeConf.price;
+    await model.save();
+
+    for (let i = 0; i < exchangeConf.prizeList.length; i++) {
+      await service.playerService.receivePrize(exchangeConf.prizeList[i], this.player._id, message.multiple, ConsumeLogType.payNewDisCountGift);
+    }
+
+    // 创建领取记录
+    const data = {
+      playerId: this.player._id.toString(),
+      shortId: this.player.model.shortId,
+      prizeId: exchangeConf._id,
+      prizeConfig: exchangeConf,
+      multiple: message.multiple,
+      createAt: new Date()
+    };
+
+    await NewDiscountGiftRecord.create(data);
+    await this.player.updateResource2Client();
+    return this.replySuccess(data);
   }
 }
