@@ -222,7 +222,7 @@ export class NewSignApi extends BaseApi {
     }
 
     const startTime = user.createAt;
-    const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 10);
+    const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10);
 
     return {tasks, activityTimes: {startTime, endTime}};
   }
@@ -328,11 +328,12 @@ export class NewSignApi extends BaseApi {
 
     if (prize.type === 3) {
       const config = await HeadBorder.findOne({propId: prize.propId}).lean();
-      const playerHeadBorder = await PlayerHeadBorder.findOne({propId: prize.propId, playerId}).lean();
+      let playerHeadBorder = await PlayerHeadBorder.findOne({propId: prize.propId, playerId}).lean();
 
       // 如果头像框已过期，删除头像框
       if (playerHeadBorder && playerHeadBorder.times !== -1 && playerHeadBorder.times <= new Date().getTime()) {
         await PlayerHeadBorder.remove({_id: playerHeadBorder._id});
+        playerHeadBorder = null;
       }
 
       if (config && !playerHeadBorder) {
@@ -350,11 +351,12 @@ export class NewSignApi extends BaseApi {
 
     if (prize.type === 4) {
       const config = await Medal.findOne({propId: prize.propId}).lean();
-      const playerMedal = await PlayerMedal.findOne({propId: prize.propId, playerId}).lean();
+      let playerMedal = await PlayerMedal.findOne({propId: prize.propId, playerId}).lean();
 
       // 如果称号已过期，删除称号
       if (playerMedal && playerMedal.times !== -1 && playerMedal.times <= new Date().getTime()) {
         await PlayerMedal.remove({_id: playerMedal._id});
+        playerMedal = null;
       }
 
       if (config && !playerMedal) {
@@ -372,11 +374,12 @@ export class NewSignApi extends BaseApi {
 
     if (prize.type === 5) {
       const config = await CardTable.findOne({propId: prize.propId}).lean();
-      const playerCardTable = await PlayerCardTable.findOne({propId: prize.propId, playerId}).lean();
+      let playerCardTable = await PlayerCardTable.findOne({propId: prize.propId, playerId}).lean();
 
       // 如果称号已过期，删除称号
       if (playerCardTable && playerCardTable.times !== -1 && playerCardTable.times <= new Date().getTime()) {
         await playerCardTable.remove({_id: playerCardTable._id});
+        playerCardTable = null;
       }
 
       if (config && !playerCardTable) {

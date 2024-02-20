@@ -609,6 +609,8 @@ export class GoodsApi extends BaseApi {
   @addApi()
   async getNewDisCountGift() {
     const giftInfo = await NewDiscountGift.findOne();
+    const payCount = await NewDiscountGiftRecord.count({playerId: this.player._id.toString(), prizeId: giftInfo._id});
+    giftInfo.isPay = !!payCount;
 
     this.replySuccess(giftInfo);
   }
@@ -646,5 +648,62 @@ export class GoodsApi extends BaseApi {
     await NewDiscountGiftRecord.create(data);
     await this.player.updateResource2Client();
     return this.replySuccess(data);
+  }
+
+  // 钻石兑换头像框
+  @addApi()
+  async payHeadBorder(message) {
+    const exchangeConf = await GoodsHeadBorder.findById(message._id);
+    if (!exchangeConf) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    const price = exchangeConf.priceList.find(item => item.day === message.day)?.price;
+    const model = await service.playerService.getPlayerModel(this.player.model._id);
+    if (model.diamond < price) {
+      return this.replyFail(TianleErrorCode.diamondInsufficient);
+    }
+
+    // 录入头像框数据
+    const config = await HeadBorder.findOne({propId: exchangeConf.propId}).lean();
+    let playerHeadBorder = await PlayerHeadBorder.findOne({propId: exchangeConf.propId, playerId: model._id}).lean();
+
+    // 如果头像框已过期，删除头像框
+    if (playerHeadBorder && playerHeadBorder.times !== -1 && playerHeadBorder.times <= new Date().getTime()) {
+      await PlayerHeadBorder.remove({_id: playerHeadBorder._id});
+      playerHeadBorder = null;
+    }
+
+    // 如果头像框已经是永久，则禁止购买
+    if (playerHeadBorder && playerHeadBorder.times === -1) {
+      return this.replyFail(TianleErrorCode.headBorderIsAlways);
+    }
+
+    // 如果用户未拥有头像框，则录入数据
+    if (config && !playerHeadBorder) {
+      const data = {
+        propId: exchangeConf.propId,
+        playerId: model._id,
+        shortId: model.shortId,
+        times: message.day !== -1 ? (new Date().getTime() + 1000 * 60 * 60 * 24 * message.day) : -1,
+        isUse: false
+      }
+
+      await PlayerHeadBorder.create(data);
+    }
+
+    // 如果用户已经拥有头像框，则在过期时间加上有效时间
+    if (config && playerHeadBorder) {
+      await PlayerHeadBorder.update({playerId: model._id, propId: exchangeConf.propId}, {$set: {times: message.day !== -1 ? (Date.parse(playerHeadBorder.createAt) + 1000 * 60 * 60 * 24 * message.day) : -1}})
+    }
+
+    // 扣除钻石
+    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -price}});
+    this.player.model.diamond = model.diamond - price;
+    // 增加日志
+    await service.playerService.logGemConsume(model._id, ConsumeLogType.payHeadBorder, -price, this.player.model.diamond, `花费${price}钻石购买${exchangeConf.name}头像框`, exchangeConf._id);
+
+    this.replySuccess({price, day: message.day, propId: exchangeConf.propId});
+    await this.player.updateResource2Client();
   }
 }
