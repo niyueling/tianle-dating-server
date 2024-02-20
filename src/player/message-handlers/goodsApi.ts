@@ -66,7 +66,7 @@ export class GoodsApi extends BaseApi {
       headLists[i].isUse = false;
       headLists[i].isGive = false;
       //判断用户是否拥有头像框
-      const playerHeadBorder = await PlayerHeadBorder.count({playerId: this.player._id, propId: headLists[i]._id });
+      const playerHeadBorder = await PlayerHeadBorder.count({playerId: this.player._id, propId: headLists[i].propId });
       if (playerHeadBorder && playerHeadBorder.times !== -1 && playerHeadBorder.times <= new Date().getTime()) {
         await PlayerHeadBorder.remove({playerId: this.player._id, propId: headLists[i]._id });
       }
