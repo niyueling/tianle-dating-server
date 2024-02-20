@@ -408,9 +408,9 @@ export class AccountApi extends BaseApi {
       // 用户是否拥有该头像框
       lists[i].isHave = playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime());
       // 头像框有效期
-      lists[i].times = playerHeadBorder.times;
+      lists[i].times = playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime()) ? playerHeadBorder.times : null;
       // 头像框是否正在使用
-      lists[i].isUse = playerHeadBorder.isUse;
+      lists[i].isUse = playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime()) ? playerHeadBorder.isUse : false;
     }
 
     return lists;
