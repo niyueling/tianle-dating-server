@@ -374,9 +374,9 @@ export class AccountApi extends BaseApi {
       // 用户是否拥有该牌桌
       lists[i].isHave = playerCardTable && (playerCardTable.times === -1 || playerCardTable.times >= new Date().getTime());
       // 牌桌有效期
-      lists[i].times = playerCardTable.times;
+      lists[i].times = playerCardTable && (playerCardTable.times === -1 || playerCardTable.times >= new Date().getTime()) ? playerCardTable.times: null;
       // 牌桌是否正在使用
-      lists[i].isUse = playerCardTable.isUse;
+      lists[i].isUse = playerCardTable && (playerCardTable.times === -1 || playerCardTable.times >= new Date().getTime()) ? playerCardTable.isUse: false;
     }
 
     return lists;
@@ -391,9 +391,9 @@ export class AccountApi extends BaseApi {
       // 用户是否拥有该称号
       lists[i].isHave = playerMedal && (playerMedal.times === -1 || playerMedal.times >= new Date().getTime());
       // 称号有效期
-      lists[i].times = playerMedal.times;
+      lists[i].times = playerMedal && (playerMedal.times === -1 || playerMedal.times >= new Date().getTime()) ? playerMedal.times : null;
       // 称号是否正在使用
-      lists[i].isUse = playerMedal.isUse;
+      lists[i].isUse = playerMedal && (playerMedal.times === -1 || playerMedal.times >= new Date().getTime()) ? playerMedal.isUse : false;
     }
 
     return lists;
