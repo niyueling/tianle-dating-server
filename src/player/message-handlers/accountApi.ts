@@ -76,6 +76,18 @@ export class AccountApi extends BaseApi {
       user.openIosShopFunc = openIosShopFunc;
     }
 
+    // 获取用户称号
+    const playerMedal = await PlayerMedal.findOne({playerId: user._id, isUse: true});
+    if (playerMedal && (playerMedal.times === -1 || playerMedal.times > new Date().getTime())) {
+      user.medal = playerMedal;
+    }
+
+    // 获取用户头像框
+    const playerHeadBorder = await PlayerHeadBorder.findOne({playerId: user._id, isUse: true});
+    if (playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times > new Date().getTime())) {
+      user.headerBorder = playerHeadBorder;
+    }
+
     this.replySuccess(user);
   }
 
@@ -233,6 +245,18 @@ export class AccountApi extends BaseApi {
         createAt: new Date() });
     }
 
+    // 获取用户称号
+    const playerMedal = await PlayerMedal.findOne({playerId: model._id, isUse: true});
+    if (playerMedal && (playerMedal.times === -1 || playerMedal.times > new Date().getTime())) {
+      model.medal = playerMedal;
+    }
+
+    // 获取用户头像框
+    const playerHeadBorder = await PlayerHeadBorder.findOne({playerId: model._id, isUse: true});
+    if (playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times > new Date().getTime())) {
+      model.headerBorder = playerHeadBorder;
+    }
+
     // 记录玩家
     PlayerManager.getInstance().addPlayer(this.player);
 
@@ -363,7 +387,7 @@ export class AccountApi extends BaseApi {
       lists = await this.getBackPackByHeader();
     }
 
-    return this.replySuccess(lists);
+    return this.replySuccess({lists, type: message.type});
   }
 
   // 更换背包使用
@@ -385,7 +409,7 @@ export class AccountApi extends BaseApi {
       record = await this.changeBackPackByHeader(message.propId);
     }
 
-    return this.replySuccess(record);
+    return this.replySuccess({record, type: message.type});
   }
 
   // 获取活动开关
