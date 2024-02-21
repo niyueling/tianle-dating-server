@@ -19,6 +19,7 @@ import NewDiscountGiftRecord from "../../database/models/NewDiscountGiftRecord";
 import HeadBorder from "../../database/models/HeadBorder";
 import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
 import GoodsHeadBorder from "../../database/models/GoodsHeadBorder";
+import GoodsBeautyNumber from "../../database/models/GoodsBeautyNumber";
 
 // 商品
 export class GoodsApi extends BaseApi {
@@ -26,9 +27,10 @@ export class GoodsApi extends BaseApi {
   @addApi()
   async getGoodsList() {
     const goodsList = await GoodsModel.find({ isOnline: true, goodsType: 1 }).sort({price: 1}).lean();
-    const voucherList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1});
-    const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1});
+    const voucherList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1}).lean();
+    const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1}).lean();
     const headLists = await GoodsHeadBorder.find().lean();
+    const beautyNumberLists = await GoodsBeautyNumber.find().lean();
 
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
@@ -60,6 +62,12 @@ export class GoodsApi extends BaseApi {
       //判断用户是否兑换钻石
       const orderCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.voucherForDiamond, propId: goodsList[i]._id });
       goodsList[i].isFirst = orderCount === 0;
+    }
+
+    for (let i = 0; i < beautyNumberLists.length; i++) {
+      //判断Id是否被使用
+      const orderCount = await Player.count({shortId: beautyNumberLists[i].numberId });
+      beautyNumberLists[i].isPay = orderCount === 0;
     }
 
     for (let i = 0; i < headLists.length; i++) {
