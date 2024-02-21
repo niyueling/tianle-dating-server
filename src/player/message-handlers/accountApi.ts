@@ -371,7 +371,8 @@ export class AccountApi extends BaseApi {
   // 获取活动开关
   @addApi({
     rule: {
-      openid: 'string'
+      mnpVersion: 'string',
+      platform: 'string',
     }
   })
   async getActivity(message) {
