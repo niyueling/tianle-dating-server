@@ -458,7 +458,7 @@ export class AccountApi extends BaseApi {
       iosLotteryCount
     };
 
-    return {sevenLogin: {open: !!sevenLoginCount}, turnTable, startPocket: {open: !!startPocketCount}, newGift };
+    return {sevenLogin: {open: sevenLoginCount === 0}, turnTable, startPocket: {open: startPocketCount === 0}, newGift };
   }
 
   async getBackPackByCardTable() {
