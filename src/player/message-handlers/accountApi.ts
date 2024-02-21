@@ -244,7 +244,7 @@ export class AccountApi extends BaseApi {
     this.replySuccess(model);
 
     const activity = await this.getActivityInfo(model, mnpVersion, platform);
-    this.player.sendMessage("getActivityReply", {ok: true, data: activity});
+    this.player.sendMessage("account/getActivityReply", {ok: true, data: activity});
   }
 
   // 公共房战绩列表
@@ -412,34 +412,32 @@ export class AccountApi extends BaseApi {
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
 
-    if (mnpVersion) {
-      // 是否开启商店
-      const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
-      // 1 = 开启全部商店
-      const open = await service.utils.getGlobalConfigByName('openMnpRecharge');
-      let iosRoomCount = 0;
-      let iosLotteryCount = 0;
-      let openIosShopFunc = mnpVersion && open === 1 && (mnpVersion !== checkVersion)
+    // 是否开启商店
+    const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
+    // 1 = 开启全部商店
+    const open = await service.utils.getGlobalConfigByName('openMnpRecharge');
+    let iosRoomCount = 0;
+    let iosLotteryCount = 0;
+    let openIosShopFunc = mnpVersion && open === 1 && (mnpVersion !== checkVersion)
 
-      // 如果机型是ios，查询抽奖次数和开房数
-      if (platform && platform === "iOS") {
-        iosRoomCount = await RoomScoreRecord.count({
-          creatorId: user.shortId
-        })
+    // 如果机型是ios，查询抽奖次数和开房数
+    if (platform && platform === "iOS") {
+      iosRoomCount = await RoomScoreRecord.count({
+        creatorId: user.shortId
+      })
 
-        iosLotteryCount = await TurntablePrizeRecord.count({
-          playerId: user._id
-        })
-        user.iosRoomCount = iosRoomCount;
-        user.iosLotteryCount = iosLotteryCount;
+      iosLotteryCount = await TurntablePrizeRecord.count({
+        playerId: user._id
+      })
+      user.iosRoomCount = iosRoomCount;
+      user.iosLotteryCount = iosLotteryCount;
 
-        const isTest = user.nickname.indexOf("test") !== -1 || user.nickname.indexOf("tencent_game") !== -1;
+      const isTest = user.nickname.indexOf("test") !== -1 || user.nickname.indexOf("tencent_game") !== -1;
 
-        openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
-      }
-
-      user.openIosShopFunc = openIosShopFunc;
+      openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
     }
+
+    user.openIosShopFunc = openIosShopFunc;
 
     // 判断7日签到是否开放
     const sevenLoginCount = await SevenSignPrizeRecord.count({playerId: user._id, createAt: {$gte: start, $lt: end}});
@@ -454,8 +452,10 @@ export class AccountApi extends BaseApi {
 
     // 判断新人宝典开关
     let newGift = {
-      open: new Date().getTime() >= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10,
-      iosRecharge: user.openIosShopFunc
+      open: new Date().getTime() <= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10,
+      iosRecharge: user.openIosShopFunc,
+      iosRoomCount,
+      iosLotteryCount
     };
 
     return {sevenLogin: {open: !!sevenLoginCount}, turnTable, startPocket: {open: !!startPocketCount}, newGift };
