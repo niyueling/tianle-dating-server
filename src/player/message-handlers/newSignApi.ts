@@ -391,7 +391,7 @@ export class NewSignApi extends BaseApi {
           isUse: false
         }
 
-        await playerCardTable.create(data);
+        await PlayerCardTable.create(data);
       }
     }
 

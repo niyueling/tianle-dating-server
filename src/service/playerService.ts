@@ -374,12 +374,12 @@ export default class PlayerService extends BaseService {
           isUse: false
         }
 
-        await playerCardTable.create(data);
+        await PlayerCardTable.create(data);
       }
     }
 
     if (prize.type === 6) {
-      user.dominateCount += prize.number * multiple;
+      user.helpCount += prize.number * multiple;
     }
 
     await user.save();
