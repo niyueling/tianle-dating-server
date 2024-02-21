@@ -88,7 +88,7 @@ export class AccountApi extends BaseApi {
     if (user.helpCount > 0) {
       user.helpCount--;
       user.gold += 100000;
-      user.save();
+      await user.save();
       this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'voucher'])})
       return this.replySuccess({gold: 100000, helpCount: user.helpCount, totalCount: config.game.helpCount});
     }
