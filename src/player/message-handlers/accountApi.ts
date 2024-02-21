@@ -79,13 +79,13 @@ export class AccountApi extends BaseApi {
     // 获取用户称号
     const playerMedal = await PlayerMedal.findOne({playerId: user._id, isUse: true});
     if (playerMedal && (playerMedal.times === -1 || playerMedal.times > new Date().getTime())) {
-      user.medal = playerMedal;
+      user.medalId = playerMedal.propId;
     }
 
     // 获取用户头像框
     const playerHeadBorder = await PlayerHeadBorder.findOne({playerId: user._id, isUse: true});
     if (playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times > new Date().getTime())) {
-      user.headerBorder = playerHeadBorder;
+      user.headerBorderId = playerHeadBorder.propId;
     }
 
     this.replySuccess(user);
@@ -248,13 +248,13 @@ export class AccountApi extends BaseApi {
     // 获取用户称号
     const playerMedal = await PlayerMedal.findOne({playerId: model._id, isUse: true});
     if (playerMedal && (playerMedal.times === -1 || playerMedal.times > new Date().getTime())) {
-      model.medal = playerMedal;
+      model.medalId = playerMedal.propId;
     }
 
     // 获取用户头像框
     const playerHeadBorder = await PlayerHeadBorder.findOne({playerId: model._id, isUse: true});
     if (playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times > new Date().getTime())) {
-      model.headerBorder = playerHeadBorder;
+      model.headerBorderId = playerHeadBorder.propId;
     }
 
     // 记录玩家
