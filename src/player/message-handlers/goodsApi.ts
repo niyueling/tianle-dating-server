@@ -30,7 +30,10 @@ export class GoodsApi extends BaseApi {
     const voucherList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1}).lean();
     const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1}).lean();
     const headLists = await GoodsHeadBorder.find().lean();
-    const beautyNumberLists = await GoodsBeautyNumber.find().lean();
+    const beautyNumberLists = await GoodsBeautyNumber.aggregate([
+      {$match: { _id: {$ne: null}}},
+      {$sample: { size: 8}}
+    ]).lean();
 
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
