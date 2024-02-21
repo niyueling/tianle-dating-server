@@ -20,6 +20,7 @@ import HeadBorder from "../../database/models/HeadBorder";
 import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
 import GoodsHeadBorder from "../../database/models/GoodsHeadBorder";
 import GoodsBeautyNumber from "../../database/models/GoodsBeautyNumber";
+import PlayerBeautyNumberRecord from "../../database/models/PlayerBeautyNumberRecord";
 
 // 商品
 export class GoodsApi extends BaseApi {
@@ -715,6 +716,45 @@ export class GoodsApi extends BaseApi {
     await service.playerService.logGemConsume(model._id, ConsumeLogType.payHeadBorder, -price, this.player.model.diamond, `花费${price}钻石购买${exchangeConf.name}头像框`, exchangeConf._id);
 
     this.replySuccess({price, day: message.day, propId: exchangeConf.propId});
+    await this.player.updateResource2Client();
+  }
+
+  // 钻石兑换靓号
+  @addApi()
+  async payBeautyNumber(message) {
+    const exchangeConf = await GoodsBeautyNumber.findById(message._id);
+    if (!exchangeConf) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    const model = await service.playerService.getPlayerModel(this.player.model._id);
+    if (model.diamond < exchangeConf.price) {
+      return this.replyFail(TianleErrorCode.diamondInsufficient);
+    }
+
+    //判断Id是否被使用
+    const orderCount = await Player.count({shortId: exchangeConf.numberId });
+    if (!orderCount) {
+      return this.replyFail(TianleErrorCode.beautyNumberInvalid);
+    }
+
+    const data = {
+      playerId: model._id,
+      oldShortId: model.shortId,
+      newShortId: exchangeConf.numberId,
+      price: exchangeConf.price,
+      currency: exchangeConf.currency,
+    }
+
+    await PlayerBeautyNumberRecord.create(data);
+
+    // 扣除钻石
+    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -exchangeConf.price}});
+    this.player.model.diamond = model.diamond - exchangeConf.price;
+    this.player.model.shortId = exchangeConf.numberId;
+    await service.playerService.logGemConsume(model._id, ConsumeLogType.payBeautyNumber, -exchangeConf.price, this.player.model.diamond, `花费${exchangeConf.price}钻石购买${exchangeConf.numberId}靓号`, exchangeConf._id);
+
+    this.replySuccess({price: exchangeConf.price, numberId: exchangeConf.numberId});
     await this.player.updateResource2Client();
   }
 }
