@@ -246,7 +246,7 @@ export class NewSignApi extends BaseApi {
     }
 
     const startTime = user.createAt;
-    const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 10);
+    const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10);
 
     return {taskList, activityTimes: {startTime, endTime}, isPay: rechargeAmount >= 6};
   }
@@ -307,7 +307,7 @@ export class NewSignApi extends BaseApi {
     }
 
     const startTime = user.createAt;
-    const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 10);
+    const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10);
 
     return {isTodaySign: !!isTodaySign, days, prizeList, activityTimes: {startTime, endTime}};
   }

@@ -22,6 +22,9 @@ import Medal from "../../database/models/Medal";
 import PlayerMedal from "../../database/models/PlayerMedal";
 import HeadBorder from "../../database/models/HeadBorder";
 import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
+import SevenSignPrizeRecord from "../../database/models/SevenSignPrizeRecord";
+import StartPocketRecord from "../../database/models/startPocketRecord";
+import RoomScoreRecord from "../../database/models/roomScoreRecord";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -54,7 +57,7 @@ export class AccountApi extends BaseApi {
 
       // 如果机型是ios，查询抽奖次数和开房数
       if (message.platform && message.platform === "iOS") {
-        iosRoomCount = await RoomRecord.count({
+        iosRoomCount = await RoomScoreRecord.count({
           creatorId: user.shortId
         })
 
@@ -183,7 +186,7 @@ export class AccountApi extends BaseApi {
 
       // 如果机型是ios，查询抽奖次数和开房数
       if (platform && platform === "iOS") {
-        iosRoomCount = await RoomRecord.count({
+        iosRoomCount = await RoomScoreRecord.count({
           creatorId: model.shortId
         })
 
@@ -365,6 +368,78 @@ export class AccountApi extends BaseApi {
     return this.replySuccess(record);
   }
 
+  // 获取活动开关
+  @addApi({
+    rule: {
+      openid: 'string'
+    }
+  })
+  async getActivity(message) {
+    const user = await Player.findOne({_id: this.player._id}).lean();
+
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    const activity = await this.getActivityInfo(user, message.mnpVersion, message.platform);
+
+    return this.replySuccess(activity);
+  }
+
+  async getActivityInfo(user, mnpVersion, platform) {
+    const now = new Date().getTime();
+    const start = moment(new Date()).startOf('day').toDate();
+    const end = moment(new Date()).endOf('day').toDate();
+
+    if (mnpVersion) {
+      // 是否开启商店
+      const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
+      // 1 = 开启全部商店
+      const open = await service.utils.getGlobalConfigByName('openMnpRecharge');
+      let iosRoomCount = 0;
+      let iosLotteryCount = 0;
+      let openIosShopFunc = mnpVersion && open === 1 && (mnpVersion !== checkVersion)
+
+      // 如果机型是ios，查询抽奖次数和开房数
+      if (platform && platform === "iOS") {
+        iosRoomCount = await RoomScoreRecord.count({
+          creatorId: user.shortId
+        })
+
+        iosLotteryCount = await TurntablePrizeRecord.count({
+          playerId: user._id
+        })
+        user.iosRoomCount = iosRoomCount;
+        user.iosLotteryCount = iosLotteryCount;
+
+        const isTest = user.nickname.indexOf("test") !== -1 || user.nickname.indexOf("tencent_game") !== -1;
+
+        openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
+      }
+
+      user.openIosShopFunc = openIosShopFunc;
+    }
+
+    // 判断7日签到是否开放
+    const sevenLoginCount = await SevenSignPrizeRecord.count({playerId: user._id, createAt: {$gte: start, $lt: end}});
+
+    // 判断转盘开关
+    let turnTable = {
+      open: user.turntableTimes > 0
+    };
+
+    // 判断开运红包是否开放
+    const startPocketCount = await StartPocketRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+
+    // 判断新人宝典开关
+    let newGift = {
+      open: new Date().getTime() >= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10,
+      iosRecharge: user.openIosShopFunc
+    };
+
+    return {sevenLogin: {open: !!sevenLoginCount}, turnTable, startPocket: {open: !!startPocketCount}, newGift };
+  }
+
   async getBackPackByCardTable() {
     const lists = await CardTable.find().lean();
 
@@ -375,7 +450,7 @@ export class AccountApi extends BaseApi {
       lists[i].isHave = playerCardTable && (playerCardTable.times === -1 || playerCardTable.times >= new Date().getTime());
       // 牌桌有效期
       lists[i].times = playerCardTable && (playerCardTable.times === -1 || playerCardTable.times >= new Date().getTime()) ? playerCardTable.times: null;
-      // 牌桌是否正在使用
+      // 牌桌是否正在使用,
       lists[i].isUse = playerCardTable && (playerCardTable.times === -1 || playerCardTable.times >= new Date().getTime()) ? playerCardTable.isUse: false;
     }
 
