@@ -85,8 +85,8 @@ export class AccountApi extends BaseApi {
     if (!user) {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
-    if (user.helpCount < config.game.helpCount) {
-      user.helpCount++;
+    if (user.helpCount > 0) {
+      user.helpCount--;
       user.gold += 100000;
       user.save();
       this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'voucher'])})
