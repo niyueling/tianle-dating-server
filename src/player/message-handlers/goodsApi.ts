@@ -89,7 +89,7 @@ export class GoodsApi extends BaseApi {
       }
     }
 
-    this.replySuccess({ goodsList, voucherList, rubyList: goldList, headLists });
+    this.replySuccess({ goodsList, voucherList, rubyList: goldList, headLists, beautyNumberLists });
   }
 
   // 钻石兑换金豆
