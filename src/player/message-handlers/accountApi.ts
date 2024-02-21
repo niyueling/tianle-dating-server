@@ -241,7 +241,10 @@ export class AccountApi extends BaseApi {
     this.player.isLoggingIn = false;
     PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
 
-    return this.replySuccess(model);
+    this.replySuccess(model);
+
+    const activity = await this.getActivityInfo(model, mnpVersion, platform);
+    this.player.sendMessage("getActivityReply", {ok: true, data: activity});
   }
 
   // 公共房战绩列表
