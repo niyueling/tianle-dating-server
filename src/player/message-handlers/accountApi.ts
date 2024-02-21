@@ -94,7 +94,7 @@ export class AccountApi extends BaseApi {
 
       const start = moment(new Date()).startOf('day').toDate();
       const end = moment(new Date()).endOf('day').toDate();
-      const helpCount = await PlayerBenefitRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+      const helpCount = await PlayerBenefitRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
 
       const data = {
         playerId: this.player._id.toString(),
