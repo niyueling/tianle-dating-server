@@ -749,7 +749,9 @@ export class GoodsApi extends BaseApi {
     await PlayerBeautyNumberRecord.create(data);
 
     // 扣除钻石
-    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -exchangeConf.price}});
+    model.diamond -= exchangeConf.price;
+    model.shortId = exchangeConf.numberId;
+    await model.save();
     this.player.model.diamond = model.diamond - exchangeConf.price;
     this.player.model.shortId = exchangeConf.numberId;
     await service.playerService.logGemConsume(model._id, ConsumeLogType.payBeautyNumber, -exchangeConf.price, this.player.model.diamond, `花费${exchangeConf.price}钻石购买${exchangeConf.numberId}靓号`, exchangeConf._id);

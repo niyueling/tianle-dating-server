@@ -468,7 +468,7 @@ export class AccountApi extends BaseApi {
       const playerCardTable = await PlayerCardTable.findOne({playerId: this.player._id, propId: lists[i].propId});
 
       // 用户是否拥有该牌桌
-      lists[i].isHave = playerCardTable && (playerCardTable.times === -1 || playerCardTable.times >= new Date().getTime());
+      lists[i].isHave = playerCardTable ? (playerCardTable.times === -1 || playerCardTable.times >= new Date().getTime()) : false;
       // 牌桌有效期
       lists[i].times = playerCardTable && (playerCardTable.times === -1 || playerCardTable.times >= new Date().getTime()) ? playerCardTable.times: null;
       // 牌桌是否正在使用,
@@ -485,7 +485,7 @@ export class AccountApi extends BaseApi {
       const playerMedal = await PlayerMedal.findOne({playerId: this.player._id, propId: lists[i].propId});
 
       // 用户是否拥有该称号
-      lists[i].isHave = playerMedal && (playerMedal.times === -1 || playerMedal.times >= new Date().getTime());
+      lists[i].isHave = playerMedal ? (playerMedal.times === -1 || playerMedal.times >= new Date().getTime()) : false;
       // 称号有效期
       lists[i].times = playerMedal && (playerMedal.times === -1 || playerMedal.times >= new Date().getTime()) ? playerMedal.times : null;
       // 称号是否正在使用
@@ -502,7 +502,7 @@ export class AccountApi extends BaseApi {
       const playerHeadBorder = await PlayerHeadBorder.findOne({playerId: this.player._id, propId: lists[i].propId});
 
       // 用户是否拥有该头像框
-      lists[i].isHave = playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime());
+      lists[i].isHave = playerHeadBorder ? (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime()) : false;
       // 头像框有效期
       lists[i].times = playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime()) ? playerHeadBorder.times : null;
       // 头像框是否正在使用
