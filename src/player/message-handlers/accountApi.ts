@@ -514,6 +514,8 @@ export class AccountApi extends BaseApi {
       lists[i].times = playerMedal && (playerMedal.times === -1 || playerMedal.times >= new Date().getTime()) ? playerMedal.times : null;
       // 称号是否正在使用
       lists[i].isUse = playerMedal && (playerMedal.times === -1 || playerMedal.times >= new Date().getTime()) ? playerMedal.isUse : false;
+      // 称号获得时间
+      lists[i].getTime = playerMedal && (playerMedal.times === -1 || playerMedal.times >= new Date().getTime()) ? playerMedal.createAt : null;
     }
 
     return lists;
