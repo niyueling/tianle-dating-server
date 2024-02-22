@@ -550,9 +550,7 @@ export class AccountApi extends BaseApi {
     }
 
     // 设置其他牌桌为未使用状态
-    const count = await PlayerCardTable.count({playerId: this.player._id, isUse: true});
-    const affectCount = await PlayerCardTable.updateMany({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
-    console.warn(count, affectCount, this.player._id)
+    await PlayerCardTable.updateMany({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
 
     // 设置当前牌桌为使用状态
     playerCardTable.isUse = true;
@@ -573,7 +571,7 @@ export class AccountApi extends BaseApi {
     }
 
     // 设置其他牌桌为未使用状态
-    await PlayerMedal.update({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
+    await PlayerMedal.updateMany({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
 
     // 设置当前牌桌为使用状态
     playerMedal.isUse = true;
@@ -594,7 +592,7 @@ export class AccountApi extends BaseApi {
     }
 
     // 设置其他牌桌为未使用状态
-    await PlayerHeadBorder.update({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
+    await PlayerHeadBorder.updateMany({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
 
     // 设置当前牌桌为使用状态
     playerHeadBorder.isUse = true;
