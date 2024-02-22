@@ -445,7 +445,7 @@ export class NewSignApi extends BaseApi {
     }
 
     // 计算每日福利今日是否已领取
-    const freeGiftReceiveCount = await PlayerRechargePartyRecord.count({playerId: user._id, prizeId: freeGift["_Id"], createAt: {$gte: start, $lt: end}});
+    const freeGiftReceiveCount = await PlayerRechargePartyRecord.count({playerId: user._id, prizeId: freeGift["_id"], createAt: {$gte: start, $lt: end}});
     freeGift["receive"] = freeGiftReceiveCount > 0;
 
     // 计算1元档
