@@ -551,7 +551,7 @@ export class AccountApi extends BaseApi {
 
     // 设置其他牌桌为未使用状态
     const count = await PlayerCardTable.count({playerId: this.player._id, isUse: true});
-    const affectCount = await PlayerCardTable.update({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
+    const affectCount = await PlayerCardTable.updateMany({playerId: this.player._id, isUse: true}, {$set: {isUse: false}});
     console.warn(count, affectCount, this.player._id)
 
     // 设置当前牌桌为使用状态
