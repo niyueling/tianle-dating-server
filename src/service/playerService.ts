@@ -226,12 +226,24 @@ export default class PlayerService extends BaseService {
     }
 
     // 判断是否分配默认牌桌
-    const count = await PlayerCardTable.count({playerId: user._id, propId: 1200});
-    if (!count) {
+    const playerCardTableCount = await PlayerCardTable.count({playerId: user._id, propId: 1200});
+    if (!playerCardTableCount) {
       await PlayerCardTable.create({
         playerId: user._id,
         shortId: user.shortId,
         propId: 1200,
+        times: -1,
+        isUse: true
+      });
+    }
+
+    // 判断是否分配默认头像框
+    const playerHeadBorderCount = await PlayerHeadBorder.count({playerId: user._id, propId: 1000});
+    if (!playerHeadBorderCount) {
+      await PlayerHeadBorder.create({
+        playerId: user._id,
+        shortId: user.shortId,
+        propId: 1000,
         times: -1,
         isUse: true
       });
