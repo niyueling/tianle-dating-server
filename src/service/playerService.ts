@@ -225,6 +225,18 @@ export default class PlayerService extends BaseService {
       playerManager.addLoggingInPlayer(user._id.toString());
     }
 
+    // 判断是否分配默认牌桌
+    const count = await PlayerCardTable.count({playerId: user._id, propId: 1200});
+    if (!count) {
+      await PlayerCardTable.create({
+        playerId: user._id,
+        shortId: user.shortId,
+        propId: 1200,
+        times: -1,
+        isUse: true
+      });
+    }
+
     return await Player.findOne({_id: user._id}).lean();
   }
 
