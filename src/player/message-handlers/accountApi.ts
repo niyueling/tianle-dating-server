@@ -44,7 +44,7 @@ export class AccountApi extends BaseApi {
       user.continueGameType = GameType.mj;
     } else {
       // 没有掉线的房间号，不要重连
-      user.disconnectedRoom = false
+      user.disconnectedRoom = false;
     }
 
     if (message.mnpVersion) {
@@ -89,6 +89,25 @@ export class AccountApi extends BaseApi {
     }
 
     this.replySuccess(user);
+  }
+
+  // 救济金数据
+  @addApi()
+  async benefitData() {
+    const user = await Player.findOne({shortId: this.player.model.shortId});
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    if (user.helpCount > 0) {
+      const start = moment(new Date()).startOf('day').toDate();
+      const end = moment(new Date()).endOf('day').toDate();
+      const helpCount = await PlayerBenefitRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+
+      return this.replySuccess({gold: 100000, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount});
+    }
+
+    return this.replyFail(TianleErrorCode.receiveFail);
   }
 
   // 发放救济金
