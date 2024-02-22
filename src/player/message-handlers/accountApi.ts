@@ -472,7 +472,7 @@ export class AccountApi extends BaseApi {
     };
 
     // 判断开运红包是否开放
-    const startPocketCount = await StartPocketRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+    // const startPocketCount = await StartPocketRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
 
     // 判断新人宝典开关
     let newGift = {
@@ -482,7 +482,7 @@ export class AccountApi extends BaseApi {
       iosLotteryCount
     };
 
-    return {sevenLogin: {open: sevenLoginCount === 0}, turnTable, startPocket: {open: startPocketCount === 0}, newGift };
+    return {sevenLogin: {open: sevenLoginCount === 0}, turnTable, startPocket: {open: true}, newGift };
   }
 
   async getBackPackByCardTable() {
