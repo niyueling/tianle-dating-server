@@ -117,9 +117,9 @@ export class NewSignApi extends BaseApi {
     // 判断是否领取
     const receive = await NewTaskRecord.count({playerId: this.player._id, taskId: taskInfo.taskId});
 
-    if (receive) {
-      return this.replyFail(TianleErrorCode.prizeIsReceive);
-    }
+    // if (receive) {
+    //   return this.replyFail(TianleErrorCode.prizeIsReceive);
+    // }
 
     // 按照奖励类型领取奖励
     for (let i = 0; i < taskInfo.taskPrizes.length; i++) {
