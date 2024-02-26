@@ -247,9 +247,9 @@ export class NewSignApi extends BaseApi {
     const end = moment(new Date()).endOf('day').toDate()
     const receive = await PlayerRechargePartyRecord.findOne({playerId: this.player._id, prizeId: prizeInfo._id, createAt: {$gte: start, $lt: end}});
 
-    if (receive) {
-      return this.replyFail(TianleErrorCode.prizeIsReceive);
-    }
+    // if (receive) {
+    //   return this.replyFail(TianleErrorCode.prizeIsReceive);
+    // }
 
     // 按照奖励类型领取奖励
     for (let i = 0; i < prizeInfo.prizeList.length; i++) {
