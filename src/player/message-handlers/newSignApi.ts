@@ -297,6 +297,22 @@ export class NewSignApi extends BaseApi {
       rechargeAmount = summary[0].sum;
     }
 
+    // 计算完成任务时间
+    let finishTime = null;
+    if (rechargeAmount >= 6) {
+      const rechargeList = await UserRechargeOrder.find({playerId: user._id.toString(), status: 1});
+      let sumaryAmount = 0;
+
+      for (let i = 0; i < rechargeList.length; i++) {
+        sumaryAmount += rechargeList[i].price;
+
+        if (sumaryAmount >= 6) {
+          finishTime = rechargeList[i].created;
+          break;
+        }
+      }
+    }
+
     const taskList = await NewFirstRecharge.find().lean();
     let tasks = [];
 
@@ -308,7 +324,7 @@ export class NewSignApi extends BaseApi {
     const startTime = user.createAt;
     const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10);
 
-    return {taskList, activityTimes: {startTime, endTime}, isPay: rechargeAmount >= 6};
+    return {taskList, activityTimes: {startTime, endTime}, isPay: rechargeAmount >= 6, finishTime};
   }
 
   // 判断任务是否完成
