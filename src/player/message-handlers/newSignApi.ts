@@ -228,6 +228,50 @@ export class NewSignApi extends BaseApi {
     return this.replySuccess(data);
   }
 
+  // 获取充值派对奖励
+  @addApi()
+  async receiveRechargePartyPrize(message) {
+    // 兼容旧版本
+    if (!message.multiple) {
+      message.multiple = 1;
+    }
+
+    // 获取奖励配置
+    const prizeInfo = await RechargeParty.findOne({_id: message.prizeId});
+    if (!prizeInfo) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    // 判断是否领取
+    const start = moment(new Date()).startOf('day').toDate()
+    const end = moment(new Date()).endOf('day').toDate()
+    const receive = await PlayerRechargePartyRecord.findOne({playerId: this.player._id, prizeId: prizeInfo._id, createAt: {$gte: start, $lt: end}});
+
+    if (receive) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
+    }
+
+    // 按照奖励类型领取奖励
+    for (let i = 0; i < prizeInfo.prizeList.length; i++) {
+      await this.receivePrize(prizeInfo.prizeList[i], this.player._id, message.multiple, ConsumeLogType.receiveRechargeParty);
+    }
+
+    // 创建领取记录
+    const data = {
+      playerId: this.player._id.toString(),
+      shortId: this.player.model.shortId,
+      prizeId: prizeInfo._id,
+      price: prizeInfo.price,
+      prizeConfig: prizeInfo,
+      multiple: message.multiple,
+      createAt: new Date()
+    };
+
+    await PlayerRechargePartyRecord.create(data);
+    await this.player.updateResource2Client();
+    return this.replySuccess(data);
+  }
+
   async getGuideLists(user) {
     const taskList = await NewTask.find().lean();
     let tasks = [];
