@@ -109,7 +109,7 @@ export class NewSignApi extends BaseApi {
     }
 
     // 获取奖励配置
-    const taskInfo = await NewTask.findOne({_id: message.taskId});
+    const taskInfo = await NewTask.findOne({taskId: message.taskId});
     if (!taskInfo) {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
