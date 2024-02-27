@@ -546,7 +546,7 @@ export class NewSignApi extends BaseApi {
     }
 
     // 计算连续充值天数
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 0; i < 10; i++) {
       const todayTime = Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * i;
       const currentStart = moment(new Date(todayTime)).startOf('day').toDate();
       const currentEnd = moment(new Date(todayTime)).endOf('day').toDate();
