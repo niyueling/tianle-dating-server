@@ -551,8 +551,6 @@ export class NewSignApi extends BaseApi {
       const currentStart = moment(new Date(todayTime)).startOf('day').toDate();
       const currentEnd = moment(new Date(todayTime)).endOf('day').toDate();
 
-      console.warn(todayTime, currentStart, currentEnd)
-
       // 用户今日充值金额
       const summary = await UserRechargeOrder.aggregate([
         { $match: { playerId: user._id.toString(), status: 1, created: {$gte: currentStart, $lt: currentEnd} } },

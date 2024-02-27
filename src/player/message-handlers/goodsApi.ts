@@ -86,6 +86,7 @@ export class GoodsApi extends BaseApi {
       if (playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime())) {
         headLists[i].isUse = playerHeadBorder.isUse;
         headLists[i].isGive = true;
+        headLists[i].isAlways = playerHeadBorder.times === -1;
         headLists[i].times = playerHeadBorder.times;
       }
     }
