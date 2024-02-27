@@ -77,6 +77,7 @@ export class GoodsApi extends BaseApi {
     for (let i = 0; i < headLists.length; i++) {
       headLists[i].isUse = false;
       headLists[i].isGive = false;
+      headLists[i].isAlways = false;
       //判断用户是否拥有头像框
       const playerHeadBorder = await PlayerHeadBorder.count({playerId: this.player._id, propId: headLists[i].propId });
       if (playerHeadBorder && playerHeadBorder.times !== -1 && playerHeadBorder.times <= new Date().getTime()) {
