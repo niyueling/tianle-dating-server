@@ -223,7 +223,7 @@ export class NewSignApi extends BaseApi {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
-    const data = await this.getRechargePartyList(user);
+    const data= await this.getRechargePartyList(user);
 
     return this.replySuccess(data);
   }
@@ -550,6 +550,8 @@ export class NewSignApi extends BaseApi {
       const todayTime = Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * i;
       const currentStart = moment(new Date(todayTime)).startOf('day').toDate();
       const currentEnd = moment(new Date(todayTime)).endOf('day').toDate();
+
+      console.warn(todayTime, currentStart, currentEnd)
 
       // 用户今日充值金额
       const summary = await UserRechargeOrder.aggregate([
