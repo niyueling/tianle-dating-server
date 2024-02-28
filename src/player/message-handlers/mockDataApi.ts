@@ -560,19 +560,33 @@ export class MockDataApi extends BaseApi {
       {taskName: "疯狂屠夫", taskDescribe: "累计使认输人数达到?/100人", taskType: 2, taskId: 1084, taskTimes: 100,
         taskPrizes: {propId: 1109, number: 1, type: 4}, taskDesignates: {title: "疯狂屠夫", propId: 1109, taskTimes: 100}, liveness: 10},
 
-      // 对局成就-疯狂屠夫
-      {taskName: "疯狂屠夫", taskDescribe: "累计使认输人数达到?/10人", taskType: 2, taskId: 1079, taskTimes: 10,
-        taskPrizes: {name: "10钻石", number: 10, type: 1}, taskDesignates: {title: "疯狂屠夫", propId: 1109, taskTimes: 10}, liveness: 10},
-      {taskName: "疯狂屠夫", taskDescribe: "累计使认输人数达到?/30人", taskType: 2, taskId: 1080, taskTimes: 30,
-        taskPrizes: {name: "10钻石", number: 10, type: 1}, taskDesignates: {title: "疯狂屠夫", propId: 1109, taskTimes: 30}, liveness: 10},
-      {taskName: "疯狂屠夫", taskDescribe: "累计使认输人数达到?/50人", taskType: 2, taskId: 1081, taskTimes: 50,
-        taskPrizes: {name: "10钻石", number: 10, type: 1}, taskDesignates: {title: "疯狂屠夫", propId: 1109, taskTimes: 50}, liveness: 10},
-      {taskName: "疯狂屠夫", taskDescribe: "累计使认输人数达到?/68人", taskType: 2, taskId: 1082, taskTimes: 68,
-        taskPrizes: {name: "10钻石", number: 10, type: 1}, taskDesignates: {title: "疯狂屠夫", propId: 1109, taskTimes: 68}, liveness: 10},
-      {taskName: "疯狂屠夫", taskDescribe: "累计使认输人数达到?/88人", taskType: 2, taskId: 1083, taskTimes: 88,
-        taskPrizes: {name: "10钻石", number: 10, type: 1}, taskDesignates: {title: "疯狂屠夫", propId: 1109, taskTimes: 88}, liveness: 10},
-      {taskName: "疯狂屠夫", taskDescribe: "累计使认输人数达到?/100人", taskType: 2, taskId: 1084, taskTimes: 100,
-        taskPrizes: {propId: 1109, number: 1, type: 4}, taskDesignates: {title: "疯狂屠夫", propId: 1109, taskTimes: 100}, liveness: 10},
+      // 对局成就-回村的诱惑
+      {taskName: "回村的诱惑", taskDescribe: "累计对局结束破产次数达到?/10次", taskType: 2, taskId: 1085, taskTimes: 10,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {title: "回村的诱惑", propId: 1108, taskTimes: 10}, liveness: 5},
+      {taskName: "回村的诱惑", taskDescribe: "累计对局结束破产次数达到?/30次", taskType: 2, taskId: 1086, taskTimes: 30,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {title: "回村的诱惑", propId: 1108, taskTimes: 30}, liveness: 5},
+      {taskName: "回村的诱惑", taskDescribe: "累计对局结束破产次数达到?/50次", taskType: 2, taskId: 1087, taskTimes: 50,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {title: "回村的诱惑", propId: 1108, taskTimes: 50}, liveness: 5},
+      {taskName: "回村的诱惑", taskDescribe: "累计对局结束破产次数达到?/68次", taskType: 2, taskId: 1088, taskTimes: 68,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {title: "回村的诱惑", propId: 1108, taskTimes: 68}, liveness: 5},
+      {taskName: "回村的诱惑", taskDescribe: "累计对局结束破产次数达到?/88次", taskType: 2, taskId: 1089, taskTimes: 88,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {title: "回村的诱惑", propId: 1108, taskTimes: 88}, liveness: 5},
+      {taskName: "回村的诱惑", taskDescribe: "累计对局结束破产次数达到?/100次", taskType: 2, taskId: 1090, taskTimes: 100,
+        taskPrizes: {propId: 1108, number: 1, type: 4}, taskDesignates: {title: "回村的诱惑", propId: 1108, taskTimes: 100}, liveness: 5},
+
+      // 对局成就-决胜千里
+      {taskName: "贵族气质", taskDescribe: "特权等级达到?/1级", taskType: 1, taskId: 1043, taskTimes: 1,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}, taskDesignates: {}, liveness: 5},
+      {taskName: "贵族气质", taskDescribe: "特权等级达到?/2级", taskType: 1, taskId: 1044, taskTimes: 2,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}, taskDesignates: {}, liveness: 5},
+      {taskName: "贵族气质", taskDescribe: "特权等级达到?/3级", taskType: 1, taskId: 1045, taskTimes: 3,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}, taskDesignates: {}, liveness: 5},
+      {taskName: "贵族气质", taskDescribe: "特权等级达到?/4级", taskType: 1, taskId: 1046, taskTimes: 4,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}, taskDesignates: {}, liveness: 5},
+      {taskName: "贵族气质", taskDescribe: "特权等级达到?/5级", taskType: 1, taskId: 1047, taskTimes: 5,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}, taskDesignates: {}, liveness: 5},
+      {taskName: "贵族气质", taskDescribe: "特权等级达到?/6级", taskType: 1, taskId: 1048, taskTimes: 6,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}, taskDesignates: {}, liveness: 5},
     ];
 
     BlockTask.insertMany(datas);

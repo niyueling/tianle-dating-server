@@ -741,7 +741,7 @@ export class GoodsApi extends BaseApi {
 
     //判断Id是否被使用
     const orderCount = await Player.count({shortId: exchangeConf.numberId });
-    if (!orderCount) {
+    if (orderCount) {
       return this.replyFail(TianleErrorCode.beautyNumberInvalid);
     }
 
