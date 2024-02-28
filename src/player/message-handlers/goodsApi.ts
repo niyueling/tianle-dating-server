@@ -38,7 +38,7 @@ export class GoodsApi extends BaseApi {
 
     const beautyNumberLists = await GoodsBeautyNumber.aggregate([
       {$match: param},
-      {$sample: { size: 8}}
+      {$sample: { size: 20}}
     ]);
 
     const start = moment(new Date()).startOf('day').toDate();
@@ -765,5 +765,27 @@ export class GoodsApi extends BaseApi {
 
     this.replySuccess({price: exchangeConf.price, numberId: exchangeConf.numberId});
     await this.player.updateResource2Client();
+  }
+
+  // 靓号换一换
+  @addApi()
+  async beautyNumberLists(message) {
+    let param = {_id: {$ne: null}};
+    if (!message.numberId) {
+      param["numberId"] = { $regex: new RegExp(message.numberId, 'i') } ;
+    }
+
+    const beautyNumberLists = await GoodsBeautyNumber.aggregate([
+      {$match: param},
+      {$sample: { size: 20}}
+    ]);
+
+    for (let i = 0; i < beautyNumberLists.length; i++) {
+      //判断Id是否被使用
+      const orderCount = await Player.count({shortId: beautyNumberLists[i].numberId });
+      beautyNumberLists[i].isPay = orderCount === 0;
+    }
+
+    return this.replySuccess(beautyNumberLists);
   }
 }
