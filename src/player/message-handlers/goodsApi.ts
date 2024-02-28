@@ -26,15 +26,20 @@ import PlayerBeautyNumberRecord from "../../database/models/PlayerBeautyNumberRe
 export class GoodsApi extends BaseApi {
   // 商城列表
   @addApi()
-  async getGoodsList() {
+  async getGoodsList(message) {
     const goodsList = await GoodsModel.find({ isOnline: true, goodsType: 1 }).sort({price: 1}).lean();
     const voucherList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1}).lean();
     const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1}).lean();
     const headLists = await GoodsHeadBorder.find().lean();
-    const beautyNumberLists = await GoodsBeautyNumber.aggregate([
-      {$match: { _id: {$ne: null}}},
-      {$sample: { size: 8}}
-    ]);
+    let beautyNumberLists = [];
+    if (!message.numberId) {
+      beautyNumberLists = await GoodsBeautyNumber.aggregate([
+        {$match: { _id: {$ne: null}}},
+        {$sample: { size: 8}}
+      ]);
+    } else {
+      beautyNumberLists = await GoodsBeautyNumber.find({numberId: message.numberId}).lean();
+    }
 
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
