@@ -771,9 +771,11 @@ export class GoodsApi extends BaseApi {
   @addApi()
   async beautyNumberLists(message) {
     let param = {_id: {$ne: null}};
-    if (!message.numberId) {
+    if (message.numberId) {
       param["numberId"] = { $regex: new RegExp(message.numberId, 'i') } ;
     }
+
+    console.log(param);
 
     const beautyNumberLists = await GoodsBeautyNumber.aggregate([
       {$match: param},
