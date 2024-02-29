@@ -34,6 +34,7 @@ import {LoginSignApi} from "./message-handlers/loginSignApi";
 import {NewSignApi} from "./message-handlers/newSignApi";
 import {NoticeApi} from "./message-handlers/noticeApi";
 import {MockDataApi} from "./message-handlers/mockDataApi";
+import {TaskApi} from "./message-handlers/taskApi";
 import {TianleErrorCode} from "@fm/common/constants";
 
 const isTokenValid = async (apiName, token, player) => {
@@ -77,7 +78,8 @@ const apiClass = {
   mockData: MockDataApi,
   loginSign: LoginSignApi,
   notice: NoticeApi,
-  newSign: NewSignApi
+  newSign: NewSignApi,
+  task: TaskApi
 }
 
 // 调用api

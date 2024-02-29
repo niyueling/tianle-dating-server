@@ -153,6 +153,7 @@ export class LoginSignApi extends BaseApi {
     }
 
     user.signLoginDays = prize.day === 7 ? 0 : prize.day;
+    user.totalSignLoginDays ++;
     if (prize.day === 7) {
       await SevenSignPrizeRecord.remove({shortId: user.shortId});
     }
