@@ -1,7 +1,6 @@
 import {addApi, BaseApi} from "./baseApi";
 import Player from "../../database/models/Player";
-import {TianleErrorCode, TaskCategory, TaskType, ConsumeLogType} from "@fm/common/constants";
-import moment = require("moment");
+import {ConsumeLogType, TaskCategory, TaskType, TianleErrorCode} from "@fm/common/constants";
 import TaskRecord from "../../database/models/TaskRecord";
 import TaskTotalPrize from "../../database/models/TaskTotalPrize";
 import TaskTotalPrizeRecord from "../../database/models/TaskTotalPrizeRecord";
@@ -11,6 +10,9 @@ import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
 import PlayerCardTable from "../../database/models/PlayerCardTable";
 import PlayerMedal from "../../database/models/PlayerMedal";
 import DiamondRecord from "../../database/models/diamondRecord";
+import {service} from "../../service/importService";
+import moment = require("moment");
+
 export class TaskApi extends BaseApi {
   @addApi()
   async taskLists(message) {
@@ -23,6 +25,22 @@ export class TaskApi extends BaseApi {
     const taskData = await this.getDailyTaskData(message, user);
 
     return this.replySuccess(taskData);
+  }
+
+  @addApi()
+  async finishTask(message) {
+    const user = await Player.findOne({_id: this.player._id});
+
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    if (!message.multiple) {
+      message.multiple = 1;
+    }
+
+    const result = await this.finishDailyTaskOnce(message, user);
+    return this.replySuccess(result);
   }
 
   async getDailyTaskData(message, user) {
@@ -450,5 +468,39 @@ export class TaskApi extends BaseApi {
     task.taskDescribe = task.taskDescribe.replace("?", task.finishCount);
 
     return task;
+  }
+
+  async finishDailyTaskOnce(message, user) {
+    // 获取任务配置
+    const taskInfo = await Task.findOne({taskId: message.taskId}).lean();
+    if (!taskInfo) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    // 根据不同任务类型判断是否完成任务
+    const taskResult = await this.checkTaskFinishAndReceive(taskInfo, user);
+
+    if (!taskResult.finish) {
+      return this.replyFail(TianleErrorCode.taskNotFinish);
+    }
+
+    if (taskResult.receive) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
+    }
+
+    // 按照奖励类型领取奖励
+    await service.playerService.receivePrize(taskInfo.taskPrizes, this.player._id, message.multiple, ConsumeLogType.receiveTask);
+
+    // 创建领取记录
+    const data = {
+      playerId: user._id.toString(),
+      shortId: user.shortId,
+      taskId: taskInfo.taskId,
+      liveness: taskInfo.liveness,
+      taskConfig: taskInfo,
+      createAt: new Date()
+    };
+
+    return await TaskRecord.create(data);
   }
 }
