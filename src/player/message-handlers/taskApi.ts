@@ -43,6 +43,60 @@ export class TaskApi extends BaseApi {
     return this.replySuccess(result);
   }
 
+  @addApi()
+  async receiveTaskTotalActivity(message) {
+    const user = await Player.findOne({_id:this.player._id});
+
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    // 计算活跃度
+    const start = moment(new Date()).startOf('day').toDate()
+    const end = moment(new Date()).endOf('day').toDate()
+    const liveness = await TaskRecord.aggregate([
+      { $match: { playerId: user._id.toString() } },
+      { $group: { _id: null, sum: { $sum: "$liveness" } } }
+    ]).exec();
+    let livenessCount = 0;
+    if (liveness.length > 0) {
+      livenessCount = liveness[0].sum;
+    }
+
+    // 获取奖励配置
+    const prizeInfo = await TaskTotalPrize.findOne({_id: message.prizeId});
+    if (!prizeInfo) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    if (livenessCount < prizeInfo.liveness) {
+      return this.replyFail(TianleErrorCode.taskNotFinish);
+    }
+
+    // 判断是否领取
+    const receive = await TaskTotalPrizeRecord.findOne({shortId: user.shortId, prizeId: prizeInfo._id});
+
+    if (receive) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
+    }
+
+    // 按照奖励类型领取奖励
+    await service.playerService.receivePrize(prizeInfo, user._id, 1, ConsumeLogType.receiveTask);
+
+    // 创建领取记录
+    const data = {
+      playerId: user._id.toString(),
+      shortId: user.shortId,
+      prizeId: prizeInfo._id,
+      prizeConfig: prizeInfo,
+      createAt: new Date()
+    };
+
+    const record = await TaskTotalPrizeRecord.create(data);
+
+    return this.replySuccess(record);
+  }
+
   async getDailyTaskData(message, user) {
     const taskLists = await this.getDailyTaskDataByType(message, user);
     const sortTasks = this.sortTasks(taskLists);
