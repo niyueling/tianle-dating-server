@@ -744,12 +744,12 @@ export class MockDataApi extends BaseApi {
         taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {}, liveness: 5},
     ];
 
-    Task.insertMany(datas);
+    await Task.insertMany(datas);
 
-    const result1 = await BlockTaskTotalPrize.find();
+    const result1 = await TaskTotalPrize.find();
 
     if (result1.length) {
-      await BlockTaskTotalPrize.remove({_id: {$ne: null}}).exec();
+      await TaskTotalPrize.remove({_id: {$ne: null}}).exec();
     }
 
     const datas1 = [
@@ -760,7 +760,7 @@ export class MockDataApi extends BaseApi {
       {number: 1, type: 4, propId: 1117, liveness: 1500}
     ];
 
-    TaskTotalPrize.insertMany(datas1);
+    await TaskTotalPrize.insertMany(datas1);
 
     return this.replySuccess({datas, datas1});
   }
