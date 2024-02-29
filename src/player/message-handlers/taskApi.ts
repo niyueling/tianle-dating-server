@@ -1,5 +1,5 @@
 import {addApi, BaseApi} from "./baseApi";
-import Player from "../../database/models/Player";
+import Player from "../../database/models/player";
 import {ConsumeLogType, TaskCategory, TaskType, TianleErrorCode} from "@fm/common/constants";
 import TaskRecord from "../../database/models/TaskRecord";
 import TaskTotalPrize from "../../database/models/TaskTotalPrize";
