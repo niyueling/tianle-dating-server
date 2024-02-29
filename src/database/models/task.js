@@ -24,6 +24,11 @@ const schema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  // 类型ID
+  typeId: {
+    type: Number,
+    required: true,
+  },
   // 任务次数
   taskTimes: {
     type: Number,
