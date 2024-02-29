@@ -373,18 +373,10 @@ export class TaskApi extends BaseApi {
       task.finishCount = playerHeadBorderCount >= task.taskTimes ? task.taskTimes : playerHeadBorderCount;
     }
 
-    // 颜值担当
-    if (task.typeId === TaskType.developAppearanceLevelPlay) {
-      const playerHeadBorderCount = await PlayerHeadBorder.count({playerId: user._id, times: -1});
-      task.finish = playerHeadBorderCount >= task.taskTimes;
-      task.finishCount = playerHeadBorderCount >= task.taskTimes ? task.taskTimes : playerHeadBorderCount;
-    }
-
-    // 弄潮儿
-    if (task.typeId === TaskType.developTide) {
-      const playerMedalCount = await PlayerMedal.count({playerId: user._id, times: -1});
-      task.finish = playerMedalCount >= task.taskTimes;
-      task.finishCount = playerMedalCount >= task.taskTimes ? task.taskTimes : playerMedalCount;
+    // 贵族气质
+    if (task.typeId === TaskType.developNobility) {
+      task.finish = user.vip >= task.taskTimes;
+      task.finishCount = user.vip >= task.taskTimes ? task.taskTimes : user.vip;
     }
 
     // 弄潮儿
