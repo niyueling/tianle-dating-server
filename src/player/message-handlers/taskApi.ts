@@ -120,6 +120,7 @@ export class TaskApi extends BaseApi {
       const isReceive = await TaskTotalPrizeRecord.count({playerId: user._id.toString(), prizeId: totalPrizeList[i]._id});
       const data = {
         id: totalPrizeList[i].propId,
+        type: totalPrizeList[i].type,
         count: totalPrizeList[i].number,
         liveness: totalPrizeList[i].liveness,
         prizeId: totalPrizeList[i]._id.toString(),
