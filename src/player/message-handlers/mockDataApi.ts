@@ -19,7 +19,6 @@ import SevenSignPrize from "../../database/models/SevenSignPrize";
 import HeadBorder from "../../database/models/HeadBorder";
 import Medal from "../../database/models/Medal";
 import CardTable from "../../database/models/CardTable";
-import Tasks from "../../database/models/tasks";
 import Task from "../../database/models/task";
 import TaskTotalPrize from "../../database/models/TaskTotalPrize";
 

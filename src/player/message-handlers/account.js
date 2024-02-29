@@ -11,7 +11,6 @@ import RankList from '../../database/models/rankList'
 import GM from '../../database/models/gm'
 import Product from '../../database/models/product'
 import BuyProductRecord from '../../database/models/buyRecord'
-import Tasks from '../../database/models/tasks';
 import AccountIdModel from '../../database/models/accountId';
 import * as moment from 'moment'
 import {RedPocketWithdrawRecordModel, RedPocketWithDrawState} from "../../database/models/redPocketRecord";
@@ -21,6 +20,7 @@ import createClient from "../../utils/redis";
 import {ConsumeRecord} from "@fm/model/models/consumeRecord";
 import DiamondRecord from "../../database/models/diamondRecord";
 import {ConsumeLogType} from "@fm/common/constants";
+import Task from "../../database/models/task";
 
 const QcloudSms = require("qcloudsms_js");
 
@@ -329,7 +329,7 @@ export default {
 
   },
   'account/TaskMsg': async (player) => {
-    const taskList = await Tasks.find().select().exec();
+    const taskList = await Task.find().select().exec();
     var taskMsg = {}
     if (!player.model.invite_curTask.length && !player.model.invite_endTask.length) {
       taskList.forEach((e) => {
