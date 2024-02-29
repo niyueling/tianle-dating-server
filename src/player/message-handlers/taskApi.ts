@@ -511,7 +511,7 @@ export class TaskApi extends BaseApi {
     task.receive = !!isReceive;
 
     // 任务描述用finishCount替换?
-    task.taskDescribe = task.taskDescribe.replace("?", task.finishCount);
+    // task.taskDescribe = task.taskDescribe.replace("?", task.finishCount);
 
     return task;
   }
