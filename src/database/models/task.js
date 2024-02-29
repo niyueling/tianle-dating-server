@@ -42,7 +42,6 @@ const schema = new mongoose.Schema({
   //任务称号
   taskDesignates: {
     type: Object,
-    required: true
   },
   liveness: {
     type: Number,

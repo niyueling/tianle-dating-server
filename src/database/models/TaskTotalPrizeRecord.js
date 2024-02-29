@@ -29,5 +29,6 @@ const schema = new mongoose.Schema({
   },
 });
 
+
 const TaskTotalPrizeRecord = mongoose.model('TaskTotalPrizeRecord', schema);
 export default TaskTotalPrizeRecord
