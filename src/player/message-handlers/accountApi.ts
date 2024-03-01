@@ -26,6 +26,7 @@ import SevenSignPrizeRecord from "../../database/models/SevenSignPrizeRecord";
 import StartPocketRecord from "../../database/models/startPocketRecord";
 import RoomScoreRecord from "../../database/models/roomScoreRecord";
 import PlayerBenefitRecord from "../../database/models/PlayerBenefitRecord";
+import NewDiscountGiftRecord from "../../database/models/NewDiscountGiftRecord";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -451,7 +452,6 @@ export class AccountApi extends BaseApi {
   }
 
   async getActivityInfo(user, mnpVersion, platform) {
-    const now = new Date().getTime();
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
 
@@ -501,7 +501,18 @@ export class AccountApi extends BaseApi {
       iosLotteryCount
     };
 
-    return {sevenLogin: {open: sevenLoginCount === 0}, turnTable, startPocket: {open: true}, newGift };
+    // 判断充值派对开关
+    let rechargeParty = {
+      open: new Date().getTime() <= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10,
+      iosRecharge: user.openIosShopFunc,
+      iosRoomCount,
+      iosLotteryCount
+    };
+
+    // 判断新人礼包
+    const payCount = await NewDiscountGiftRecord.count({playerId: this.player._id.toString()});
+
+    return {sevenLogin: {open: sevenLoginCount === 0}, turnTable, startPocket: {open: true}, newGift, discountGift: {open: !!payCount}, rechargeParty };
   }
 
   async getBackPackByCardTable() {
