@@ -14,8 +14,8 @@ const schema = new Schema({
   juCount: {type: Number, default: 0}, // 累计局数
   juWinCount: {type: Number, default: 0}, // 胜利局数
   juContinueWinCount: {type: Number, default: 0}, // 连续胜利局数(1)
-  looseMoneyBoyAmount: {type: Number, default: 0}, // 当局最高输豆数量
-  reapingMachineAmount: {type: Number, default: 0}, // 当局最高赢豆数量
+  looseMoneyBoyAmount: {type: Number, default: 0}, // 当局最高输豆数量(1)
+  reapingMachineAmount: {type: Number, default: 0}, // 当局最高赢豆数量(1)
   atTheTopCount: {type: Number, default: 0}, // 封顶次数（21万倍以上）
   quackStrikeCount: {type: Number, default: 0}, // 首次胡牌就清空三个对手
   chosenOneCount: {type: Number, default: 0}, // 累计天胡次数
