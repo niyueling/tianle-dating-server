@@ -40,6 +40,7 @@ export class TaskApi extends BaseApi {
     }
 
     const result = await this.finishDailyTaskOnce(message, user);
+    await this.player.updateResource2Client();
     return this.replySuccess(result);
   }
 
@@ -93,6 +94,7 @@ export class TaskApi extends BaseApi {
     };
 
     const record = await TaskTotalPrizeRecord.create(data);
+    await this.player.updateResource2Client();
 
     return this.replySuccess(record);
   }

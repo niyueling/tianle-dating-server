@@ -31,7 +31,6 @@ const schema = new Schema({
   theMarksmanCount: {type: Number, default: 0}, // 累计对局中最先胡牌
   madButcherCount: {type: Number, default: 0}, // 累计使认输人数
   goVillageCount: {type: Number, default: 0}, // 累计对局结束破产次数
-  decisiveVictoryCount: {type: Number, default: 0}, // 累计胜利对局次数
   juRank: {type: Number, default: 1}, // 胜率
   redPocket: {type: Number, default: 0}, // 红包
   gangCount: {type: Number, default: 0}, // 杠牌次数
