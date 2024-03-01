@@ -116,6 +116,8 @@ export class TaskApi extends BaseApi {
       livenessCount = liveness[0].sum;
     }
 
+    livenessCount = 2000;
+
     // 获取累计活跃奖励列表
     const totalPrizeList = await TaskTotalPrize.find();
     const totalLists = [];
