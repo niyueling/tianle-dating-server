@@ -141,7 +141,6 @@ export class TaskApi extends BaseApi {
 
   async getDailyTaskDataByType(message, user) {
     let taskLists = [];
-    const tasks = [];
 
     // 成长成就
     if(message.taskType === TaskCategory.develop) {
@@ -290,7 +289,7 @@ export class TaskApi extends BaseApi {
     }
 
     for (const task of tasks) {
-      if (task.finish) {
+      if (task.finish && task.receive) {
         sortTasks.push(task);
       }
     }
