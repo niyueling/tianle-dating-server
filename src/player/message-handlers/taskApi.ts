@@ -64,8 +64,6 @@ export class TaskApi extends BaseApi {
       livenessCount = liveness[0].sum;
     }
 
-    livenessCount = 2000;
-
     // 获取奖励配置
     const prizeInfo = await TaskTotalPrize.findOne({_id: message.prizeId});
     if (!prizeInfo) {
@@ -115,8 +113,6 @@ export class TaskApi extends BaseApi {
     if (liveness.length > 0) {
       livenessCount = liveness[0].sum;
     }
-
-    livenessCount = 2000;
 
     // 获取累计活跃奖励列表
     const totalPrizeList = await TaskTotalPrize.find();
