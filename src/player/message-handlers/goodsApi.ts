@@ -268,6 +268,7 @@ export class GoodsApi extends BaseApi {
     }
 
     user.gold += goodInfo.gold;
+    user.shopFreeGiftCount++;
     user.save();
 
     await service.playerService.logGoldConsume(user._id, ConsumeLogType.freeShopGold, goodInfo.gold,
