@@ -653,7 +653,7 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.prizeIsReceive);
     }
 
-    model.voucher -= exchangeConf.price;
+    model.voucher -= exchangeConf.price * 100;
     await model.save();
 
     for (let i = 0; i < exchangeConf.prizeList.length; i++) {
