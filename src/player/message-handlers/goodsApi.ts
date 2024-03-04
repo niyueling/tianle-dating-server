@@ -714,7 +714,7 @@ export class GoodsApi extends BaseApi {
 
     // 如果用户已经拥有头像框，则在过期时间加上有效时间
     if (config && playerHeadBorder) {
-      await PlayerHeadBorder.update({playerId: model._id, propId: exchangeConf.propId}, {$set: {times: message.day !== -1 ? (Date.parse(playerHeadBorder.createAt) + 1000 * 60 * 60 * 24 * message.day) : -1}})
+      await PlayerHeadBorder.update({playerId: model._id, propId: exchangeConf.propId}, {$set: {times: message.day !== -1 ? (playerHeadBorder.times + 1000 * 60 * 60 * 24 * message.day) : -1}})
     }
 
     // 扣除钻石
