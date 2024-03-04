@@ -375,7 +375,7 @@ export default class PlayerService extends BaseService {
           isUse: false
         }
 
-        await PlayerHeadBorder.create(data);
+        await PlayerMedal.create(data);
       }
     }
 

@@ -444,7 +444,7 @@ export class NewSignApi extends BaseApi {
           isUse: false
         }
 
-        await PlayerHeadBorder.create(data);
+        await PlayerMedal.create(data);
       }
     }
 
