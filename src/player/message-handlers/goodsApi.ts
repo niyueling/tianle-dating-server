@@ -630,7 +630,7 @@ export class GoodsApi extends BaseApi {
   async getNewDisCountGift() {
     const giftInfo = await NewDiscountGift.findOne();
     const payCount = await NewDiscountGiftRecord.count({playerId: this.player._id.toString(), prizeId: giftInfo._id});
-    giftInfo.isPay = !!payCount;
+    giftInfo.isPay = payCount === 0;
 
     this.replySuccess(giftInfo);
   }
@@ -646,6 +646,11 @@ export class GoodsApi extends BaseApi {
     const model = await service.playerService.getPlayerModel(this.player.model._id);
     if (model.voucher < exchangeConf.price) {
       return this.replyFail(TianleErrorCode.voucherInsufficient);
+    }
+
+    const payCount = await NewDiscountGiftRecord.count({playerId: this.player._id.toString(), prizeId: exchangeConf._id});
+    if(payCount > 0) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
     }
 
     model.voucher -= exchangeConf.price;
