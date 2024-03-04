@@ -512,7 +512,7 @@ export class AccountApi extends BaseApi {
     // 判断新人礼包
     const payCount = await NewDiscountGiftRecord.count({playerId: this.player._id.toString()});
 
-    return {sevenLogin: {open: sevenLoginCount === 0}, turnTable, startPocket: {open: true}, newGift, discountGift: {open: !!payCount}, rechargeParty };
+    return {sevenLogin: {open: sevenLoginCount === 0}, turnTable, startPocket: {open: true}, newGift, discountGift: {open: payCount === 0}, rechargeParty };
   }
 
   async getBackPackByCardTable() {
