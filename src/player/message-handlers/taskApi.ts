@@ -363,14 +363,14 @@ export class TaskApi extends BaseApi {
 
     // 收藏家
     if (task.typeId === TaskType.developCollect) {
-      const playerCardTableCount = await PlayerCardTable.count({playerId: user._id, times: -1});
+      const playerCardTableCount = await PlayerCardTable.count({playerId: user._id, times: -1, propId: {$ne: 1200}});
       task.finish = playerCardTableCount >= task.taskTimes;
       task.finishCount = playerCardTableCount >= task.taskTimes ? task.taskTimes : playerCardTableCount;
     }
 
     // 颜值担当
     if (task.typeId === TaskType.developAppearanceLevelPlay) {
-      const playerHeadBorderCount = await PlayerHeadBorder.count({playerId: user._id, times: -1});
+      const playerHeadBorderCount = await PlayerHeadBorder.count({playerId: user._id, times: -1, propId: {$ne: 1000}});
       task.finish = playerHeadBorderCount >= task.taskTimes;
       task.finishCount = playerHeadBorderCount >= task.taskTimes ? task.taskTimes : playerHeadBorderCount;
     }
