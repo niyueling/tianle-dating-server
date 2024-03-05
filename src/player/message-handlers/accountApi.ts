@@ -344,12 +344,14 @@ export class AccountApi extends BaseApi {
     rule: {
       avatar: "string",
       nickname: "string",
+      sex: "number?",
     }
   })
   async updateUserInfo(msg) {
     const model = await service.playerService.getPlayerModel(this.player.model._id)
     model.avatar = msg.avatar;
     model.nickname = msg.nickname;
+    model.sex = msg.sex;
     model.isBindWechat = true;
     await model.save();
     this.replySuccess(model);
