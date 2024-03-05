@@ -3,11 +3,8 @@ import * as moment from "moment";
 import ChannelManager from "../../chat/channel-manager";
 import * as config from "../../config";
 import {getNewShortPlayerId} from "../../database/init";
-import LotteryRecord from "../../database/models/lotteryRecord";
-import Notice from "../../database/models/notice";
 import Player from "../../database/models/player";
 import RoomRecord from "../../database/models/roomRecord";
-import Lobby from "../../match/lobby";
 import {service} from "../../service/importService";
 import {signAndRecord} from "../../utils/jwt";
 import PlayerManager from "../player-manager";
@@ -23,10 +20,10 @@ import PlayerMedal from "../../database/models/PlayerMedal";
 import HeadBorder from "../../database/models/HeadBorder";
 import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
 import SevenSignPrizeRecord from "../../database/models/SevenSignPrizeRecord";
-import StartPocketRecord from "../../database/models/startPocketRecord";
 import RoomScoreRecord from "../../database/models/roomScoreRecord";
 import PlayerBenefitRecord from "../../database/models/PlayerBenefitRecord";
 import NewDiscountGiftRecord from "../../database/models/NewDiscountGiftRecord";
+import Lobby from "../../match/lobby";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -205,14 +202,13 @@ export class AccountApi extends BaseApi {
   async loginSuccess(model, mnpVersion, platform) {
     this.player.model = model;
 
-    // const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
-    // console.warn(disconnectedRoom)
-    // if (disconnectedRoom) {
-    //   model.disconnectedRoom = true;
-    // }
+    const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
+    console.warn("disconnectedRoom", disconnectedRoom)
+    if (disconnectedRoom) {
+      model.disconnectedRoom = true;
+    }
     // 下发掉线子游戏
     const room = await service.roomRegister.getDisconnectRoomByPlayerId(model._id.toString());
-    console.warn(room)
     if (room) {
       // 掉线的子游戏类型
       model.disconnectedRoom = true;
