@@ -342,8 +342,8 @@ export class AccountApi extends BaseApi {
   //更新用户头像，昵称
   @addApi({
     rule: {
-      avatar: "string",
-      nickname: "string",
+      avatar: "string?",
+      nickname: "string?",
       sex: "number?",
     }
   })
