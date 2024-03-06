@@ -43,6 +43,7 @@ const schema = new Schema({
   sessionKey: {type: String},
   guideSteps: {type: Number, default: 1001},
   vip: {type: Number, default: 0},
+  giftExpireTime: {type: Number, default: 0},//月卡有效期
   source: {type: Number, required: true, default: 1},
   helpCount: {type: Number, required: true, default: 5},
   dominateCount: {type: Number, required: true, default: 5},// 充值后给予1-5次好牌补助
