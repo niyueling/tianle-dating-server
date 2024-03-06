@@ -354,6 +354,11 @@ export default class PlayerService extends BaseService {
 
         await PlayerHeadBorder.create(data);
       }
+
+      // 如果用户已经拥有头像框，则在过期时间加上有效时间
+      if (config && playerHeadBorder) {
+        await PlayerHeadBorder.update({playerId: user._id, propId: prize.propId}, {$set: {times: prize.day !== -1 ? (playerHeadBorder.times + 1000 * 60 * 60 * 24 * prize.day) : -1}})
+      }
     }
 
     if (prize.type === 4) {
@@ -399,6 +404,11 @@ export default class PlayerService extends BaseService {
         }
 
         await PlayerCardTable.create(data);
+      }
+
+      // 如果用户已经拥有牌桌，则在过期时间加上有效时间
+      if (config && playerCardTable) {
+        await PlayerCardTable.update({playerId: user._id, propId: prize.propId}, {$set: {times: prize.day !== -1 ? (playerCardTable.times + 1000 * 60 * 60 * 24 * prize.day) : -1}})
       }
     }
 

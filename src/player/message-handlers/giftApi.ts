@@ -14,8 +14,11 @@ export class GiftApi extends BaseApi {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
+    const exclusiveList = ["专属头像框(无双王者)", "专属牌桌(浩瀚星河)", "破产救济金+50%", "幸运转盘+10次"];
+
     const prizeInfo = await MonthGift.findOne().lean();
     prizeInfo.expireTime = user.giftExpireTime > 0 && user.giftExpireTime > new Date().getTime() ? user.giftExpireTime : 0;
+    prizeInfo.exclusiveList = exclusiveList;
 
     return this.replySuccess(prizeInfo);
   }
@@ -41,6 +44,8 @@ export class GiftApi extends BaseApi {
 
     // 按照奖励类型领取奖励
     for (let i = 0; i < prizeInfo.prizeList.length; i++) {
+      prizeInfo.prizeList[i].number *= message.day;
+      prizeInfo.prizeList[i].day = message.day;
       await service.playerService.receivePrize(prizeInfo.prizeList[i], this.player._id, message.multiple, ConsumeLogType.receiveNewSign);
     }
 
