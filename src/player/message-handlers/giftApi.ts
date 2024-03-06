@@ -1,8 +1,6 @@
 import { TianleErrorCode, ConsumeLogType } from "@fm/common/constants";
 import {addApi, BaseApi} from "./baseApi";
 import {service} from "../../service/importService";
-import NewSignPrizeRecord from "../../database/models/NewSignPrizeRecord";
-import NewSignPrize from "../../database/models/NewSignPrize";
 import MonthGift from "../../database/models/MonthGift";
 import MonthGiftRecord from "../../database/models/MonthGiftRecord";
 
@@ -25,12 +23,12 @@ export class GiftApi extends BaseApi {
   // 购买日卡/周卡/月卡
   @addApi({
     rule: {
-      prizeId: 'string',
+      giftId: 'string',
       day: 'number'
     }
   })
-  async signIn(message) {
-    const prizeInfo = await MonthGift.findOne({_id: message.prizeId});
+  async payGift(message) {
+    const prizeInfo = await MonthGift.findOne({_id: message.giftId});
     if (!prizeInfo) {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
