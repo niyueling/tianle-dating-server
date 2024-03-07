@@ -101,8 +101,13 @@ export class AccountApi extends BaseApi {
       const start = moment(new Date()).startOf('day').toDate();
       const end = moment(new Date()).endOf('day').toDate();
       const helpCount = await PlayerBenefitRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+      let gold = 100000;
 
-      return this.replySuccess({gold: 100000, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount});
+      if (user.giftExpireTime && user.giftExpireTime > new Date().getTime()) {
+        gold += gold * 0.5;
+      }
+
+      return this.replySuccess({gold: gold, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount});
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);
@@ -116,9 +121,15 @@ export class AccountApi extends BaseApi {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
+    let gold = 100000;
+
+    if (user.giftExpireTime && user.giftExpireTime > new Date().getTime()) {
+      gold += gold * 0.5;
+    }
+
     if (user.helpCount > 0) {
       user.helpCount--;
-      user.gold += 100000;
+      user.gold += gold;
       await user.save();
 
       const start = moment(new Date()).startOf('day').toDate();
@@ -129,14 +140,14 @@ export class AccountApi extends BaseApi {
         playerId: this.player._id.toString(),
         shortId: this.player.model.shortId,
         helpCount: helpCount + 1,
-        gold: 100000,
+        gold: gold,
         createAt: new Date()
       }
 
       await PlayerBenefitRecord.create(data);
 
       this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'voucher'])})
-      return this.replySuccess({gold: 100000, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount + 1});
+      return this.replySuccess({gold: gold, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount + 1});
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);

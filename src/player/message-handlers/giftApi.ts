@@ -51,6 +51,7 @@ export class GiftApi extends BaseApi {
 
     // 更新月卡到期时间
     model.voucher -= price;
+    model.turntableTimes += 10;
     model.giftExpireTime = new Date().getTime() + 1000 * 60 * 60 * 24 * message.day;
 
     // 创建领取记录

@@ -19,6 +19,11 @@ async function updateTurntableTimes() {
   for (const user of users) {
     user.turntableTimes = 10;
     user.helpCount = 5;
+
+    if (user.giftExpireTime && user.giftExpireTime > new Date().getTime()) {
+      user.turntableTimes += 10;
+    }
+
     await user.save();
   }
   return lock.unlock();
