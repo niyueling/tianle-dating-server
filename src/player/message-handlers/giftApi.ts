@@ -50,7 +50,7 @@ export class GiftApi extends BaseApi {
     }
 
     // 更新月卡到期时间
-    model.voucher -= price;
+    model.voucher -= price * 100;
     model.turntableTimes += 10;
     if (!model.giftExpireTime || model.giftExpireTime < new Date().getTime()) {
       model.giftExpireTime = new Date().getTime();
