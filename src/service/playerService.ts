@@ -348,7 +348,7 @@ export default class PlayerService extends BaseService {
           propId: prize.propId,
           playerId: user._id,
           shortId: user.shortId,
-          times: -1,
+          times: prize.day ? (new Date().getTime() + 1000 * 60 * 60 * 24 * prize.day) : -1,
           isUse: false
         }
 
@@ -356,8 +356,8 @@ export default class PlayerService extends BaseService {
       }
 
       // 如果用户已经拥有头像框，则在过期时间加上有效时间
-      if (config && playerHeadBorder) {
-        await PlayerHeadBorder.update({playerId: user._id, propId: prize.propId}, {$set: {times: prize.day !== -1 ? (playerHeadBorder.times + 1000 * 60 * 60 * 24 * prize.day) : -1}})
+      if (config && playerHeadBorder && playerHeadBorder.times !== -1) {
+        await PlayerHeadBorder.update({playerId: user._id, propId: prize.propId}, {$set: {times: prize.day ? (playerHeadBorder.times + 1000 * 60 * 60 * 24 * prize.day) : -1}})
       }
     }
 
@@ -399,7 +399,7 @@ export default class PlayerService extends BaseService {
           propId: prize.propId,
           playerId: user._id,
           shortId: user.shortId,
-          times: -1,
+          times: prize.day ? (new Date().getTime() + 1000 * 60 * 60 * 24 * prize.day) : -1,
           isUse: false
         }
 
@@ -407,8 +407,8 @@ export default class PlayerService extends BaseService {
       }
 
       // 如果用户已经拥有牌桌，则在过期时间加上有效时间
-      if (config && playerCardTable) {
-        await PlayerCardTable.update({playerId: user._id, propId: prize.propId}, {$set: {times: prize.day !== -1 ? (playerCardTable.times + 1000 * 60 * 60 * 24 * prize.day) : -1}})
+      if (config && playerCardTable && playerCardTable.times !== -1) {
+        await PlayerCardTable.update({playerId: user._id, propId: prize.propId}, {$set: {times: prize.day ? (playerCardTable.times + 1000 * 60 * 60 * 24 * prize.day) : -1}})
       }
     }
 
