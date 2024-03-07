@@ -53,6 +53,7 @@ export class GiftApi extends BaseApi {
     model.voucher -= price;
     model.turntableTimes += 10;
     model.giftExpireTime = new Date().getTime() + 1000 * 60 * 60 * 24 * message.day;
+    await model.save();
 
     // 创建领取记录
     const data = {
