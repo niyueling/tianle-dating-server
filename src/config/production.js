@@ -1,7 +1,7 @@
 module.exports = {
   database: {
     // 游戏服中的 mongo
-    url: "mongodb://172.19.148.251:27017/mahjong"
+    url: "mongodb://172.19.148.251:27017/tianleServer"
   },
   websocket: {
     "port": 9527

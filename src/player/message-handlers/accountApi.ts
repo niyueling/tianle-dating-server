@@ -360,9 +360,16 @@ export class AccountApi extends BaseApi {
   })
   async updateUserInfo(msg) {
     const model = await service.playerService.getPlayerModel(this.player.model._id)
-    model.avatar = msg.avatar;
-    model.nickname = msg.nickname;
-    model.sex = msg.sex;
+    if (msg.avatar) {
+      model.avatar = msg.avatar;
+    }
+    if (msg.nickname) {
+      model.nickname = msg.nickname;
+    }
+    if (msg.sex) {
+      model.sex = msg.sex;
+    }
+
     model.isBindWechat = true;
     await model.save();
     this.replySuccess(model);
