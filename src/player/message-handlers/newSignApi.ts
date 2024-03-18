@@ -367,7 +367,7 @@ export class NewSignApi extends BaseApi {
   }
 
   async getNewSignLists(user) {
-    const prizeList = await NewSignPrize.find().lean();
+    const prizeList = await NewSignPrize.find().sort({day: 1}).lean();
     const start = moment(new Date()).startOf('day').toDate()
     const end = moment(new Date()).endOf('day').toDate()
     const isTodaySign = await NewSignPrizeRecord.count({playerId: user._id,
