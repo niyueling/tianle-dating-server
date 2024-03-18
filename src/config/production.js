@@ -16,7 +16,7 @@ module.exports = {
   redis: {
     port: 6379,
     host: "172.19.148.251",
-    password: "8fkaetmR@@@@"
+    password: ""
   },
   http: {
     port: 4001,
