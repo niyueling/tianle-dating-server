@@ -95,7 +95,7 @@ export class MockDataApi extends BaseApi {
         taskPrizes: {name: "50万金豆", number: 500000, type: 2}, taskDesignates: {title: "富可敌国", propId: 1122, taskTimes: 8888}, liveness: 10},
       {taskName: "富可敌国", taskDescribe: "拥有钻石数大于?", taskType: 1, taskId: 1002, taskTimes: 388, typeId: 1,
         taskPrizes: {name: "50万金豆", number: 500000, type: 2}, taskDesignates: {title: "富可敌国", propId: 1122, taskTimes: 8888}, liveness: 10},
-      {taskName: "富可敌国", taskDescribe: "拥有钻石数大于?", taskType: 1, taskId: 1003, taskTimes: 388, typeId: 1,
+      {taskName: "富可敌国", taskDescribe: "拥有钻石数大于?", taskType: 1, taskId: 1003, taskTimes: 888, typeId: 1,
         taskPrizes: {name: "50万金豆", number: 500000, type: 2}, taskDesignates: {title: "富可敌国", propId: 1122, taskTimes: 8888}, liveness: 10},
       {taskName: "富可敌国", taskDescribe: "拥有钻石数大于?", taskType: 1, taskId: 1004, taskTimes: 2888, typeId: 1,
         taskPrizes: {name: "50万金豆", number: 500000, type: 2}, taskDesignates: {title: "富可敌国", propId: 1122, taskTimes: 8888}, liveness: 10},
