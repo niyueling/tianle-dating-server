@@ -12,11 +12,10 @@ module.exports = {
   debug: {
     "message": false
   },
-  // 游戏服中的 redis
   redis: {
-    port: 6379,
-    host: "172.19.148.251",
-    password: ""
+    port: 8389,
+    host: "localhost",
+    password: "8fkaetmR@@@@"
   },
   http: {
     port: 4001,
