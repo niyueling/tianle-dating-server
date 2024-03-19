@@ -119,7 +119,7 @@ export class LoginSignApi extends BaseApi {
   }
 
   async getSevenSignLists(user) {
-    const prizeList = await SevenSignPrize.find();
+    const prizeList = await SevenSignPrize.find().sort({day: 1});
     const start = moment(new Date()).startOf('day').toDate()
     const end = moment(new Date()).endOf('day').toDate()
     const isTodaySign = await SevenSignPrizeRecord.count({shortId: user.shortId,
