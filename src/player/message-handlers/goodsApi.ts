@@ -9,12 +9,10 @@ import {service} from "../../service/importService";
 import FreeGoldRecord from "../../database/models/freeGoldRecord";
 import * as moment from "moment";
 import GoodsReviveRuby from "../../database/models/goodsReviveRuby";
-import GameCategory from "../../database/models/gameCategory";
 import Player from "../../database/models/player";
 import Goods from "../../database/models/goods";
 import DiamondRecord from "../../database/models/diamondRecord";
 import NewDiscountGift from "../../database/models/NewDiscountGift";
-import NewFirstRechargeRecord from "../../database/models/NewFirstRechargeRecord";
 import NewDiscountGiftRecord from "../../database/models/NewDiscountGiftRecord";
 import HeadBorder from "../../database/models/HeadBorder";
 import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
@@ -85,8 +83,11 @@ export class GoodsApi extends BaseApi {
       headLists[i].isAlways = false;
       //判断用户是否拥有头像框
       const playerHeadBorder = await PlayerHeadBorder.count({playerId: this.player._id, propId: headLists[i].propId });
+      if (i === 0) {
+        console.warn(playerHeadBorder);
+      }
       if (playerHeadBorder && playerHeadBorder.times !== -1 && playerHeadBorder.times <= new Date().getTime()) {
-        await PlayerHeadBorder.remove({playerId: this.player._id, propId: headLists[i]._id });
+        await PlayerHeadBorder.remove({playerId: this.player._id, propId: headLists[i].propId });
       }
 
       if (playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime())) {
