@@ -4,7 +4,7 @@ module.exports = {
     url: "mongodb://172.19.148.251:27017/tianleServer"
   },
   websocket: {
-    "port": 9527
+    "port": 9597
   },
   logger: {
     "filename": "mahjong.log"
@@ -25,7 +25,7 @@ module.exports = {
     secret: 'tv+-u:JV>cWG|K8H',
   },
   gmTool: {
-    port: 9528,
+    port: 9598,
     superAccounts: [
       {
         "username": "super",
