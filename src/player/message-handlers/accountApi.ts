@@ -24,6 +24,8 @@ import RoomScoreRecord from "../../database/models/roomScoreRecord";
 import PlayerBenefitRecord from "../../database/models/PlayerBenefitRecord";
 import NewDiscountGiftRecord from "../../database/models/NewDiscountGiftRecord";
 import Lobby from "../../match/lobby";
+import StartPocketRecord from "../../database/models/startPocketRecord";
+import NewSignPrizeRecord from "../../database/models/NewSignPrizeRecord";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -501,21 +503,8 @@ export class AccountApi extends BaseApi {
     // 判断7日签到是否开放
     const sevenLoginCount = await SevenSignPrizeRecord.count({playerId: user._id, createAt: {$gte: start, $lt: end}});
 
-    // 判断转盘开关
-    let turnTable = {
-      open: user.turntableTimes > 0
-    };
-
     // 判断开运红包是否开放
-    // const startPocketCount = await StartPocketRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
-
-    // 判断新人宝典开关
-    let newGift = {
-      open: new Date().getTime() <= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10,
-      iosRecharge: user.openIosShopFunc,
-      iosRoomCount,
-      iosLotteryCount
-    };
+    const startPocketCount = await StartPocketRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
 
     // 判断充值派对开关
     let rechargeParty = {
@@ -525,10 +514,45 @@ export class AccountApi extends BaseApi {
       iosLotteryCount
     };
 
-    // 判断新人礼包
+    // 判断新人福利
     const payCount = await NewDiscountGiftRecord.count({playerId: this.player._id.toString()});
 
-    return {sevenLogin: {open: sevenLoginCount === 0}, turnTable, startPocket: {open: true}, newGift, discountGift: {open: payCount === 0}, rechargeParty };
+    // 判断新人宝典开关
+    let newGift = {
+      open: new Date().getTime() <= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10,
+      popOpen: true,
+      iosRecharge: user.openIosShopFunc,
+      iosRoomCount,
+      iosLotteryCount
+    };
+    // 判断新手签到是否可领取
+    const todayReceiveCount = await NewSignPrizeRecord.count({playerId: user._id,
+      createAt: {$gte: start, $lt: end}});
+    let days = await NewSignPrizeRecord.count({playerId: user._id});
+    if (days >= 7 || !!todayReceiveCount) {
+      newGift.popOpen = false;
+    }
+
+    // 判断初见指引是否可领取
+    const guideInfo = await service.playerService.getGuideLists(user);
+    if (!guideInfo.receive) {
+      newGift.popOpen = false;
+    }
+
+    // 判断首充奖励是否可领取
+    const firstRecharge = await service.playerService.getFirstRechargeList(user);
+    if (firstRecharge.receive || !firstRecharge.isPay) {
+      newGift.popOpen = false;
+    }
+
+    return {
+      sevenLogin: {open: true, popOpen: sevenLoginCount === 0, redDot: sevenLoginCount === 0},
+      turnTable: {popOpen: user.turntableTimes > 0, open: true, redDot: user.turntableTimes > 0,},
+      startPocket: {open: true, popOpen: startPocketCount === 0, redDot: startPocketCount === 0},
+      newGift: {open: newGift.open, popOpen: newGift.popOpen},
+      discountGift: {open: payCount === 0, popOpen: payCount === 0, redDot: payCount === 0},
+      rechargeParty
+    };
   }
 
   async getBackPackByCardTable() {

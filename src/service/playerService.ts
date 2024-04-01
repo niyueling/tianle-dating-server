@@ -23,6 +23,10 @@ import Medal from "../database/models/Medal";
 import PlayerMedal from "../database/models/PlayerMedal";
 import CardTable from "../database/models/CardTable";
 import PlayerCardTable from "../database/models/PlayerCardTable";
+import NewTask from "../database/models/newTask";
+import NewTaskRecord from "../database/models/NewTaskRecord";
+import NewFirstRecharge from "../database/models/NewFirstRecharge";
+import NewFirstRechargeRecord from "../database/models/NewFirstRechargeRecord";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
@@ -417,5 +421,100 @@ export default class PlayerService extends BaseService {
     }
 
     await user.save();
+  }
+
+  async getGuideLists(user) {
+    const taskList = await NewTask.find().lean();
+    let tasks = [];
+    let receive = false;
+
+    for (let i = 0; i < taskList.length; i++) {
+      const task = await this.checkTaskState(taskList[i], user);
+      if (!task.receive && task.finish) {
+        receive = true;
+      }
+      tasks.push(task);
+    }
+
+    return {tasks, receive};
+  }
+
+  // 判断任务是否完成
+  async checkTaskState(task, user) {
+    const receiveCount = await NewTaskRecord.count({playerId: user._id, taskId: task.taskId});
+    task.receive = !!receiveCount;
+    const model = await service.playerService.getPlayerModel(user._id);
+    // 完成10场游戏对局
+    if (task.taskId === 1001) {
+      task.finish = model.juCount >= task.taskTimes;
+      task.finishCount = model.juCount;
+    }
+
+    // 完成3场游戏对局胜利
+    if (task.taskId === 1002) {
+      task.finish = model.juWinCount >= task.taskTimes;
+      task.finishCount = model.juWinCount;
+    }
+
+    // 完成10次杠牌
+    if (task.taskId === 1003) {
+      task.finish = model.gangCount >= task.taskTimes;
+      task.finishCount = model.gangCount;
+    }
+
+    // 商城购买钻石1次(任意金额)
+    if (task.taskId === 1004) {
+      const orderCount = await DiamondRecord.count({player: user._id, type: ConsumeLogType.voucherForDiamond });
+      task.finish = orderCount >= task.taskTimes;
+      task.finishCount = orderCount;
+    }
+
+    // 观看1次广告
+    if (task.taskId === 1005) {
+      task.finish = task.receive;
+      task.finishCount = task.finish ? 1 : 0;
+    }
+
+    return task;
+  }
+
+  async getFirstRechargeList(user) {
+    const summary = await UserRechargeOrder.aggregate([
+      { $match: { playerId: user._id.toString(), status: 1 } },
+      { $group: { _id: null, sum: { $sum: "$price" } } }
+    ]).exec();
+    let rechargeAmount = 0;
+    if (summary.length > 0) {
+      rechargeAmount = summary[0].sum;
+    }
+
+    // 计算完成任务时间
+    let finishTime = null;
+    if (rechargeAmount >= 6) {
+      const rechargeList = await UserRechargeOrder.find({playerId: user._id.toString(), status: 1});
+      let sumaryAmount = 0;
+
+      for (let i = 0; i < rechargeList.length; i++) {
+        sumaryAmount += rechargeList[i].price;
+
+        if (sumaryAmount >= 6) {
+          finishTime = rechargeList[i].created;
+          break;
+        }
+      }
+    }
+
+    const taskList = await NewFirstRecharge.find().lean();
+    const receive = false;
+
+    for (let i = 0; i < taskList.length; i++) {
+      let receive = await NewFirstRechargeRecord.count({playerId: user._id, "prizeConfig.day": taskList[i].day});
+      taskList[i].receive = !!receive;
+      if (!taskList[i].receive) {
+        receive = true;
+      }
+    }
+
+    return {taskList, isPay: rechargeAmount >= 6, finishTime, receive};
   }
 }
