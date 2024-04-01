@@ -130,7 +130,7 @@ export class GiftApi extends BaseApi {
 
     //免费领金豆
     const lastRecord = await PlayerFreeGoldRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}}).sort({createAt: -1});
-    const lastReceiveTime = lastRecord ? Date.parse(lastRecord.createAt) : new Date().getTime();
+    const lastReceiveTime = lastRecord ? Date.parse(lastRecord.createAt) : 0;
 
     // 签到奖励
     const isTodaySign = await SevenSignPrizeRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
