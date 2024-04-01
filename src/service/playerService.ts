@@ -27,6 +27,8 @@ import NewTask from "../database/models/newTask";
 import NewTaskRecord from "../database/models/NewTaskRecord";
 import NewFirstRecharge from "../database/models/NewFirstRecharge";
 import NewFirstRechargeRecord from "../database/models/NewFirstRechargeRecord";
+import RechargeParty from "../database/models/RechargeParty";
+import PlayerRechargePartyRecord from "../database/models/PlayerRechargePartyRecord";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
@@ -516,5 +518,113 @@ export default class PlayerService extends BaseService {
     }
 
     return {taskList, isPay: rechargeAmount >= 6, finishTime, receive};
+  }
+
+  async getRechargePartyList(user) {
+    const records = await RechargeParty.find().lean();
+    const start = moment(new Date()).startOf('day').toDate()
+    const end = moment(new Date()).endOf('day').toDate()
+    let freeGift = {};
+    const rechargeDay1 = [];
+    const rechargeDay6 = [];
+    const rechargeDay30 = [];
+    const partyList1 = [];
+    const partyList6 = [];
+    const partyList30 = [];
+
+    for (let i = 0; i < records.length; i++) {
+      if (records[i].price === 0) {
+        freeGift = records[i];
+      }
+
+      if (records[i].price === 1) {
+        partyList1.push(records[i]);
+      }
+
+      if (records[i].price === 6) {
+        partyList6.push(records[i]);
+      }
+
+      if (records[i].price === 30) {
+        partyList30.push(records[i]);
+      }
+    }
+
+    // 计算每日福利今日是否已领取
+    const freeGiftReceiveCount = await PlayerRechargePartyRecord.count({playerId: user._id, prizeId: freeGift["_id"], createAt: {$gte: start, $lt: end}});
+    freeGift["receive"] = freeGiftReceiveCount > 0;
+
+    // 计算1元档
+    // 计算今日是否已领取
+    const party1TodayReceiveCount = await PlayerRechargePartyRecord.count({playerId: user._id, price: 1, createAt: {$gte: start, $lt: end}});
+    for (let i= 0; i < partyList1.length; i++) {
+      // 计算是否已领取
+      const receiveCount = await PlayerRechargePartyRecord.count({playerId: user._id, prizeId: partyList1[i]._id});
+      partyList1[i].receive = !!receiveCount;
+    }
+
+    // 计算6元档
+    // 计算今日是否已领取
+    const party6TodayReceiveCount = await PlayerRechargePartyRecord.count({playerId: user._id, price: 6, createAt: {$gte: start, $lt: end}});
+    for (let i= 0; i < partyList6.length; i++) {
+      // 计算是否已领取
+      const receiveCount = await PlayerRechargePartyRecord.count({playerId: user._id, prizeId: partyList6[i]._id});
+      partyList6[i].receive = !!receiveCount;
+    }
+
+    // 计算30元档
+    // 计算今日是否已领取
+    const party30TodayReceiveCount = await PlayerRechargePartyRecord.count({playerId: user._id, price: 30, createAt: {$gte: start, $lt: end}});
+    for (let i= 0; i < partyList30.length; i++) {
+      // 计算是否已领取
+      const receiveCount = await PlayerRechargePartyRecord.count({playerId: user._id, prizeId: partyList30[i]._id});
+      partyList30[i].receive = !!receiveCount;
+    }
+
+    // 用户今日充值金额
+    const summary = await UserRechargeOrder.aggregate([
+      { $match: { playerId: user._id.toString(), status: 1, created: {$gte: start, $lt: end} } },
+      { $group: { _id: null, sum: { $sum: "$price" } } }
+    ]).exec();
+    let rechargeAmount = 0;
+    if (summary.length > 0) {
+      rechargeAmount = summary[0].sum;
+    }
+
+    // 计算连续充值天数
+    for (let i = 0; i < 10; i++) {
+      const todayTime = Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * i;
+      const currentStart = moment(new Date(todayTime)).startOf('day').toDate();
+      const currentEnd = moment(new Date(todayTime)).endOf('day').toDate();
+
+      // 用户今日充值金额
+      const summary = await UserRechargeOrder.aggregate([
+        { $match: { playerId: user._id.toString(), status: 1, created: {$gte: currentStart, $lt: currentEnd} } },
+        { $group: { _id: null, sum: { $sum: "$price" } } }
+      ]).exec();
+      let todayRechargeAmount = 0;
+      if (summary.length > 0) {
+        todayRechargeAmount = summary[0].sum;
+
+        if (todayRechargeAmount >= 1) {
+          rechargeDay1.push(todayRechargeAmount);
+        }
+
+        if (todayRechargeAmount >= 6) {
+          rechargeDay6.push(todayRechargeAmount);
+        }
+
+        if (todayRechargeAmount >= 30) {
+          rechargeDay30.push(todayRechargeAmount);
+        }
+      }
+    }
+
+    return {
+      freeGiftReceive: freeGift["receive"],
+      partyOne: {todayFinish: rechargeAmount >= 1, todayReceive: party1TodayReceiveCount > 0, lists: partyList1, rechargeDay: rechargeDay1},
+      partySix: {todayFinish: rechargeAmount >= 6, todayReceive: party6TodayReceiveCount > 0, lists: partyList6, rechargeDay: rechargeDay6},
+      partyThirty: {todayFinish: rechargeAmount >= 30, todayReceive: party30TodayReceiveCount > 0, lists: partyList30, rechargeDay: rechargeDay30}
+    }
   }
 }

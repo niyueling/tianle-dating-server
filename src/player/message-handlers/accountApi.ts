@@ -506,14 +506,6 @@ export class AccountApi extends BaseApi {
     // 判断开运红包是否开放
     const startPocketCount = await StartPocketRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
 
-    // 判断充值派对开关
-    let rechargeParty = {
-      open: new Date().getTime() <= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10,
-      iosRecharge: user.openIosShopFunc,
-      iosRoomCount,
-      iosLotteryCount
-    };
-
     // 判断新人福利
     const payCount = await NewDiscountGiftRecord.count({playerId: this.player._id.toString()});
 
@@ -545,13 +537,28 @@ export class AccountApi extends BaseApi {
       newGift.popOpen = false;
     }
 
+    // 判断充值派对开关
+    let rechargeParty = {
+      open: new Date().getTime() <= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10,
+      popOpen: false,
+      iosRecharge: user.openIosShopFunc,
+      iosRoomCount,
+      iosLotteryCount
+    };
+    const rechargePartyInfo = await service.playerService.getRechargePartyList(user);
+    if (!rechargePartyInfo.freeGiftReceive || (rechargePartyInfo.partyOne.todayFinish && !rechargePartyInfo.partyOne.todayReceive)
+    || (rechargePartyInfo.partySix.todayFinish && !rechargePartyInfo.partySix.todayReceive) ||
+      (rechargePartyInfo.partyThirty.todayFinish && !rechargePartyInfo.partyThirty.todayReceive)) {
+      newGift.popOpen = true;
+    }
+
     return {
       sevenLogin: {open: true, popOpen: sevenLoginCount === 0, redDot: sevenLoginCount === 0},
-      turnTable: {popOpen: user.turntableTimes > 0, open: true, redDot: user.turntableTimes > 0,},
+      turnTable: {popOpen: user.turntableTimes > 0, open: true, redDot: user.turntableTimes > 0},
       startPocket: {open: true, popOpen: startPocketCount === 0, redDot: startPocketCount === 0},
-      newGift: {open: newGift.open, popOpen: newGift.popOpen},
+      newGift: {open: newGift.open, popOpen: newGift.popOpen, redDot: newGift.popOpen},
       discountGift: {open: payCount === 0, popOpen: payCount === 0, redDot: payCount === 0},
-      rechargeParty
+      rechargeParty: {open: rechargeParty.open, popOpen: rechargeParty.popOpen, redDot: rechargeParty.popOpen},
     };
   }
 
