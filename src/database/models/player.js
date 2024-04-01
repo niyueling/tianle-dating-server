@@ -45,7 +45,8 @@ const schema = new Schema({
   vip: {type: Number, default: 0},
   giftExpireTime: {type: Number, default: 0},//月卡有效期
   source: {type: Number, required: true, default: 1},
-  helpCount: {type: Number, required: true, default: 5},
+  helpCount: {type: Number, required: true, default: 5},// 救济金次数
+  freeAdverCount: {type: Number, required: true, default: 10},// 看广告免费领取金豆次数
   dominateCount: {type: Number, required: true, default: 5},// 充值后给予1-5次好牌补助
   ip: {type: String},
   province: {type: String},

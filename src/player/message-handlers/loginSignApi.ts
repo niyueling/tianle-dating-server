@@ -5,7 +5,6 @@ import SevenSignPrize from "../../database/models/SevenSignPrize";
 import SevenSignPrizeRecord from "../../database/models/SevenSignPrizeRecord";
 import {service} from "../../service/importService";
 import StartPocketRecord from "../../database/models/startPocketRecord";
-import {pick} from "lodash/lodash";
 import Player from "../../database/models/player";
 
 export class LoginSignApi extends BaseApi {

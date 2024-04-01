@@ -3,13 +3,8 @@ import * as mongoose from 'mongoose'
 import * as config from './config'
 import * as moment from 'moment'
 import cleanRecord from './bin/cleanRecord'
-import fillPoorModel from './bin/fillUpRuby'
-import aggregateExtRecord from './bin/aggregateExtRecord'
 import aggregateActivePlayer from './bin/aggregateActivePlayer'
 import updateRoomCount from './bin/roomRecordLog'
-import saveClubRoomInfo from './bin/clubRoomRecordLog'
-import cleanUselessClub from "./bin/cleanUselessClub";
-import {service} from "./service/importService";
 import updateMnpAccessToken from "./bin/updateMnpAccessToken";
 import {updateTurntableTimes} from "./bin/updateMahjongSchedules";
 
@@ -48,11 +43,11 @@ schedule.scheduleJob('*/15 * * * *', function () {
     })
 })
 
-// 0点更新更新抽奖次数
+// 0点更新用户参数
 schedule.scheduleJob('0 0 * * *', function () {
   updateTurntableTimes()
     .catch(error => {
-      console.error('update player turntabletimes error', error.stack)
+      console.error('update player params error', error.stack)
     })
 })
 

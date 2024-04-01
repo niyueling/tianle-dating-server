@@ -3,6 +3,10 @@ import {addApi, BaseApi} from "./baseApi";
 import {service} from "../../service/importService";
 import MonthGift from "../../database/models/MonthGift";
 import MonthGiftRecord from "../../database/models/MonthGiftRecord";
+import Player from "../../database/models/player";
+import moment = require("moment");
+import PlayerFreeGoldRecord from "../../database/models/PlayerFreeGoldRecord";
+import {pick} from "lodash";
 
 export class GiftApi extends BaseApi {
   // 日卡/周卡/月卡
@@ -71,5 +75,41 @@ export class GiftApi extends BaseApi {
     await MonthGiftRecord.create(data);
     await this.player.updateResource2Client();
     return this.replySuccess(data);
+  }
+
+  // 每日福利免费领取金豆
+  @addApi()
+  async freeGold() {
+    const user = await Player.findOne({shortId: this.player.model.shortId});
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    let gold = 30000;
+
+    if (user.freeAdverCount > 0) {
+      user.freeAdverCount--;
+      user.gold += gold;
+      await user.save();
+
+      const start = moment(new Date()).startOf('day').toDate();
+      const end = moment(new Date()).endOf('day').toDate();
+      const freeAdverCount = await PlayerFreeGoldRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+
+      const data = {
+        playerId: this.player._id.toString(),
+        shortId: this.player.model.shortId,
+        freeAdverCount: freeAdverCount + 1,
+        gold: gold,
+        createAt: new Date()
+      }
+
+      await PlayerFreeGoldRecord.create(data);
+
+      this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'voucher'])});
+      return this.replySuccess({gold: gold, freeAdverCount: freeAdverCount + 1, totalCount: user.freeAdverCount + freeAdverCount + 1});
+    }
+
+    return this.replyFail(TianleErrorCode.receiveFail);
   }
 }

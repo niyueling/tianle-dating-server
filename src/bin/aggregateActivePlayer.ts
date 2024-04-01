@@ -19,7 +19,6 @@ async function aggregateActivePlayerRecord(day: Date = new Date()) {
     .exec()
 
   for (const s of summary) {
-    console.log(start, s)
     await ActivePlayerSummary.update({
       day: start,
     }, {
@@ -38,7 +37,6 @@ async function aggregateActivePlayerRecord(day: Date = new Date()) {
     .exec()
 
   for (const s of summaryInCategory) {
-    console.log(start, s)
     await UserActivityLogModel.update({day: start, category: s._id}, {
       $set: {count: s.playersCounter}
     }, {upsert: true})
