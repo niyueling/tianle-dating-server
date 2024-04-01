@@ -552,6 +552,9 @@ export class AccountApi extends BaseApi {
       newGift.popOpen = true;
     }
 
+    // 成就
+    const taskInfo= await service.playerService.getDailyTaskData(user);
+
     return {
       sevenLogin: {open: true, popOpen: sevenLoginCount === 0, redDot: sevenLoginCount === 0},
       turnTable: {popOpen: user.turntableTimes > 0, open: true, redDot: user.turntableTimes > 0},
@@ -559,6 +562,7 @@ export class AccountApi extends BaseApi {
       newGift: {open: newGift.open, popOpen: newGift.popOpen, redDot: newGift.popOpen},
       discountGift: {open: payCount === 0, popOpen: payCount === 0, redDot: payCount === 0},
       rechargeParty: {open: rechargeParty.open, popOpen: rechargeParty.popOpen, redDot: rechargeParty.popOpen},
+      task: {open: true, popOpen: taskInfo.canReceive, redDot: taskInfo.canReceive}
     };
   }
 
