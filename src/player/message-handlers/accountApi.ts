@@ -512,7 +512,7 @@ export class AccountApi extends BaseApi {
     // 判断新人宝典开关
     let newGift = {
       open: new Date().getTime() <= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10,
-      popOpen: true,
+      popOpen: false,
       iosRecharge: user.openIosShopFunc,
       iosRoomCount,
       iosLotteryCount
@@ -521,20 +521,20 @@ export class AccountApi extends BaseApi {
     const todayReceiveCount = await NewSignPrizeRecord.count({playerId: user._id,
       createAt: {$gte: start, $lt: end}});
     let days = await NewSignPrizeRecord.count({playerId: user._id});
-    if (days >= 7 || !!todayReceiveCount) {
-      newGift.popOpen = false;
+    if (days < 7 && todayReceiveCount === 0) {
+      newGift.popOpen = true;
     }
 
     // 判断初见指引是否可领取
     const guideInfo = await service.playerService.getGuideLists(user);
-    if (!guideInfo.receive) {
-      newGift.popOpen = false;
+    if (guideInfo.receive) {
+      newGift.popOpen = true;
     }
 
     // 判断首充奖励是否可领取
     const firstRecharge = await service.playerService.getFirstRechargeList(user);
-    if (firstRecharge.receive || !firstRecharge.isPay) {
-      newGift.popOpen = false;
+    if (firstRecharge.receive && firstRecharge.isPay) {
+      newGift.popOpen = true;
     }
 
     // 判断充值派对开关
