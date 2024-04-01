@@ -86,6 +86,7 @@ export class GiftApi extends BaseApi {
     }
 
     let gold = 30000;
+    let lastReceiveTime = null;
 
     if (user.freeAdverCount > 0) {
       user.freeAdverCount--;
@@ -95,6 +96,8 @@ export class GiftApi extends BaseApi {
       const start = moment(new Date()).startOf('day').toDate();
       const end = moment(new Date()).endOf('day').toDate();
       const freeAdverCount = await PlayerFreeGoldRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+      const lastRecord = await PlayerFreeGoldRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}}).sort({createAt: -1});
+      lastReceiveTime = lastRecord ? Date.parse(lastRecord.createAt) : new Date().getTime();
 
       const data = {
         playerId: this.player._id.toString(),
@@ -107,7 +110,7 @@ export class GiftApi extends BaseApi {
       await PlayerFreeGoldRecord.create(data);
 
       this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'voucher'])});
-      return this.replySuccess({gold: gold, freeAdverCount: freeAdverCount + 1, totalCount: user.freeAdverCount + freeAdverCount + 1});
+      return this.replySuccess({gold: gold, freeAdverCount: freeAdverCount + 1, totalCount: user.freeAdverCount + freeAdverCount + 1, lastReceiveTime});
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);
