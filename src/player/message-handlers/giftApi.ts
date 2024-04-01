@@ -7,6 +7,7 @@ import Player from "../../database/models/player";
 import moment = require("moment");
 import PlayerFreeGoldRecord from "../../database/models/PlayerFreeGoldRecord";
 import {pick} from "lodash";
+import SevenSignPrizeRecord from "../../database/models/SevenSignPrizeRecord";
 
 export class GiftApi extends BaseApi {
   // 日卡/周卡/月卡
@@ -114,5 +115,27 @@ export class GiftApi extends BaseApi {
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);
+  }
+
+  // 每日福利
+  @addApi()
+  async dailyWelfare() {
+    const user = await Player.findOne({shortId: this.player.model.shortId});
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    const start = moment(new Date()).startOf('day').toDate();
+    const end = moment(new Date()).endOf('day').toDate();
+
+    //免费领金豆
+    const lastRecord = await PlayerFreeGoldRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}}).sort({createAt: -1});
+    const lastReceiveTime = lastRecord ? Date.parse(lastRecord.createAt) : new Date().getTime();
+
+    // 签到奖励
+    const isTodaySign = await SevenSignPrizeRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+
+    return this.replySuccess({freeGold: {count: user.freeAdverCount, lastReceiveTime}, turntable: {count: user.turntableTimes},
+      dailySign: {count: isTodaySign === 0 ? 1 : 0, receive: !!isTodaySign}, benefit: {count: user.helpCount, gold: user.gold}});
   }
 }
