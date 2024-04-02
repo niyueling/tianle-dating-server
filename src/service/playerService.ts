@@ -324,9 +324,6 @@ export default class PlayerService extends BaseService {
     order.transactionId = thirdOrderNo;
     await order.save();
 
-    // 增加日志
-    // await this.logGemConsume(user._id, ConsumeLogType.chargeByWechat, order.diamond, user.diamond, "微信充值");
-
     return true;
   }
 

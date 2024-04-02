@@ -95,7 +95,10 @@ export class GoodsApi extends BaseApi {
       }
     }
 
-    this.replySuccess({ goodsList, voucherList, rubyList: goldList, headLists, beautyNumberLists });
+    const rechargeCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1 });
+    const transferCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.voucherForDiamond });
+
+    this.replySuccess({ goodsList, voucherList, rubyList: goldList, headLists, beautyNumberLists, discountStatus: {recharge: rechargeCount === 0, transfer: transferCount === 0} });
   }
 
   // 钻石兑换金豆
@@ -105,9 +108,11 @@ export class GoodsApi extends BaseApi {
     if (!exchangeConf) {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
+
+    const transferCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.voucherForDiamond });
     const gem2ExchangeNum = exchangeConf.diamond;
     const model = await service.playerService.getPlayerModel(this.player.model._id);
-    const gold = exchangeConf.gold
+    const gold = transferCount > 0 ? exchangeConf.gold : exchangeConf.gold * 10;
     if (gem2ExchangeNum > model.diamond && gem2ExchangeNum > 0) {
       return this.replyFail(TianleErrorCode.diamondInsufficient);
     }
@@ -148,6 +153,7 @@ export class GoodsApi extends BaseApi {
 
     //判断用户是否充值过该模板
     const orderCount = await UserRechargeOrder.count({playerId: message.userId, status: 1, goodsId: message._id });
+    const rechargeCount = await UserRechargeOrder.count({playerId: message.userId, status: 1 });
     message.award = orderCount > 0 ? 0 : template.firstTimeAmount;
     message.price = template.price;
 
@@ -163,7 +169,7 @@ export class GoodsApi extends BaseApi {
     const data = {
       playerId: message.userId,
       shortId: player.shortId,
-      diamond: template.amount,
+      diamond: rechargeCount > 0 ? template.amount : template.amount * 10,
       price: template.price,
       goodsId: template._id,
       source: "wechat",
@@ -430,6 +436,7 @@ export class GoodsApi extends BaseApi {
 
     //判断用户是否首次充值该模板
     const orderCount = await UserRechargeOrder.count({playerId: message.userId, status: 1, goodsId: message._id });
+    const rechargeCount = await UserRechargeOrder.count({playerId: message.userId, status: 1 });
 
     // 获取用户信息，判断openid和session_key是否绑定
     const player = await PlayerModel.findOne({_id: message.userId}).lean();
@@ -443,7 +450,7 @@ export class GoodsApi extends BaseApi {
     const data = {
       playerId: message.userId,
       shortId: player.shortId,
-      diamond: template.amount + (orderCount > 0 ? 0 : template.firstTimeAmount) + template.originPrice,
+      diamond: (rechargeCount > 0 ? template.amount : template.amount * 10) + (orderCount > 0 ? 0 : template.firstTimeAmount) + template.originPrice,
       price: template.price,
       goodsId: template._id,
       source: "wechat",
