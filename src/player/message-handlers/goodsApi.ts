@@ -96,7 +96,7 @@ export class GoodsApi extends BaseApi {
     }
 
     const rechargeCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1 });
-    const transferCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.diamondToGold });
+    const transferCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.gemForRuby });
 
     this.replySuccess({ goodsList, voucherList, rubyList: goldList, headLists, beautyNumberLists, discountStatus: {recharge: rechargeCount === 0, transfer: transferCount === 0} });
   }
@@ -109,7 +109,7 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
 
-    const transferCount = await DiamondRecord.count({player: this.player.model._id, type: ConsumeLogType.diamondToGold });
+    const transferCount = await DiamondRecord.count({player: this.player.model._id, type: ConsumeLogType.gemForRuby });
     const gem2ExchangeNum = exchangeConf.diamond;
     const model = await service.playerService.getPlayerModel(this.player.model._id);
     const gold = (transferCount > 0 ? exchangeConf.gold : exchangeConf.gold * 10);
