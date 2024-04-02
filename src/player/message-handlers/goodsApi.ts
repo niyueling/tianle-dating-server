@@ -113,6 +113,7 @@ export class GoodsApi extends BaseApi {
     const gem2ExchangeNum = exchangeConf.diamond;
     const model = await service.playerService.getPlayerModel(this.player.model._id);
     const gold = (transferCount > 0 ? exchangeConf.gold : exchangeConf.gold * 10);
+    console.warn(transferCount, gold);
     if (gem2ExchangeNum > model.diamond && gem2ExchangeNum > 0) {
       return this.replyFail(TianleErrorCode.diamondInsufficient);
     }
