@@ -7,6 +7,7 @@ import PlayerCardTypeRecord from "../../database/models/playerCardTypeRecord";
 import DebrisRecord from "../../database/models/DebrisRecord";
 import DebrisTotalPrize from "../../database/models/DebrisTotalPrize";
 import DebrisTotalPrizeRecord from "../../database/models/DebrisTotalPrizeRecord";
+import Notice from "../../database/models/notice";
 
 export class DebrisApi extends BaseApi {
   @addApi()
@@ -85,6 +86,14 @@ export class DebrisApi extends BaseApi {
     await this.player.updateResource2Client();
 
     return this.replySuccess(record);
+  }
+
+  // 玩法介绍
+  @addApi()
+  async noticeLists() {
+    let lists = await Notice.find({type: "introduction"}).sort({id: 1}).lean().exec();
+
+    return this.replySuccess(lists);
   }
 
   async getDailyTaskData(message, user) {
