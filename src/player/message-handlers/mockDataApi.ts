@@ -9,6 +9,7 @@ import Medal from "../../database/models/Medal";
 import CardTable from "../../database/models/CardTable";
 import Task from "../../database/models/task";
 import TaskTotalPrize from "../../database/models/TaskTotalPrize";
+import Debris from "../../database/models/debris";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -465,6 +466,416 @@ export class MockDataApi extends BaseApi {
         taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {}, liveness: 5},
       {taskName: "左右逢源", taskDescribe: "累计领取商城每日暖心福利达到?次", taskType: 4, taskId: 1159, taskTimes: 20, typeId: 29,
         taskPrizes: {name: "20万金豆", number: 200000, type: 2}, taskDesignates: {}, liveness: 5},
+    ];
+
+    await Task.insertMany(datas);
+
+    const result1 = await TaskTotalPrize.find();
+
+    if (result1.length) {
+      await TaskTotalPrize.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas1 = [
+      {number: 100, type: 1, propId: null, liveness: 150},
+      {number: 150, type: 1, propId: null, liveness: 500},
+      {number: 200, type: 1, propId: null, liveness: 800},
+      {number: 1, type: 3, propId: 1019, liveness: 1000},
+      {number: 1, type: 4, propId: 1117, liveness: 1500}
+    ];
+
+    await TaskTotalPrize.insertMany(datas1);
+
+    return this.replySuccess({datas, datas1});
+  }
+
+  // 录入番型数据
+  @addApi()
+  async saveDebrisData() {
+    const result = await Debris.find();
+
+    if (result.length) {
+      await Debris.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      // 番型-星蝎交辉
+      {taskName: "星蝎交辉", taskDescribe: "胡星蝎交辉番型次数达到?次", taskType: 1, taskId: 1001, taskTimes: 9, typeId: 50,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "星蝎交辉", taskDescribe: "胡星蝎交辉番型次数达到?次", taskType: 1, taskId: 1002, taskTimes: 50, typeId: 50,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "星蝎交辉", taskDescribe: "胡星蝎交辉番型次数达到?次", taskType: 1, taskId: 1003, taskTimes: 100, typeId: 50,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "星蝎交辉", taskDescribe: "胡星蝎交辉番型次数达到?次", taskType: 1, taskId: 1004, taskTimes: 300, typeId: 50,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "星蝎交辉", taskDescribe: "胡星蝎交辉番型次数达到?次", taskType: 1, taskId: 1005, taskTimes: 500, typeId: 50,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "星蝎交辉", taskDescribe: "胡星蝎交辉番型次数达到?次", taskType: 1, taskId: 1006, taskTimes: 888, typeId: 150,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+
+      // 番型-摩羯之吻
+      {taskName: "摩羯之吻", taskDescribe: "胡摩羯之吻番型次数达到?次", taskType: 1, taskId: 1007, taskTimes: 9, typeId: 49,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "摩羯之吻", taskDescribe: "胡摩羯之吻番型次数达到?次", taskType: 1, taskId: 1008, taskTimes: 50, typeId: 49,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "摩羯之吻", taskDescribe: "胡摩羯之吻番型次数达到?次", taskType: 1, taskId: 1009, taskTimes: 100, typeId: 49,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "摩羯之吻", taskDescribe: "胡摩羯之吻番型次数达到?次", taskType: 1, taskId: 1010, taskTimes: 300, typeId: 49,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "摩羯之吻", taskDescribe: "胡摩羯之吻番型次数达到?次", taskType: 1, taskId: 1011, taskTimes: 500, typeId: 49,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "摩羯之吻", taskDescribe: "胡摩羯之吻番型次数达到?次", taskType: 1, taskId: 1012, taskTimes: 888, typeId: 49,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+
+      // 番型-众星捧月
+      {taskName: "众星捧月", taskDescribe: "胡众星捧月番型次数达到?次", taskType: 1, taskId: 1013, taskTimes: 9, typeId: 48,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "众星捧月", taskDescribe: "胡众星捧月番型次数达到?次", taskType: 1, taskId: 1014, taskTimes: 50, typeId: 48,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "众星捧月", taskDescribe: "胡众星捧月番型次数达到?次", taskType: 1, taskId: 1015, taskTimes: 100, typeId: 48,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "众星捧月", taskDescribe: "胡众星捧月番型次数达到?次", taskType: 1, taskId: 1016, taskTimes: 300, typeId: 48,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "众星捧月", taskDescribe: "胡众星捧月番型次数达到?次", taskType: 1, taskId: 1017, taskTimes: 500, typeId: 48,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "众星捧月", taskDescribe: "胡众星捧月番型次数达到?次", taskType: 1, taskId: 1018, taskTimes: 888, typeId: 48,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+
+      // 番型-月落星沉
+      {taskName: "月落星沉", taskDescribe: "胡月落星沉番型次数达到?次", taskType: 1, taskId: 1019, taskTimes: 9, typeId: 47,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "月落星沉", taskDescribe: "胡月落星沉番型次数达到?次", taskType: 1, taskId: 1020, taskTimes: 50, typeId: 47,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "月落星沉", taskDescribe: "胡月落星沉番型次数达到?次", taskType: 1, taskId: 1021, taskTimes: 100, typeId: 47,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "月落星沉", taskDescribe: "胡月落星沉番型次数达到?次", taskType: 1, taskId: 1022, taskTimes: 300, typeId: 47,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "月落星沉", taskDescribe: "胡月落星沉番型次数达到?次", taskType: 1, taskId: 1023, taskTimes: 500, typeId: 47,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "月落星沉", taskDescribe: "胡月落星沉番型次数达到?次", taskType: 1, taskId: 1024, taskTimes: 888, typeId: 47,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+
+      // 番型-大步流星
+      {taskName: "大步流星", taskDescribe: "胡大步流星番型次数达到?次", taskType: 1, taskId: 1025, taskTimes: 9, typeId: 46,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "大步流星", taskDescribe: "胡大步流星番型次数达到?", taskType: 1, taskId: 1026, taskTimes: 50, typeId: 46,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "大步流星", taskDescribe: "胡大步流星番型次数达到?", taskType: 1, taskId: 1027, taskTimes: 100, typeId: 46,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "大步流星", taskDescribe: "胡大步流星番型次数达到?", taskType: 1, taskId: 1028, taskTimes: 300, typeId: 46,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "大步流星", taskDescribe: "胡大步流星番型次数达到?", taskType: 1, taskId: 1029, taskTimes: 500, typeId: 46,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+      {taskName: "大步流星", taskDescribe: "胡大步流星番型次数达到?", taskType: 1, taskId: 1030, taskTimes: 888, typeId: 46,
+        taskPrizes: {name: "50万金豆", number: 500000, type: 2}},
+
+      // 番型-星流影集
+      {taskName: "星流影集", taskDescribe: "胡星流影集番型次数达到?次", taskType: 1, taskId: 1031, taskTimes: 9, typeId: 45,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "星流影集", taskDescribe: "胡星流影集番型次数达到?次", taskType: 1, taskId: 1032, taskTimes: 50, typeId: 45,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "星流影集", taskDescribe: "胡星流影集番型次数达到?次", taskType: 1, taskId: 1033, taskTimes: 100, typeId: 45,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "星流影集", taskDescribe: "胡星流影集番型次数达到?次", taskType: 1, taskId: 1034, taskTimes: 300, typeId: 44,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "星流影集", taskDescribe: "胡星流影集番型次数达到?次", taskType: 1, taskId: 1035, taskTimes: 500, typeId: 45,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "星流影集", taskDescribe: "胡星流影集番型次数达到?次", taskType: 1, taskId: 1036, taskTimes: 888, typeId: 45,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+
+      // 番型-移星换斗
+      {taskName: "移星换斗", taskDescribe: "胡移星换斗番型次数达到?次", taskType: 1, taskId: 1037, taskTimes: 9, typeId: 44,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "移星换斗", taskDescribe: "胡移星换斗番型次数达到?次", taskType: 1, taskId: 1038, taskTimes: 50, typeId: 44,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "移星换斗", taskDescribe: "胡移星换斗番型次数达到?次", taskType: 1, taskId: 1039, taskTimes: 100, typeId: 44,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "移星换斗", taskDescribe: "胡移星换斗番型次数达到?次", taskType: 1, taskId: 1040, taskTimes: 300, typeId: 44,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "移星换斗", taskDescribe: "胡移星换斗番型次数达到?次", taskType: 1, taskId: 1041, taskTimes: 500, typeId: 44,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "移星换斗", taskDescribe: "胡移星换斗番型次数达到?次", taskType: 1, taskId: 1042, taskTimes: 888, typeId: 44,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+
+      // 番型-一天星斗
+      {taskName: "一天星斗", taskDescribe: "胡一天星斗番型次数达到?次", taskType: 1, taskId: 1043, taskTimes: 9, typeId: 43,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}},
+      {taskName: "一天星斗", taskDescribe: "胡一天星斗番型次数达到?次", taskType: 1, taskId: 1044, taskTimes: 50, typeId: 43,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}},
+      {taskName: "一天星斗", taskDescribe: "胡一天星斗番型次数达到?次", taskType: 1, taskId: 1045, taskTimes: 100, typeId: 43,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}},
+      {taskName: "一天星斗", taskDescribe: "胡一天星斗番型次数达到?次", taskType: 1, taskId: 1046, taskTimes: 300, typeId: 43,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}},
+      {taskName: "一天星斗", taskDescribe: "胡一天星斗番型次数达到?次", taskType: 1, taskId: 1047, taskTimes: 500, typeId: 43,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}},
+      {taskName: "一天星斗", taskDescribe: "胡一天星斗番型次数达到?次", taskType: 1, taskId: 1048, taskTimes: 888, typeId: 43,
+        taskPrizes: {name: "100万金豆", number: 1000000, type: 2}},
+
+      // 番型-棋布星陈
+      {taskName: "棋布星陈", taskDescribe: "胡棋布星陈番型次数达到?次", taskType: 1, taskId: 1049, taskTimes: 9, typeId: 42 ,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "棋布星陈", taskDescribe: "胡棋布星陈番型次数达到?次", taskType: 1, taskId: 1050, taskTimes: 50, typeId: 42,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "棋布星陈", taskDescribe: "胡棋布星陈番型次数达到?次", taskType: 1, taskId: 1051, taskTimes: 100, typeId: 42,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "棋布星陈", taskDescribe: "胡棋布星陈番型次数达到?次", taskType: 1, taskId: 1052, taskTimes: 300, typeId: 42,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "棋布星陈", taskDescribe: "胡棋布星陈番型次数达到?次", taskType: 1, taskId: 1053, taskTimes: 500, typeId: 42,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "棋布星陈", taskDescribe: "胡棋布星陈番型次数达到?次", taskType: 1, taskId: 1054, taskTimes: 888, typeId: 42,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+
+      // 番型-星离月会
+      {taskName: "星离月会", taskDescribe: "胡星离月会番型次数达到?次", taskType: 1, taskId: 1055, taskTimes: 9, typeId: 41,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "星离月会", taskDescribe: "胡星离月会番型次数达到?次", taskType: 1, taskId: 1056, taskTimes: 50, typeId: 41,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "星离月会", taskDescribe: "胡星离月会番型次数达到?次", taskType: 1, taskId: 1057, taskTimes: 100, typeId: 41,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "星离月会", taskDescribe: "胡星离月会番型次数达到?次", taskType: 1, taskId: 1058, taskTimes: 300, typeId: 41,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "星离月会", taskDescribe: "胡星离月会番型次数达到?次", taskType: 1, taskId: 1059, taskTimes: 500, typeId: 41,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "星离月会", taskDescribe: "胡星离月会番型次数达到?次", taskType: 1, taskId: 1060, taskTimes: 888, typeId: 41,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+
+      // 番型-流星望电
+      {taskName: "流星望电", taskDescribe: "胡流星望电番型次数达到?次", taskType: 1, taskId: 1061, taskTimes: 9, typeId: 40,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "流星望电", taskDescribe: "胡流星望电番型次数达到?次", taskType: 1, taskId: 1062, taskTimes: 50, typeId: 40,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "流星望电", taskDescribe: "胡流星望电番型次数达到?次", taskType: 1, taskId: 1063, taskTimes: 100, typeId: 40,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "流星望电", taskDescribe: "胡流星望电番型次数达到?次", taskType: 1, taskId: 1064, taskTimes: 300, typeId: 40,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "流星望电", taskDescribe: "胡流星望电番型次数达到?次", taskType: 1, taskId: 1065, taskTimes: 500, typeId: 40,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "流星望电", taskDescribe: "胡流星望电番型次数达到?次", taskType: 1, taskId: 1066, taskTimes: 888, typeId: 40,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+
+      // 番型-星流电击
+      {taskName: "星流电击", taskDescribe: "胡星流电击番型次数达到?次", taskType: 1, taskId: 1067, taskTimes: 9, typeId: 39,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "星流电击", taskDescribe: "胡星流电击番型次数达到?次", taskType: 1, taskId: 1068, taskTimes: 50, typeId: 39,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "星流电击", taskDescribe: "胡星流电击番型次数达到?次", taskType: 1, taskId: 1069, taskTimes: 100, typeId: 39,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "星流电击", taskDescribe: "胡星流电击番型次数达到?次", taskType: 1, taskId: 1070, taskTimes: 300, typeId: 39,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "星流电击", taskDescribe: "胡星流电击番型次数达到?次", taskType: 1, taskId: 1071, taskTimes: 500, typeId: 39,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "星流电击", taskDescribe: "胡星流电击番型次数达到?次", taskType: 1, taskId: 1072, taskTimes: 888, typeId: 39,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 番型-三星高照
+      {taskName: "三星高照", taskDescribe: "胡三星高照番型次数达到?次", taskType: 1, taskId: 1073, taskTimes: 9, typeId: 38,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "三星高照", taskDescribe: "胡三星高照番型次数达到?次", taskType: 1, taskId: 1074, taskTimes: 50, typeId: 38,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "三星高照", taskDescribe: "胡三星高照番型次数达到?次", taskType: 1, taskId: 1075, taskTimes: 100, typeId: 38,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "三星高照", taskDescribe: "胡三星高照番型次数达到?次", taskType: 1, taskId: 1076, taskTimes: 300, typeId: 38,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "三星高照", taskDescribe: "胡三星高照番型次数达到?次", taskType: 1, taskId: 1077, taskTimes: 500, typeId: 38,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "三星高照", taskDescribe: "胡三星高照番型次数达到?次", taskType: 1, taskId: 1078, taskTimes: 888, typeId: 38,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 番型-一路福星
+      {taskName: "一路福星", taskDescribe: "胡一路福星番型次数达到?次", taskType: 1, taskId: 1079, taskTimes: 9, typeId: 37,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "一路福星", taskDescribe: "胡一路福星番型次数达到?次", taskType: 1, taskId: 1080, taskTimes: 50, typeId: 37,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "一路福星", taskDescribe: "胡一路福星番型次数达到?次", taskType: 1, taskId: 1081, taskTimes: 100, typeId: 37,
+        taskPrizes: {name: "10钻石", number: 10, type: 1},},
+      {taskName: "一路福星", taskDescribe: "胡一路福星番型次数达到?次", taskType: 1, taskId: 1082, taskTimes: 300, typeId: 37,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "一路福星", taskDescribe: "胡一路福星番型次数达到?次", taskType: 1, taskId: 1083, taskTimes: 500, typeId: 37,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+      {taskName: "一路福星", taskDescribe: "胡一路福星番型次数达到?次", taskType: 1, taskId: 1084, taskTimes: 888, typeId: 37,
+        taskPrizes: {name: "10钻石", number: 10, type: 1}},
+
+      // 番型-十二星座
+      {taskName: "十二星座", taskDescribe: "胡十二星座番型次数达到?次", taskType: 1, taskId: 1085, taskTimes: 9, typeId: 33,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "十二星座", taskDescribe: "胡十二星座番型次数达到?次", taskType: 1, taskId: 1086, taskTimes: 50, typeId: 33,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "十二星座", taskDescribe: "胡十二星座番型次数达到?次", taskType: 1, taskId: 1087, taskTimes: 100, typeId: 33,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "十二星座", taskDescribe: "胡十二星座番型次数达到?次", taskType: 1, taskId: 1088, taskTimes: 300, typeId: 33,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "十二星座", taskDescribe: "胡十二星座番型次数达到?次", taskType: 1, taskId: 1089, taskTimes: 500, typeId: 33,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "十二星座", taskDescribe: "胡十二星座番型次数达到?次", taskType: 1, taskId: 1090, taskTimes: 888, typeId: 33,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-白羊座
+      {taskName: "白羊座", taskDescribe: "累计合成白羊杠达到?次", taskType: 2, taskId: 1091, taskTimes: 100, typeId: 41,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "白羊座", taskDescribe: "累计合成白羊杠达到?次", taskType: 2, taskId: 1092, taskTimes: 300, typeId: 41,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "白羊座", taskDescribe: "累计合成白羊杠达到?次", taskType: 2, taskId: 1093, taskTimes: 500, typeId: 41,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "白羊座", taskDescribe: "累计合成白羊杠达到?次", taskType: 2, taskId: 1094, taskTimes: 800, typeId: 41,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "白羊座", taskDescribe: "累计合成白羊杠达到?次", taskType: 2, taskId: 1095, taskTimes: 1000, typeId: 41,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "白羊座", taskDescribe: "累计合成白羊杠达到?次", taskType: 2, taskId: 1096, taskTimes: 3000, typeId: 41,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-金牛座
+      {taskName: "金牛座", taskDescribe: "累计合成金牛杠达到?次", taskType: 2, taskId: 1097, taskTimes: 100, typeId: 42,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "金牛座", taskDescribe: "累计合成金牛杠达到?次", taskType: 2, taskId: 1098, taskTimes: 300, typeId: 42,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "金牛座", taskDescribe: "累计合成金牛杠达到?次", taskType: 2, taskId: 1099, taskTimes: 500, typeId: 42,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "金牛座", taskDescribe: "累计合成金牛杠达到?次", taskType: 2, taskId: 1100, taskTimes: 800, typeId: 42,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "金牛座", taskDescribe: "累计合成金牛杠达到?次", taskType: 2, taskId: 1101, taskTimes: 1000, typeId: 42,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "金牛座", taskDescribe: "累计合成金牛杠达到?次", taskType: 2, taskId: 1102, taskTimes: 3000, typeId: 42,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-双子座
+      {taskName: "双子座", taskDescribe: "累计合成双子杠达到?次", taskType: 2, taskId: 1103, taskTimes: 100, typeId: 43,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "双子座", taskDescribe: "累计合成双子杠达到?次", taskType: 2, taskId: 1104, taskTimes: 300, typeId: 43,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "双子座", taskDescribe: "累计合成双子杠达到?次", taskType: 2, taskId: 1105, taskTimes: 500, typeId: 43,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "双子座", taskDescribe: "累计合成双子杠达到?次", taskType: 2, taskId: 1106, taskTimes: 800, typeId: 43,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "双子座", taskDescribe: "累计合成双子杠达到?次", taskType: 2, taskId: 1107, taskTimes: 1000, typeId: 43,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "双子座", taskDescribe: "累计合成双子杠达到?次", taskType: 2, taskId: 1108, taskTimes: 3000, typeId: 43,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-巨蟹座
+      {taskName: "巨蟹座", taskDescribe: "累计合成巨蟹杠达到?次", taskType: 2, taskId: 1109, taskTimes: 100, typeId: 44,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "巨蟹座", taskDescribe: "累计合成巨蟹杠达到?次", taskType: 2, taskId: 1110, taskTimes: 300, typeId: 44,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "巨蟹座", taskDescribe: "累计合成巨蟹杠达到?次", taskType: 2, taskId: 1111, taskTimes: 500, typeId: 44,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "巨蟹座", taskDescribe: "累计合成巨蟹杠达到?次", taskType: 2, taskId: 1112, taskTimes: 800, typeId: 44,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "巨蟹座", taskDescribe: "累计合成巨蟹杠达到?次", taskType: 2, taskId: 1113, taskTimes: 1000, typeId: 44,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "巨蟹座", taskDescribe: "累计合成巨蟹杠达到?次", taskType: 2, taskId: 1114, taskTimes: 3000, typeId: 44,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-狮子座
+      {taskName: "狮子座", taskDescribe: "累计合成狮子杠达到?次", taskType: 2, taskId: 1115, taskTimes: 100, typeId: 45,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "狮子座", taskDescribe: "累计合成狮子杠达到?次", taskType: 2, taskId: 1116, taskTimes: 300, typeId: 45,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "狮子座", taskDescribe: "累计合成狮子杠达到?次", taskType: 2, taskId: 1117, taskTimes: 500, typeId: 45,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "狮子座", taskDescribe: "累计合成狮子杠达到?次", taskType: 2, taskId: 1118, taskTimes: 800, typeId: 45,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "狮子座", taskDescribe: "累计合成狮子杠达到?次", taskType: 2, taskId: 1119, taskTimes: 1000, typeId: 45,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "狮子座", taskDescribe: "累计合成狮子杠达到?次", taskType: 2, taskId: 1120, taskTimes: 3000, typeId: 45,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-处女座
+      {taskName: "处女座", taskDescribe: "累计合成处女杠达到?次", taskType: 2, taskId: 1121, taskTimes: 100, typeId: 46,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "处女座", taskDescribe: "累计合成处女杠达到?次", taskType: 2, taskId: 1122, taskTimes: 300, typeId: 46,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "处女座", taskDescribe: "累计合成处女杠达到?次", taskType: 2, taskId: 1123, taskTimes: 500, typeId: 46,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "处女座", taskDescribe: "累计合成处女杠达到?次", taskType: 2, taskId: 1124, taskTimes: 800, typeId: 46,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "处女座", taskDescribe: "累计合成处女杠达到?次", taskType: 2, taskId: 1125, taskTimes: 1000, typeId: 46,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "处女座", taskDescribe: "累计合成处女杠达到?次", taskType: 2, taskId: 1126, taskTimes: 3000, typeId: 46,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-天秤座
+      {taskName: "天秤座", taskDescribe: "累计合成天秤杠达到?次", taskType: 2, taskId: 1127, taskTimes: 100, typeId: 47,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "天秤座", taskDescribe: "累计合成天秤杠达到?次", taskType: 2, taskId: 1128, taskTimes: 300, typeId: 47,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "天秤座", taskDescribe: "累计合成天秤杠达到?次", taskType: 2, taskId: 1129, taskTimes: 500, typeId: 47,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "天秤座", taskDescribe: "累计合成天秤杠达到?次", taskType: 2, taskId: 1130, taskTimes: 800, typeId: 47,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "天秤座", taskDescribe: "累计合成天秤杠达到?次", taskType: 2, taskId: 1131, taskTimes: 1000, typeId: 47,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "天秤座", taskDescribe: "累计合成天秤杠达到?次", taskType: 2, taskId: 1132, taskTimes: 3000, typeId: 47,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-天蝎座
+      {taskName: "天蝎座", taskDescribe: "累计合成天蝎杠达到?次", taskType: 2, taskId: 1133, taskTimes: 100, typeId: 48,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "天蝎座", taskDescribe: "累计合成天蝎杠达到?次", taskType: 2, taskId: 1134, taskTimes: 300, typeId: 48,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "天蝎座", taskDescribe: "累计合成天蝎杠达到?次", taskType: 2, taskId: 1135, taskTimes: 500, typeId: 48,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "天蝎座", taskDescribe: "累计合成天蝎杠达到?次", taskType: 2, taskId: 1136, taskTimes: 800, typeId: 48,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "天蝎座", taskDescribe: "累计合成天蝎杠达到?次", taskType: 2, taskId: 1137, taskTimes: 1000, typeId: 48,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "天蝎座", taskDescribe: "累计合成天蝎杠达到?次", taskType: 2, taskId: 1138, taskTimes: 3000, typeId: 48,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-射手座
+      {taskName: "射手座", taskDescribe: "累计合成射手杠达到?次", taskType: 2, taskId: 1139, taskTimes: 100, typeId: 49,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "射手座", taskDescribe: "累计合成射手杠达到?次", taskType: 2, taskId: 1140, taskTimes: 300, typeId: 49,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "射手座", taskDescribe: "累计合成射手杠达到?次", taskType: 2, taskId: 1141, taskTimes: 500, typeId: 49,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "射手座", taskDescribe: "累计合成射手杠达到?次", taskType: 2, taskId: 1142, taskTimes: 800, typeId: 49,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "射手座", taskDescribe: "累计合成射手杠达到?次", taskType: 2, taskId: 1143, taskTimes: 1000, typeId: 49,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "射手座", taskDescribe: "累计合成射手杠达到?次", taskType: 2, taskId: 1144, taskTimes: 3000, typeId: 49,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-摩羯座
+      {taskName: "摩羯座", taskDescribe: "累计合成摩羯杠达到?次", taskType: 2, taskId: 1145, taskTimes: 100, typeId: 50,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "摩羯座", taskDescribe: "累计合成摩羯杠达到?次", taskType: 2, taskId: 1147, taskTimes: 300, typeId: 50,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "摩羯座", taskDescribe: "累计合成摩羯杠达到?次", taskType: 2, taskId: 1148, taskTimes: 500, typeId: 50,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "摩羯座", taskDescribe: "累计合成摩羯杠达到?次", taskType: 2, taskId: 1149, taskTimes: 800, typeId: 50,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "摩羯座", taskDescribe: "累计合成摩羯杠达到?次", taskType: 2, taskId: 1140, taskTimes: 1000, typeId: 50,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "摩羯座", taskDescribe: "累计合成摩羯杠达到?次", taskType: 2, taskId: 1150, taskTimes: 3000, typeId: 50,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-水瓶座
+      {taskName: "水瓶座", taskDescribe: "累计合成水瓶杠达到?次", taskType: 2, taskId: 1151, taskTimes: 100, typeId: 51,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "水瓶座", taskDescribe: "累计合成水瓶杠达到?次", taskType: 2, taskId: 1152, taskTimes: 300, typeId: 51,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "水瓶座", taskDescribe: "累计合成水瓶杠达到?次", taskType: 2, taskId: 1153, taskTimes: 500, typeId: 51,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "水瓶座", taskDescribe: "累计合成水瓶杠达到?次", taskType: 2, taskId: 1154, taskTimes: 800, typeId: 51,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "水瓶座", taskDescribe: "累计合成水瓶杠达到?次", taskType: 2, taskId: 1155, taskTimes: 1000, typeId: 51,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "水瓶座", taskDescribe: "累计合成水瓶杠达到?次", taskType: 2, taskId: 1156, taskTimes: 3000, typeId: 51,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+
+      // 杠牌-双鱼座
+      {taskName: "双鱼座", taskDescribe: "累计合成双鱼杠达到?次", taskType: 2, taskId: 1157, taskTimes: 100, typeId: 52,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "双鱼座", taskDescribe: "累计合成双鱼杠达到?次", taskType: 2, taskId: 1158, taskTimes: 300, typeId: 52,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "双鱼座", taskDescribe: "累计合成双鱼杠达到?次", taskType: 2, taskId: 1159, taskTimes: 500, typeId: 52,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "双鱼座", taskDescribe: "累计合成双鱼杠达到?次", taskType: 2, taskId: 1160, taskTimes: 800, typeId: 52,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "双鱼座", taskDescribe: "累计合成双鱼杠达到?次", taskType: 2, taskId: 1161, taskTimes: 1000, typeId: 52,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
+      {taskName: "双鱼座", taskDescribe: "累计合成双鱼杠达到?次", taskType: 2, taskId: 1162, taskTimes: 3000, typeId: 52,
+        taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
     ];
 
     await Task.insertMany(datas);
