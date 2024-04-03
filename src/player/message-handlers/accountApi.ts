@@ -522,18 +522,21 @@ export class AccountApi extends BaseApi {
       createAt: {$gte: start, $lt: end}});
     let days = await NewSignPrizeRecord.count({playerId: user._id});
     if (days < 7 && todayReceiveCount === 0) {
+      console.warn(111);
       newGift.popOpen = true;
     }
 
     // 判断初见指引是否可领取
     const guideInfo = await service.playerService.getGuideLists(user);
     if (guideInfo.receive) {
+      console.warn(222, guideInfo.tasks);
       newGift.popOpen = true;
     }
 
     // 判断首充奖励是否可领取
     const firstRecharge = await service.playerService.getFirstRechargeList(user);
     if (firstRecharge.receive && firstRecharge.isPay) {
+      console.warn(333, firstRecharge);
       newGift.popOpen = true;
     }
 
