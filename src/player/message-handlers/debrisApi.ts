@@ -2,14 +2,13 @@ import {addApi, BaseApi} from "./baseApi";
 import Player from "../../database/models/player";
 import {ConsumeLogType, TaskCategory, debrisType, TianleErrorCode} from "@fm/common/constants";
 import {service} from "../../service/importService";
-import moment = require("moment");
 import Debris from "../../database/models/debris";
 import PlayerCardTypeRecord from "../../database/models/playerCardTypeRecord";
 import DebrisRecord from "../../database/models/DebrisRecord";
 import DebrisTotalPrize from "../../database/models/DebrisTotalPrize";
 import DebrisTotalPrizeRecord from "../../database/models/DebrisTotalPrizeRecord";
 
-export class TaskApi extends BaseApi {
+export class DebrisApi extends BaseApi {
   @addApi()
   async taskLists(message) {
     const user = await Player.findOne({_id: this.player._id});
