@@ -549,7 +549,6 @@ export class AccountApi extends BaseApi {
     if (!rechargePartyInfo.freeGiftReceive || (rechargePartyInfo.partyOne.todayFinish && !rechargePartyInfo.partyOne.todayReceive)
     || (rechargePartyInfo.partySix.todayFinish && !rechargePartyInfo.partySix.todayReceive) ||
       (rechargePartyInfo.partyThirty.todayFinish && !rechargePartyInfo.partyThirty.todayReceive)) {
-      console.warn(rechargePartyInfo);
       rechargeParty.popOpen = true;
     }
 
