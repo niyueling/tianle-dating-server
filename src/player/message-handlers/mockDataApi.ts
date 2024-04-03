@@ -10,6 +10,7 @@ import CardTable from "../../database/models/CardTable";
 import Task from "../../database/models/task";
 import TaskTotalPrize from "../../database/models/TaskTotalPrize";
 import Debris from "../../database/models/debris";
+import DebrisTotalPrize from "../../database/models/DebrisTotalPrize";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -878,23 +879,23 @@ export class MockDataApi extends BaseApi {
         taskPrizes: {name: "20万金豆", number: 200000, type: 2}},
     ];
 
-    await Task.insertMany(datas);
+    await Debris.insertMany(datas);
 
-    const result1 = await TaskTotalPrize.find();
+    const result1 = await DebrisTotalPrize.find();
 
     if (result1.length) {
-      await TaskTotalPrize.remove({_id: {$ne: null}}).exec();
+      await DebrisTotalPrize.remove({_id: {$ne: null}}).exec();
     }
 
     const datas1 = [
-      {number: 100, type: 1, propId: null, liveness: 150},
-      {number: 150, type: 1, propId: null, liveness: 500},
-      {number: 200, type: 1, propId: null, liveness: 800},
-      {number: 1, type: 3, propId: 1019, liveness: 1000},
-      {number: 1, type: 4, propId: 1117, liveness: 1500}
+      {number: 100, type: 1, propId: null, liveness: 10},
+      {number: 150, type: 1, propId: null, liveness: 30},
+      {number: 200, type: 1, propId: null, liveness: 100},
+      {number: 1000000, type: 2, propId: null, liveness: 300},
+      {number: 8880000, type: 2, propId: null, liveness: 888}
     ];
 
-    await TaskTotalPrize.insertMany(datas1);
+    await DebrisTotalPrize.insertMany(datas1);
 
     return this.replySuccess({datas, datas1});
   }
