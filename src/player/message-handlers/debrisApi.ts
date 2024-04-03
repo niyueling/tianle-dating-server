@@ -1,10 +1,6 @@
 import {addApi, BaseApi} from "./baseApi";
 import Player from "../../database/models/player";
 import {ConsumeLogType, TaskCategory, debrisType, TianleErrorCode} from "@fm/common/constants";
-import TaskRecord from "../../database/models/TaskRecord";
-import TaskTotalPrize from "../../database/models/TaskTotalPrize";
-import TaskTotalPrizeRecord from "../../database/models/TaskTotalPrizeRecord";
-import Task from "../../database/models/task";
 import {service} from "../../service/importService";
 import moment = require("moment");
 import Debris from "../../database/models/debris";
@@ -35,10 +31,6 @@ export class TaskApi extends BaseApi {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
-    if (!message.multiple) {
-      message.multiple = 1;
-    }
-
     const result = await this.finishDailyTaskOnce(message, user);
     await this.player.updateResource2Client();
     return this.replySuccess(result);
@@ -53,11 +45,9 @@ export class TaskApi extends BaseApi {
     }
 
     // 计算活跃度
-    const start = moment(new Date()).startOf('day').toDate()
-    const end = moment(new Date()).endOf('day').toDate()
-    const liveness = await TaskRecord.aggregate([
-      { $match: { playerId: user._id.toString() } },
-      { $group: { _id: null, sum: { $sum: "$liveness" } } }
+    const liveness = await PlayerCardTypeRecord.aggregate([
+      { $match: { playerId: user._id } },
+      { $group: { _id: null, sum: { $sum: "$count" } } }
     ]).exec();
     let livenessCount = 0;
     if (liveness.length > 0) {
@@ -65,7 +55,7 @@ export class TaskApi extends BaseApi {
     }
 
     // 获取奖励配置
-    const prizeInfo = await TaskTotalPrize.findOne({_id: message.prizeId});
+    const prizeInfo = await DebrisTotalPrize.findOne({_id: message.prizeId});
     if (!prizeInfo) {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
@@ -75,7 +65,7 @@ export class TaskApi extends BaseApi {
     }
 
     // 判断是否领取
-    const receive = await TaskTotalPrizeRecord.findOne({shortId: user.shortId, prizeId: prizeInfo._id});
+    const receive = await DebrisTotalPrizeRecord.findOne({playerId: user._id, prizeId: prizeInfo._id});
 
     if (receive) {
       return this.replyFail(TianleErrorCode.prizeIsReceive);
@@ -87,13 +77,12 @@ export class TaskApi extends BaseApi {
     // 创建领取记录
     const data = {
       playerId: user._id.toString(),
-      shortId: user.shortId,
       prizeId: prizeInfo._id,
       prizeConfig: prizeInfo,
       createAt: new Date()
     };
 
-    const record = await TaskTotalPrizeRecord.create(data);
+    const record = await DebrisTotalPrizeRecord.create(data);
     await this.player.updateResource2Client();
 
     return this.replySuccess(record);
@@ -321,7 +310,7 @@ export class TaskApi extends BaseApi {
 
   async finishDailyTaskOnce(message, user) {
     // 获取任务配置
-    const taskInfo = await Task.findOne({taskId: message.taskId}).lean();
+    const taskInfo = await Debris.findOne({taskId: message.taskId}).lean();
     if (!taskInfo) {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
@@ -338,18 +327,16 @@ export class TaskApi extends BaseApi {
     }
 
     // 按照奖励类型领取奖励
-    await service.playerService.receivePrize(taskInfo.taskPrizes, this.player._id, message.multiple, ConsumeLogType.receiveTask);
+    await service.playerService.receivePrize(taskInfo.taskPrizes, this.player._id, 1, ConsumeLogType.receiveTask);
 
     // 创建领取记录
     const data = {
       playerId: user._id.toString(),
-      shortId: user.shortId,
       taskId: taskInfo.taskId,
-      liveness: taskInfo.liveness,
       taskConfig: taskInfo,
       createAt: new Date()
     };
 
-    return await TaskRecord.create(data);
+    return await DebrisRecord.create(data);
   }
 }

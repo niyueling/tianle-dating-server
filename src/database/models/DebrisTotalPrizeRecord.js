@@ -7,10 +7,6 @@ const schema = new mongoose.Schema({
     type: String,
     required: true
   },
-  shortId: {
-    type: Number,
-    required: true
-  },
   // 创建时间
   createAt: {
     type: Date,

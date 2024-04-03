@@ -53,8 +53,6 @@ export class TaskApi extends BaseApi {
     }
 
     // 计算活跃度
-    const start = moment(new Date()).startOf('day').toDate()
-    const end = moment(new Date()).endOf('day').toDate()
     const liveness = await TaskRecord.aggregate([
       { $match: { playerId: user._id.toString() } },
       { $group: { _id: null, sum: { $sum: "$liveness" } } }
@@ -75,7 +73,7 @@ export class TaskApi extends BaseApi {
     }
 
     // 判断是否领取
-    const receive = await TaskTotalPrizeRecord.findOne({shortId: user.shortId, prizeId: prizeInfo._id});
+    const receive = await TaskTotalPrizeRecord.findOne({playerId: user._id, prizeId: prizeInfo._id});
 
     if (receive) {
       return this.replyFail(TianleErrorCode.prizeIsReceive);
