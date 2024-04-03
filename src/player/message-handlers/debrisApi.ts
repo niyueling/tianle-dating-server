@@ -59,16 +59,16 @@ export class DebrisApi extends BaseApi {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
 
-    if (livenessCount < prizeInfo.liveness) {
-      return this.replyFail(TianleErrorCode.taskNotFinish);
-    }
-
-    // 判断是否领取
-    const receive = await DebrisTotalPrizeRecord.findOne({playerId: user._id, prizeId: prizeInfo._id});
-
-    if (receive) {
-      return this.replyFail(TianleErrorCode.prizeIsReceive);
-    }
+    // if (livenessCount < prizeInfo.liveness) {
+    //   return this.replyFail(TianleErrorCode.taskNotFinish);
+    // }
+    //
+    // // 判断是否领取
+    // const receive = await DebrisTotalPrizeRecord.findOne({playerId: user._id, prizeId: prizeInfo._id});
+    //
+    // if (receive) {
+    //   return this.replyFail(TianleErrorCode.prizeIsReceive);
+    // }
 
     // 按照奖励类型领取奖励
     await service.playerService.receivePrize(prizeInfo, user._id, 1, ConsumeLogType.receiveTask);
@@ -317,13 +317,13 @@ export class DebrisApi extends BaseApi {
     // 根据不同任务类型判断是否完成任务
     const taskResult = await this.checkTaskFinishAndReceive(taskInfo, user);
 
-    if (!taskResult.finish) {
-      return this.replyFail(TianleErrorCode.taskNotFinish);
-    }
-
-    if (taskResult.receive) {
-      return this.replyFail(TianleErrorCode.prizeIsReceive);
-    }
+    // if (!taskResult.finish) {
+    //   return this.replyFail(TianleErrorCode.taskNotFinish);
+    // }
+    //
+    // if (taskResult.receive) {
+    //   return this.replyFail(TianleErrorCode.prizeIsReceive);
+    // }
 
     // 按照奖励类型领取奖励
     await service.playerService.receivePrize(taskInfo.taskPrizes, this.player._id, 1, ConsumeLogType.receiveTask);
