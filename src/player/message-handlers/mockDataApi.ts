@@ -11,6 +11,7 @@ import Task from "../../database/models/task";
 import TaskTotalPrize from "../../database/models/TaskTotalPrize";
 import Debris from "../../database/models/debris";
 import DebrisTotalPrize from "../../database/models/DebrisTotalPrize";
+import VipConfig from "../../database/models/VipConfig";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -488,6 +489,77 @@ export class MockDataApi extends BaseApi {
     await TaskTotalPrize.insertMany(datas1);
 
     return this.replySuccess({datas, datas1});
+  }
+
+  // 录入vip特权数据
+  @addApi()
+  async saveVipData() {
+    const result = await VipConfig.find();
+
+    if (result.length) {
+      await VipConfig.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      {vip: 0, experience: 0, noteList: [{type: "new", note: "可领取5次救济金"},{type: "new", note: "可进行10次幸运抽奖"}], prizeList: {name: "50万金豆", number: 500000, type: 2}},
+      {vip: 1, experience: 300, noteList: [{type: "old", note: "可领取5次救济金"},{type: "new", note: "可领取2倍救济金"},{type: "new", note: "商城内使用钻石可兑换2倍金豆"}],
+        prizeList: {name: "100万金豆", number: 1000000, type: 2}},
+      {vip: 2, experience: 1000,
+        noteList: [{type: "old", note: "可领取5次救济金"},
+          {type: "upgrade", note: "可领取3倍救济金"},
+          {type: "upgrade", note: "商城内使用钻石可兑换4倍金豆"}],
+        prizeList: {name: "200万金豆", number: 2000000, type: 2}},
+      {vip: 3, experience: 3000,
+        noteList: [{type: "old", note: "可领取5次救济金"},
+          {type: "upgrade", note: "可领取4倍救济金"},
+          {type: "upgrade", note: "商城内使用钻石可兑换6倍金豆"}], prizeList: {name: "400万金豆", number: 4000000, type: 2}},
+      {vip: 4, experience: 5000,
+        noteList: [{type: "old", note: "可领取5次救济金"},
+          {type: "upgrade", note: "可领取5倍救济金"},
+          {type: "upgrade", note: "商城内使用钻石可兑换8倍金豆"}],
+        prizeList: {name: "500万金豆", number: 5000000, type: 2}},
+      {vip: 5, experience: 10000,
+        noteList: [{type: "old", note: "可领取5次救济金"},
+          {type: "upgrade", note: "可领取6倍救济金"},
+          {type: "upgrade", note: "商城内使用钻石可兑换10倍金豆"}],
+        prizeList: {name: "1200万金豆", number: 12000000, type: 2}},
+      {vip: 6, experience: 30000,
+        noteList: [{type: "old", note: "可领取5次救济金"},
+          {type: "upgrade", note: "可领取7倍救济金"},
+          {type: "upgrade", note: "商城内使用钻石可兑换12倍金豆"}],
+        prizeList: {name: "2500万金豆", number: 25000000, type: 2}},
+      {vip: 7, experience: 50000,
+        noteList: [{type: "upgrade", note: "可领取8次救济金"},
+          {type: "upgrade", note: "可领取10倍救济金"},
+          {type: "upgrade", note: "商城内使用钻石可兑换14倍金豆"},
+          {type: "new", note: "复活礼包可兑换2倍金豆"},
+          {type: "new", note: "超值礼包可兑换2倍金豆"}],
+        prizeList: {name: "3000万金豆", number: 30000000, type: 2}},
+      {vip: 8, experience: 100000, noteList: [{type: "old", note: "可领取8次救济金"},
+          {type: "upgrade", note: "可领取12倍救济金"},
+          {type: "upgrade", note: "商城内使用钻石可兑换16倍金豆"},
+          {type: "old", note: "复活礼包可兑换2倍金豆"},
+          {type: "old", note: "超值礼包可兑换2倍金豆"}],
+        prizeList: {name: "5000万金豆", number: 50000000, type: 2}},
+      {vip: 9, experience: 300000,
+        noteList: [{type: "old", note: "可领取8次救济金"},
+          {type: "upgrade", note: "可领取14倍救济金"},
+          {type: "upgrade", note: "商城内使用钻石可兑换18倍金豆"},
+          {type: "old", note: "复活礼包可兑换2倍金豆"},
+          {type: "old", note: "超值礼包可兑换2倍金豆"}],
+        prizeList: {name: "1亿金豆", number: 100000000, type: 2}},
+      {vip: 10, experience: 500000,
+        noteList: [{type: "upgrade", note: "可领取10次救济金"},
+          {type: "upgrade", note: "可领取16倍救济金"},
+          {type: "upgrade", note: "商城内使用钻石可兑换20倍金豆"},
+          {type: "upgrade", note: "复活礼包可兑换3倍金豆"},
+          {type: "upgrade", note: "超值礼包可兑换3倍金豆"}],
+        prizeList: {name: "2亿金豆", number: 200000000, type: 2}},
+    ];
+
+    await VipConfig.insertMany(datas);
+
+    return this.replySuccess(datas);
   }
 
   // 录入番型数据
