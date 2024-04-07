@@ -6,7 +6,7 @@ import PlayerVipUpgradeRecord from "../../database/models/PlayerVipUpgradeRecord
 
 export class VipApi extends BaseApi {
   @addApi()
-  async VipConfigLists() {
+  async vipConfigLists() {
     const user = await this.service.playerService.getPlayerModel(this.player.model._id);
 
     if (!user) {
