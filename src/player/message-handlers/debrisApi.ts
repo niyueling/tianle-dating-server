@@ -106,6 +106,7 @@ export class DebrisApi extends BaseApi {
       { $match: { playerId: user._id } },
       { $group: { _id: null, sum: { $sum: "$count" } } }
     ]).exec();
+    console.warn("liveness-%s", liveness);
     let livenessCount = 0;
     if (liveness.length > 0) {
       livenessCount = liveness[0].sum;
