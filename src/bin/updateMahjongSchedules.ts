@@ -2,7 +2,6 @@ import {RedisKey} from "@fm/common/constants";
 import {service} from "../service/importService";
 import Player from "../database/models/player";
 
-// 更新方块战争转盘抽奖次数
 async function updateTurntableTimes() {
   const lock = await service.utils.grantLockOnce(RedisKey.updateBlockTurntableTimesLock, 3600);
   if (!lock) {
@@ -30,7 +29,21 @@ async function updateTurntableTimes() {
   return lock.unlock();
 }
 
+async function updateRobotGameState() {
+  const users = await Player.find({isGame: true});
+  if (users.length > 0) {
+    console.log('update robot game state', new Date().toLocaleString());
+  }
+
+  for (const user of users) {
+    if (user.gameTime && new Date().getTime() > Date.parse(user.gameTime) + 1000 * 60 * 10) {
+      user.isGame = false;
+      await user.save();
+    }
+  }
+}
 
 module.exports = {
-  updateTurntableTimes
+  updateTurntableTimes,
+  updateRobotGameState
 }

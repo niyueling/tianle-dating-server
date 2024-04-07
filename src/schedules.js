@@ -6,7 +6,7 @@ import cleanRecord from './bin/cleanRecord'
 import aggregateActivePlayer from './bin/aggregateActivePlayer'
 import updateRoomCount from './bin/roomRecordLog'
 import updateMnpAccessToken from "./bin/updateMnpAccessToken";
-import {updateTurntableTimes} from "./bin/updateMahjongSchedules";
+import {updateTurntableTimes, updateRobotGameState} from "./bin/updateMahjongSchedules";
 
 mongoose.connect(config.database.url)
 
@@ -48,6 +48,14 @@ schedule.scheduleJob('0 0 * * *', function () {
   updateTurntableTimes()
     .catch(error => {
       console.error('update player params error', error.stack)
+    })
+})
+
+// 每5分钟更新机器人对局状态
+schedule.scheduleJob('*/5 * * * *', function () {
+  updateRobotGameState()
+    .catch(error => {
+      console.error('update player robot game state', error.stack)
     })
 })
 
