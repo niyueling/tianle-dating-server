@@ -8,7 +8,6 @@ import DebrisRecord from "../../database/models/DebrisRecord";
 import DebrisTotalPrize from "../../database/models/DebrisTotalPrize";
 import DebrisTotalPrizeRecord from "../../database/models/DebrisTotalPrizeRecord";
 import Notice from "../../database/models/notice";
-import TaskRecord from "../../database/models/TaskRecord";
 
 export class DebrisApi extends BaseApi {
   @addApi()
@@ -46,14 +45,9 @@ export class DebrisApi extends BaseApi {
     }
 
     // 计算活跃度
-    const liveness = await PlayerCardTypeRecord.aggregate([
-      { $match: { playerId: user._id } },
-      { $group: { _id: null, sum: { $sum: "$count" } } }
-    ]).exec();
+    const liveness = await PlayerCardTypeRecord.find({playerId: user._id});
     let livenessCount = 0;
-    if (liveness.length > 0) {
-      livenessCount = liveness[0].sum;
-    }
+    liveness.map(v => livenessCount += v.count);
 
     // 获取奖励配置
     const prizeInfo = await DebrisTotalPrize.findOne({_id: message.prizeId});
@@ -104,7 +98,6 @@ export class DebrisApi extends BaseApi {
 
     // 计算活跃度
     const liveness = await PlayerCardTypeRecord.find({playerId: user._id});
-    console.warn("liveness-%s", liveness);
     let livenessCount = 0;
     liveness.map(v => livenessCount += v.count);
 
