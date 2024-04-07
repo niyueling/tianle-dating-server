@@ -42,7 +42,8 @@ const schema = new Schema({
   totalSignLoginDays: {type: Number, default: 0}, // 累计签到天数
   sessionKey: {type: String},
   guideSteps: {type: Number, default: 1001},
-  vip: {type: Number, default: 0},
+  vip: {type: Number, default: 0},// vip等级
+  vipExperience: {type: Number, default: 0},// vip经验
   giftExpireTime: {type: Number, default: 0},//月卡有效期
   source: {type: Number, required: true, default: 1},
   helpCount: {type: Number, required: true, default: 5},// 救济金次数

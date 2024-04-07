@@ -37,6 +37,7 @@ import {MockDataApi} from "./message-handlers/mockDataApi";
 import {TaskApi} from "./message-handlers/taskApi";
 import {GiftApi} from "./message-handlers/giftApi";
 import {DebrisApi} from "./message-handlers/debrisApi";
+import {VipApi} from "./message-handlers/vipApi";
 import {TianleErrorCode} from "@fm/common/constants";
 
 const isTokenValid = async (apiName, token, player) => {
@@ -83,7 +84,8 @@ const apiClass = {
   newSign: NewSignApi,
   task: TaskApi,
   gift: GiftApi,
-  debris: DebrisApi
+  debris: DebrisApi,
+  vip: VipApi
 }
 
 // 调用api
