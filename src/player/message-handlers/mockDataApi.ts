@@ -12,6 +12,7 @@ import TaskTotalPrize from "../../database/models/TaskTotalPrize";
 import Debris from "../../database/models/debris";
 import DebrisTotalPrize from "../../database/models/DebrisTotalPrize";
 import VipConfig from "../../database/models/VipConfig";
+import RegressionSignPrize from "../../database/models/RegressionSignPrize";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -66,6 +67,31 @@ export class MockDataApi extends BaseApi {
     ];
 
     await SevenSignPrize.insertMany(datas);
+
+    return this.replySuccess(datas);
+  }
+
+  // 增加回归签到测试数据
+  @addApi()
+  async regressionSignLists() {
+    const result = await RegressionSignPrize.find();
+
+    if (result.length) {
+      await RegressionSignPrize.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      {freePrizeList: [{type: 1, number: 10},{type: 2, number: 200000}], payPrizeList: [{type: 1, number: 80},{type: 2, number: 10000000}], day: 1},
+      {freePrizeList: [{type: 1, number: 20},{type: 2, number: 300000}], payPrizeList: [{type: 1, number: 100},{type: 2, number: 40000000}], day: 2},
+      {freePrizeList: [{type: 1, number: 30},{type: 2, number: 600000}], payPrizeList: [{type: 1, number: 130},{type: 2, number: 60000000}], day: 3},
+      {freePrizeList: [{type: 1, number: 40},{type: 2, number: 800000}], payPrizeList: [{type: 1, number: 150},{type: 2, number: 88880000}], day: 4},
+      {freePrizeList: [{type: 1, number: 50},{type: 2, number: 1000000}], payPrizeList: [{type: 1, number: 188},{type: 2, number: 100000000}], day: 5},
+      {freePrizeList: [{type: 1, number: 60},{type: 2, number: 2000000}], payPrizeList: [{type: 1, number: 288},{type: 2, number: 500000000}], day: 6},
+      {freePrizeList: [{type: 1, number: 70},{type: 2, number: 3000000}], payPrizeList: [{type: 1, number: 588},{type: 2, number: 1000000000}], day: 7},
+      {freePrizeList: [{type: 1, number: 80},{type: 2, number: 5000000}], payPrizeList: [{type: 1, number: 888},{type: 2, number: 1880000000}], day: 8},
+    ];
+
+    await RegressionSignPrize.insertMany(datas);
 
     return this.replySuccess(datas);
   }
