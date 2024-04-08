@@ -36,7 +36,7 @@ async function updateRobotGameState() {
   }
 
   for (const user of users) {
-    if (user.gameTime && new Date().getTime() > Date.parse(user.gameTime) + 1000 * 60 * 10) {
+    if (user.gameTime && new Date().getTime() > Date.parse(user.gameTime) + 1000 * 60 * 3) {
       user.isGame = false;
       await user.save();
     }
