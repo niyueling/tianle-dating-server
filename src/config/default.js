@@ -170,6 +170,7 @@ module.exports = {
 
   },
   game: {
+    regressionAmount: 1200,
     helpCount: 5,
     initModelGoldCount: 0,
     luckyDrawNeedGold: 500,

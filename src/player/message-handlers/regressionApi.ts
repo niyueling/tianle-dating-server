@@ -4,7 +4,6 @@ import * as moment from "moment";
 import {service} from "../../service/importService";
 import Player from "../../database/models/player";
 import NewSignPrizeRecord from "../../database/models/NewSignPrizeRecord";
-import NewSignPrize from "../../database/models/NewSignPrize";
 import HeadBorder from "../../database/models/HeadBorder";
 import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
 import Medal from "../../database/models/Medal";
@@ -21,6 +20,8 @@ import RechargeParty from "../../database/models/RechargeParty";
 import PlayerRechargePartyRecord from "../../database/models/PlayerRechargePartyRecord";
 import RegressionSignPrize from "../../database/models/RegressionSignPrize";
 import RegressionSignPrizeRecord from "../../database/models/RegressionSignPrizeRecord";
+import RegressionRechargeRecord from "../../database/models/RegressionRechargeRecord";
+const config = require("../config");
 
 export class RegressionApi extends BaseApi {
   // 回归签到
@@ -37,28 +38,63 @@ export class RegressionApi extends BaseApi {
     return this.replySuccess(data);
   }
 
-  // 领取新手签到奖励
+  // 购买至尊回归礼包
+  @addApi()
+  async payRechargeGift(message) {
+    // 获取奖励配置
+    const player = await service.playerService.getPlayerModel(this.player._id);
+    if (!player) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    const startTime = player.regressionTime || new Date();
+    const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
+    const start = moment(startTime).startOf('day').toDate()
+    const end = moment(endTime).endOf('day').toDate()
+
+    // 判断是否已经购买
+    const receive = await RegressionRechargeRecord.findOne({playerId: this.player._id, status: 1, createAt: {$gte: start, $lt: end}});
+    if (receive) {
+      return this.replyFail(TianleErrorCode.orderNotExistOrPay);
+    }
+
+    // 判断代金券是否充足
+    if (player.voucher < config.game.regressionAmount) {
+      return this.replyFail(TianleErrorCode.voucherInsufficient);
+    }
+
+    // 扣除代金券
+    player.voucher -= config.game.regressionAmount;
+    await player.save();
+
+    // 创建购买记录
+    const data = {
+      playerId: this.player._id.toString(),
+      amount: config.game.regressionAmount,
+      status: 1,
+      createAt: new Date()
+    };
+
+    await RegressionRechargeRecord.create(data);
+    await this.player.updateResource2Client();
+    return this.replySuccess(data);
+  }
+
+  // 领取回归签到奖励
   @addApi({
     rule: {
       prizeId: 'string',
-      multiple: "number?"
     }
   })
   async signIn(message) {
-    // 兼容旧版本
-    if (!message.multiple) {
-      message.multiple = 1;
-    }
-
     // 获取奖励配置
-    const prizeInfo = await NewSignPrize.findOne({_id: message.prizeId});
+    const prizeInfo = await RegressionSignPrize.findOne({_id: message.prizeId});
     if (!prizeInfo) {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
 
     // 判断是否领取
-    const receive = await NewSignPrizeRecord.findOne({playerId: this.player._id, "prizeConfig.day": prizeInfo.day});
-
+    const receive = await RegressionSignPrizeRecord.findOne({playerId: this.player._id, day: prizeInfo.day});
     if (receive) {
       return this.replyFail(TianleErrorCode.prizeIsReceive);
     }
@@ -384,8 +420,8 @@ export class RegressionApi extends BaseApi {
       prizeList[i].receive = !!receive;
     }
 
-    const startTime = user.createAt;
-    const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10);
+    const startTime = user.regressionTime || new Date();
+    const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
 
     return {isTodaySign: !!isTodaySign, days, prizeList, activityTimes: {startTime, endTime}};
   }

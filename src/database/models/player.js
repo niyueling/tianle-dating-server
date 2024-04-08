@@ -56,6 +56,7 @@ const schema = new Schema({
   tourist: {type: Boolean, default: false},
   isBindWechat: {type: Boolean, default: false, required: true},
   isGame: {type: Boolean, default: false},// 是否正在游戏中
+  regressionTime: {type: Date, default: Date.now},// 回归时间
   gameTime: {type: Date, default: Date.now},// 游戏时间
   createAt: {type: Date, default: Date.now},
 });

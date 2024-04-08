@@ -675,7 +675,7 @@ export class MockDataApi extends BaseApi {
         taskPrizes: {name: "10钻石", number: 10, type: 1}},
       {taskName: "星流影集", taskDescribe: "胡星流影集番型次数达到?次", taskType: 1, taskId: 1033, taskTimes: 100, typeId: 45,
         taskPrizes: {name: "10钻石", number: 10, type: 1}},
-      {taskName: "星流影集", taskDescribe: "胡星流影集番型次数达到?次", taskType: 1, taskId: 1034, taskTimes: 300, typeId: 44,
+      {taskName: "星流影集", taskDescribe: "胡星流影集番型次数达到?次", taskType: 1, taskId: 1034, taskTimes: 300, typeId: 45,
         taskPrizes: {name: "10钻石", number: 10, type: 1}},
       {taskName: "星流影集", taskDescribe: "胡星流影集番型次数达到?次", taskType: 1, taskId: 1035, taskTimes: 500, typeId: 45,
         taskPrizes: {name: "10钻石", number: 10, type: 1}},

@@ -15,6 +15,14 @@ const schema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  freeReceive: {
+    type: Boolean,
+    required: true,
+  },
+  payReceive: {
+    type: Boolean,
+    required: true,
+  },
   // 奖品配置
   prizeConfig: {
     type: Object,

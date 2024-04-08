@@ -86,20 +86,19 @@ export class GiftApi extends BaseApi {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
+    const start = moment(new Date()).startOf('day').toDate();
+    const end = moment(new Date()).endOf('day').toDate();
     let gold = 30000;
-    let lastReceiveTime = null;
+    const lastRecord = await PlayerFreeGoldRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}}).sort({createAt: -1});
+    let lastReceiveTime = lastRecord ? Date.parse(lastRecord.createAt) : null;
 
     if (user.freeAdverCount > 0) {
       user.freeAdverCount--;
       user.gold += gold;
       await user.save();
 
-      const start = moment(new Date()).startOf('day').toDate();
-      const end = moment(new Date()).endOf('day').toDate();
       const freeAdverCount = await PlayerFreeGoldRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
-      const lastRecord = await PlayerFreeGoldRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}}).sort({createAt: -1});
-      lastReceiveTime = lastRecord ? Date.parse(lastRecord.createAt) : new Date().getTime();
-
+      lastReceiveTime = new Date().getTime();
       const data = {
         playerId: this.player._id.toString(),
         shortId: this.player.model.shortId,
