@@ -52,7 +52,7 @@ schedule.scheduleJob('0 0 * * *', function () {
 })
 
 // 每5分钟更新机器人对局状态
-schedule.scheduleJob('*/3 * * * *', function () {
+schedule.scheduleJob('* * * * *', function () {
   updateRobotGameState()
     .catch(error => {
       console.error('update player robot game state', error.stack)
