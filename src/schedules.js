@@ -1,10 +1,10 @@
-import * as schedule from 'node-schedule'
-import * as mongoose from 'mongoose'
-import * as config from './config'
-import * as moment from 'moment'
-import cleanRecord from './bin/cleanRecord'
-import aggregateActivePlayer from './bin/aggregateActivePlayer'
-import updateRoomCount from './bin/roomRecordLog'
+import * as schedule from 'node-schedule';
+import * as mongoose from 'mongoose';
+import * as config from './config';
+import * as moment from 'moment';
+import cleanRecord from './bin/cleanRecord';
+import aggregateActivePlayer from './bin/aggregateActivePlayer';
+import updateRoomCount from './bin/roomRecordLog';
 import updateMnpAccessToken from "./bin/updateMnpAccessToken";
 import {updateTurntableTimes, updateRobotGameState} from "./bin/updateMahjongSchedules";
 
