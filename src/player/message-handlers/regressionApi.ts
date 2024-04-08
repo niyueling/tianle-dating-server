@@ -21,7 +21,7 @@ import PlayerRechargePartyRecord from "../../database/models/PlayerRechargeParty
 import RegressionSignPrize from "../../database/models/RegressionSignPrize";
 import RegressionSignPrizeRecord from "../../database/models/RegressionSignPrizeRecord";
 import RegressionRechargeRecord from "../../database/models/RegressionRechargeRecord";
-const config = require("../config");
+const config = require("../..//config");
 
 export class RegressionApi extends BaseApi {
   // 回归签到
