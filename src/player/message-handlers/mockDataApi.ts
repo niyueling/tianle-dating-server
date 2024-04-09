@@ -538,7 +538,7 @@ export class MockDataApi extends BaseApi {
       {vip: 3, experience: 3000,
         noteList: [{type: "old", note: "可领取5次救济金"},
           {type: "upgrade", note: "可领取4倍救济金"},
-          {type: "upgrade", note: "商城内使用钻石可兑换6倍金豆"}], prizeList: [{name: "400万金豆", number: 4000000, type: 2}, ,{name: "30钻石", number: 30, type: 1}]},
+          {type: "upgrade", note: "商城内使用钻石可兑换6倍金豆"}], prizeList: [{name: "400万金豆", number: 4000000, type: 2}, {name: "30钻石", number: 30, type: 1}]},
       {vip: 4, experience: 5000,
         noteList: [{type: "old", note: "可领取5次救济金"},
           {type: "upgrade", note: "可领取5倍救济金"},

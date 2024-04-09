@@ -216,7 +216,6 @@ export class AccountApi extends BaseApi {
     this.player.model = model;
 
     const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
-    console.warn("disconnectedRoom", disconnectedRoom)
     if (disconnectedRoom) {
       model.disconnectedRoom = true;
     }
@@ -537,6 +536,11 @@ export class AccountApi extends BaseApi {
       newGift.popOpen = true;
     }
 
+    // 判断活动是否过期
+    if (new Date().getTime() > Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10) {
+      newGift.popOpen = false;
+    }
+
     // 判断充值派对开关
     let rechargeParty = {
       open: new Date().getTime() <= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10,
@@ -546,9 +550,9 @@ export class AccountApi extends BaseApi {
       iosLotteryCount
     };
     const rechargePartyInfo = await service.playerService.getRechargePartyList(user);
-    if (!rechargePartyInfo.freeGiftReceive || (rechargePartyInfo.partyOne.todayFinish && !rechargePartyInfo.partyOne.todayReceive)
+    if (new Date().getTime() <= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10 && (!rechargePartyInfo.freeGiftReceive || (rechargePartyInfo.partyOne.todayFinish && !rechargePartyInfo.partyOne.todayReceive)
     || (rechargePartyInfo.partySix.todayFinish && !rechargePartyInfo.partySix.todayReceive) ||
-      (rechargePartyInfo.partyThirty.todayFinish && !rechargePartyInfo.partyThirty.todayReceive)) {
+      (rechargePartyInfo.partyThirty.todayFinish && !rechargePartyInfo.partyThirty.todayReceive))) {
       rechargeParty.popOpen = true;
     }
 
