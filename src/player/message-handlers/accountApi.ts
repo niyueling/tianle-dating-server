@@ -48,6 +48,7 @@ export class AccountApi extends BaseApi {
       // 下发掉线子游戏
       const room = await service.roomRegister.getDisconnectRoomByPlayerId(user._id.toString(), allGameTypes[i]);
       if (room) {
+        console.warn(room)
         // 掉线的子游戏类型
         user.disconnectedRoom = true;
         user.continueGameType = allGameTypes[i];
