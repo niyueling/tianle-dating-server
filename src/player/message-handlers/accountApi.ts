@@ -36,15 +36,22 @@ export class AccountApi extends BaseApi {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
-    // 下发掉线子游戏
-    const room = await service.roomRegister.getDisconnectRoomByPlayerId(user._id.toString());
-    if (room) {
-      // 掉线的子游戏类型
+    user.disconnectedRoom = false
+    const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(user._id.toString());
+    if (disconnectedRoom) {
+      console.warn("disconnectedRoom-%s", JSON.stringify(disconnectedRoom));
       user.disconnectedRoom = true;
-      user.continueGameType = GameType.mj;
-    } else {
-      // 没有掉线的房间号，不要重连
-      user.disconnectedRoom = false;
+    }
+
+    const allGameTypes = [GameType.mj, GameType.xueliu, GameType.guobiao];
+    for (let i = 0; i < allGameTypes.length; i++) {
+      // 下发掉线子游戏
+      const room = await service.roomRegister.getDisconnectRoomByPlayerId(user._id.toString(), allGameTypes[i]);
+      if (room) {
+        // 掉线的子游戏类型
+        user.disconnectedRoom = true;
+        user.continueGameType = allGameTypes[i];
+      }
     }
 
     if (message.mnpVersion) {
@@ -215,19 +222,22 @@ export class AccountApi extends BaseApi {
   async loginSuccess(model, mnpVersion, platform) {
     this.player.model = model;
 
+    model.disconnectedRoom = false
     const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
     if (disconnectedRoom) {
+      console.warn("disconnectedRoom-%s", JSON.stringify(disconnectedRoom));
       model.disconnectedRoom = true;
     }
-    // 下发掉线子游戏
-    const room = await service.roomRegister.getDisconnectRoomByPlayerId(model._id.toString());
-    if (room) {
-      // 掉线的子游戏类型
-      model.disconnectedRoom = true;
-      model.continueGameType = GameType.mj;
-    } else {
-      // 没有掉线的房间号，不要重连
-      model.disconnectedRoom = false
+
+    const allGameTypes = [GameType.mj, GameType.xueliu, GameType.guobiao];
+    for (let i = 0; i < allGameTypes.length; i++) {
+      // 下发掉线子游戏
+      const room = await service.roomRegister.getDisconnectRoomByPlayerId(model._id.toString(), allGameTypes[i]);
+      if (room) {
+        // 掉线的子游戏类型
+        model.disconnectedRoom = true;
+        model.continueGameType = allGameTypes[i];
+      }
     }
 
     // add token

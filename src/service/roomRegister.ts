@@ -79,8 +79,8 @@ export default class RoomRegister extends BaseService {
   }
 
   // 从 mongo 中获取掉线房间号
-  async getDisconnectRoomByPlayerId(joinId: string) {
-    const roomNumber = await this.roomNumber(joinId, GameType.mj);
+  async getDisconnectRoomByPlayerId(joinId: string, gameType) {
+    const roomNumber = await this.roomNumber(joinId, gameType);
     const roomExist = await this.redis.getAsync(this.roomKey(roomNumber))
     if (roomExist) {
       return roomNumber;
