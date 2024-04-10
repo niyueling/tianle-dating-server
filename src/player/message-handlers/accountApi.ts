@@ -26,6 +26,7 @@ import NewDiscountGiftRecord from "../../database/models/NewDiscountGiftRecord";
 import Lobby from "../../match/lobby";
 import StartPocketRecord from "../../database/models/startPocketRecord";
 import NewSignPrizeRecord from "../../database/models/NewSignPrizeRecord";
+import CombatGain from "../../database/models/combatGain";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -295,6 +296,18 @@ export class AccountApi extends BaseApi {
     const playerHeadBorder = await PlayerHeadBorder.findOne({playerId: model._id, isUse: true});
     if (playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times > new Date().getTime())) {
       model.headerBorderId = playerHeadBorder.propId;
+    }
+
+    // 判断用户最后一次参与游戏类型
+    const roomInfo = await CombatGain.findOne({playerId: model._id}).sort({time: -1});
+    if (roomInfo) {
+      const roomrecord = await RoomRecord.findOne({room: roomInfo.room});
+      model.lastGame = {
+        gameType: roomrecord.category,
+        gameName: roomInfo.gameName,
+        categoryId: roomrecord.rule.categoryId,
+        categoryName: roomInfo.caregoryName
+      }
     }
 
     // 记录玩家
