@@ -48,9 +48,9 @@ export class AccountApi extends BaseApi {
       // 下发掉线子游戏
       const room = await service.roomRegister.getDisconnectRoomByPlayerId(user._id.toString(), allGameTypes[i]);
       if (room) {
-        console.warn(room)
         // 掉线的子游戏类型
         user.disconnectedRoom = true;
+        user.disconnectedRoomId = room;
         user.continueGameType = allGameTypes[i];
       }
     }
@@ -237,6 +237,7 @@ export class AccountApi extends BaseApi {
       if (room) {
         // 掉线的子游戏类型
         model.disconnectedRoom = true;
+        model.disconnectedRoomId = room;
         model.continueGameType = allGameTypes[i];
       }
     }
