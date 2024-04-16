@@ -302,11 +302,13 @@ export class AccountApi extends BaseApi {
     const roomInfo = await CombatGain.findOne({playerId: model._id}).sort({time: -1});
     if (roomInfo) {
       const roomrecord = await RoomRecord.findOne({room: roomInfo.room});
-      model.lastGame = {
-        gameType: roomrecord.category,
-        gameName: roomInfo.gameName,
-        categoryId: roomrecord.rule.categoryId,
-        categoryName: roomInfo.caregoryName
+      if (roomrecord) {
+        model.lastGame = {
+          gameType: roomrecord.category,
+          gameName: roomInfo.gameName,
+          categoryId: roomrecord.rule.categoryId,
+          categoryName: roomInfo.caregoryName
+        }
       }
     }
 
