@@ -398,7 +398,7 @@ export default class PlayerService extends BaseService {
 
       // 如果称号已过期，删除称号
       if (playerCardTable && playerCardTable.times !== -1 && playerCardTable.times <= new Date().getTime()) {
-        await playerCardTable.remove({_id: playerCardTable._id});
+        await PlayerCardTable.remove({_id: playerCardTable._id});
         playerCardTable = null;
       }
 
