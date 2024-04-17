@@ -13,6 +13,7 @@ import Debris from "../../database/models/debris";
 import DebrisTotalPrize from "../../database/models/DebrisTotalPrize";
 import VipConfig from "../../database/models/VipConfig";
 import RegressionSignPrize from "../../database/models/RegressionSignPrize";
+import CardType from "../../database/models/CardType";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -1091,5 +1092,204 @@ export class MockDataApi extends BaseApi {
     await CardTable.insertMany(datas);
 
     return this.replySuccess(datas);
+  }
+
+  // 录入牌型
+  @addApi()
+  async saveCardType() {
+    const result = await CardType.find();
+
+    if (result.length) {
+      await CardType.remove({_id: {$ne: null}}).exec();
+    }
+    const cardTypes = [
+      {cardName: "起手叫", multiple: 4, isOrdinal: false, isTianHu: true, cardId: 1},
+      {cardName: "双星辰", multiple: 4, isOrdinal: false, constellateCount: 2, level: 1, cardId: 2},
+      {
+        cardName: "门清",
+        multiple: 2,
+        isOrdinal: false,
+        condition: {peng: false, mingGang: false, hu: true, dianPao: true},
+        level: 1,
+        cardId: 3
+      },
+      {cardName: "杠上开花", multiple: 3, isOrdinal: false, condition: {gang: true, hu: true}, cardId: 4},
+      {
+        cardName: "妙手回春",
+        multiple: 3,
+        isOrdinal: false,
+        condition: {residueCount: 0, zimo: true, hu: true},
+        level: 1,
+        cardId: 5
+      },
+      {
+        cardName: "海底捞月",
+        multiple: 2,
+        isOrdinal: false,
+        condition: {residueCount: 0, hu: true, jiePao: true},
+        level: 1,
+        cardId: 6
+      },
+      {
+        cardName: "杠上炮",
+        multiple: 2,
+        isOrdinal: false,
+        condition: {gang: true, hu: true, jiePao: true},
+        cardId: 7
+      },
+      {
+        cardName: "抢杠胡",
+        multiple: 2,
+        isOrdinal: false,
+        condition: {buGang: true, hu: true, jiePao: true},
+        cardId: 8
+      },
+      {cardName: "绝张", multiple: 2, isOrdinal: false, condition: {simpleCount: 1, hu: true}, cardId: 9},
+      {
+        cardName: "对对胡",
+        multiple: 2,
+        isOrdinal: false,
+        condition: {keCount: 4, hu: true},
+        level: 1,
+        cardId: 10
+      },
+      {cardName: "单色星辰", multiple: 2, isOrdinal: false, constellateCount: 1, level: 1, cardId: 11},
+      {cardName: "双同刻", multiple: 2, isOrdinal: false, condition: {keCount: 2}, level: 1, cardId: 12},
+      {cardName: "十二行星", multiple: 3, isOrdinal: false, condition: {gangCount: 3}, level: 1, cardId: 13},
+      {cardName: "十八行星", multiple: 4, isOrdinal: false, condition: {gangCount: 4}, level: 1, cardId: 14},
+      {
+        cardName: "断么九",
+        multiple: 6,
+        isOrdinal: true,
+        ordinalCard: [2, 3, 4, 5, 6, 7, 8],
+        level: 1,
+        cardId: 15
+      },
+      {
+        cardName: "不求人",
+        multiple: 6,
+        isOrdinal: false,
+        condition: {peng: false, mingGang: false, hu: true, zimo: true},
+        level: 1,
+        cardId: 16
+      },
+      {
+        cardName: "混双",
+        multiple: 6,
+        isOrdinal: true,
+        ordinalCard: [2, 4, 6, 8],
+        constellateCount: 1,
+        level: 1,
+        cardId: 17
+      },
+      {
+        cardName: "混单",
+        multiple: 6,
+        isOrdinal: true,
+        ordinalCard: [1, 3, 5, 7, 9],
+        constellateCount: 1,
+        level: 1,
+        cardId: 18
+      },
+      {cardName: "双暗刻", multiple: 6, isOrdinal: false, condition: {anGangCount: 2}, level: 1, cardId: 19},
+      {
+        cardName: "三节高",
+        multiple: 8,
+        isOrdinal: false,
+        condition: {huaType: "simple", keCount: 3},
+        level: 1,
+        cardId: 20
+      },
+      {cardName: "双色星辰", multiple: 8, isOrdinal: false, constellateCount: 2, level: 1, cardId: 21},
+      {cardName: "混小", multiple: 12, isOrdinal: true, ordinalCard: [1, 2, 3], level: 1, cardId: 22},
+      {cardName: "混中", multiple: 12, isOrdinal: true, ordinalCard: [4, 5, 6], level: 1, cardId: 23},
+      {cardName: "混大", multiple: 12, isOrdinal: true, ordinalCard: [7, 8, 9], level: 1, cardId: 24},
+      {cardName: "星灭光离", multiple: 12, isOrdinal: false, condition: {laiCount: 0}, level: 1, cardId: 25},
+      {cardName: "三暗刻", multiple: 12, isOrdinal: false, condition: {anGangCount: 3}, level: 1, cardId: 26},
+      {cardName: "三色星辰", multiple: 16, isOrdinal: false, constellateCount: 3, level: 1, cardId: 27},
+      {cardName: "七对", multiple: 16, isOrdinal: false, condition: {duiCount: 7}, level: 1, cardId: 28},
+      {
+        cardName: "四节高",
+        multiple: 16,
+        isOrdinal: false,
+        condition: {huaType: "simple", keCount: 4},
+        level: 1,
+        cardId: 29
+      },
+      {cardName: "全单刻", multiple: 24, isOrdinal: true, ordinalCard: [1, 3, 5, 7, 9], level: 1, cardId: 30},
+      {cardName: "全双刻", multiple: 24, isOrdinal: true, ordinalCard: [2, 4, 6, 8], level: 1, cardId: 31},
+      {cardName: "四暗刻", multiple: 24, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 32},
+      {
+        cardName: "十二星座",
+        multiple: 24,
+        isOrdinal: false,
+        constellateCount: 3,
+        condition: {gangCount: 3},
+        level: 1,
+        cardId: 33
+      },
+      {cardName: "地胡", multiple: 32, isOrdinal: false, condition: {anGangCount: 4}, cardId: 34},
+      {cardName: "景星麟凤", multiple: 36, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 35},
+      {cardName: "天胡", multiple: 48, isOrdinal: false, condition: {anGangCount: 4}, cardId: 36},
+      {cardName: "一路福星", multiple: 72, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 37},
+      {cardName: "三星高照", multiple: 99, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 38},
+      {cardName: "星流电击", multiple: 188, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 39},
+      {cardName: "流星望电", multiple: 246, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 40},
+      {cardName: "星离月会", multiple: 266, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 41},
+      {cardName: "棋布星陈", multiple: 288, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 42},
+      {cardName: "一天星斗", multiple: 288, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 43},
+      {cardName: "移星换斗", multiple: 299, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 44},
+      {cardName: "星流影集", multiple: 318, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 45},
+      {cardName: "大步流星", multiple: 333, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 46},
+      {cardName: "月落星沉", multiple: 366, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 47},
+      {cardName: "众星捧月", multiple: 377, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 48},
+      {cardName: "摩羯之吻", multiple: 399, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 49},
+      {cardName: "星蝎交辉", multiple: 488, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 50},
+
+      // 血流红中
+      {cardName: "清幺九", multiple: 88, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 51},
+      {cardName: "连七对", multiple: 88, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 52},
+      {cardName: "一色双龙会", multiple: 64, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 53},
+      {cardName: "九莲宝灯", multiple: 64, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 54},
+      {cardName: "天胡", multiple: 48, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 55},
+      {cardName: "绿一色", multiple: 48, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 56},
+      {cardName: "地胡", multiple: 24, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 57},
+      {cardName: "十八罗汉", multiple: 24, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 58},
+      {cardName: "全大", multiple: 24, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 59},
+      {cardName: "全中", multiple: 24, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 60},
+      {cardName: "全小", multiple: 24, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 61},
+      {cardName: "四节高", multiple: 24, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 62},
+      {cardName: "四暗刻", multiple: 16, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 63},
+      {cardName: "十二金钗", multiple: 12, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 64},
+      {cardName: "全双刻", multiple: 12, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 65},
+      {cardName: "三节高", multiple: 12, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 66},
+      {cardName: "金钩钩", multiple: 8, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 67},
+      {cardName: "百万石", multiple: 8, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 68},
+      {cardName: "大于五", multiple: 8, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 69},
+      {cardName: "小于五", multiple: 8, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 70},
+      {cardName: "三暗刻", multiple: 6, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 71},
+      {cardName: "七对", multiple: 6, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 72},
+      {cardName: "清一色", multiple: 6, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 73},
+      {cardName: "清龙", multiple: 6, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 74},
+      {cardName: "杠上开花", multiple: 4, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 75},
+      {cardName: "推不倒", multiple: 4, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 76},
+      {cardName: "不求人", multiple: 4, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 77},
+      {cardName: "对对胡", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 78},
+      {cardName: "老少副", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 79},
+      {cardName: "门清", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 80},
+      {cardName: "断幺九", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 81},
+      {cardName: "双暗刻", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 82},
+      {cardName: "双同刻", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 83},
+      {cardName: "坎张", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 84},
+      {cardName: "边张", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 85},
+      {cardName: "妙手回春", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 86},
+      {cardName: "海底捞月", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 87},
+      {cardName: "杠上炮", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 88},
+      {cardName: "绝张", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 89},
+      {cardName: "抢杠胡", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 90},
+      {cardName: "根", multiple: 2, isOrdinal: false, condition: {anGangCount: 4}, level: 1, cardId: 91},
+
+    ];
+    await CardType.insertMany(cardTypes);
   }
 }
