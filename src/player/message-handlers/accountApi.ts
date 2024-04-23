@@ -322,8 +322,8 @@ export class AccountApi extends BaseApi {
 
     this.replySuccess(model);
 
-    const activity = await this.getActivityInfo(model, mnpVersion, platform);
-    this.player.sendMessage("account/getActivityReply", {ok: true, data: activity});
+    // const activity = await this.getActivityInfo(model, mnpVersion, platform);
+    // this.player.sendMessage("account/getActivityReply", {ok: true, data: activity});
   }
 
   // 公共房战绩列表

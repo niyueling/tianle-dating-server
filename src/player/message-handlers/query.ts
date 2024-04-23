@@ -1,4 +1,3 @@
-import {GameType} from "@fm/common/constants";
 import {GameError} from "@fm/common/errors";
 import {RoomInfoModel} from "../../database/models/roomInfo";
 import {addApi, BaseApi} from "./baseApi";
