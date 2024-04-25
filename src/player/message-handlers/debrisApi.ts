@@ -19,6 +19,7 @@ export class DebrisApi extends BaseApi {
     }
 
     const taskData = await this.getDailyTaskData(message, user);
+    taskData["taskType"] = message.taskType;
 
     return this.replySuccess(taskData);
   }
