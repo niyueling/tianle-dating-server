@@ -85,7 +85,7 @@ export class LoginSignApi extends BaseApi {
 
     // 判断今日是否领取
     const count = await StartPocketRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
-    if (count > 1) {
+    if (count > 2) {
       return this.replyFail(TianleErrorCode.prizeIsReceive);
     }
 
