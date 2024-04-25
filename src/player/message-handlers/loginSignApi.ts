@@ -84,10 +84,10 @@ export class LoginSignApi extends BaseApi {
     const point = Math.floor(Math.random() * 6) + 1;
 
     // 判断今日是否领取
-    const count = await StartPocketRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
-    if (count > 0) {
-      return this.replyFail(TianleErrorCode.prizeIsReceive);
-    }
+    // const count = await StartPocketRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+    // if (count > 0) {
+    //   return this.replyFail(TianleErrorCode.prizeIsReceive);
+    // }
 
     const rank = point === 1 ? 8 : point;
     const amount = 100000 * rank;
