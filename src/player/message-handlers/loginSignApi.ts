@@ -71,9 +71,9 @@ export class LoginSignApi extends BaseApi {
   async startPocketData() {
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
-    const receive = await StartPocketRecord.findOne({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+    const count = await StartPocketRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
 
-    return this.replySuccess({receive: !!receive, amount: 800000, base: 100000});
+    return this.replySuccess({receive: count > 0, receiveCount: count, amount: 800000, base: 100000});
   }
 
   // 领取开运红包
