@@ -40,7 +40,6 @@ export class AccountApi extends BaseApi {
     user.disconnectedRoom = false
     const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(user._id.toString());
     if (disconnectedRoom) {
-      console.warn("disconnectedRoom-%s", JSON.stringify(disconnectedRoom));
       user.disconnectedRoom = true;
     }
 
