@@ -784,7 +784,7 @@ export class GoodsApi extends BaseApi {
   async beautyNumberLists(message) {
     let param = {_id: {$ne: null}};
     if (message.numberId) {
-      param["numberId"] = { $regex: new RegExp(message.numberId, 'i') } ;
+      param["numberId"] = message.numberId;
     }
 
     console.log(param);
