@@ -30,7 +30,7 @@ export class GoodsApi extends BaseApi {
     const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1}).lean();
     const headLists = await GoodsHeadBorder.find().lean();
     let param = {_id: {$ne: null}};
-    if (!message.numberId) {
+    if (message.numberId) {
       param["numberId"] = { $regex: new RegExp(message.numberId, 'i') } ;
     }
 
