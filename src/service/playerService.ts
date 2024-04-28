@@ -34,6 +34,7 @@ import TaskTotalPrize from "../database/models/TaskTotalPrize";
 import TaskTotalPrizeRecord from "../database/models/TaskTotalPrizeRecord";
 import Task from "../database/models/task";
 import RoomScoreRecord from "../database/models/roomScoreRecord";
+import VipConfig from "../database/models/VipConfig";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
@@ -323,6 +324,16 @@ export default class PlayerService extends BaseService {
     order.status = 1;
     order.transactionId = thirdOrderNo;
     await order.save();
+
+    // 判断vip是否升级
+    user.vipExperience += order.price * 100;
+
+    const vipList = await VipConfig.find({vip: {$gt: user.vip}}).sort({vip: 1}).lean();
+    for (let i = 0; i < vipList.length; i++) {
+      if (user.vipExperience >= vipList[i].experience) {
+        user.vip++;
+      }
+    }
 
     return true;
   }
