@@ -332,6 +332,7 @@ export default class PlayerService extends BaseService {
     for (let i = 0; i < vipList.length; i++) {
       if (user.vipExperience >= vipList[i].experience) {
         user.vip++;
+        user.vipExperience -= vipList[i].experience;
       }
     }
 
