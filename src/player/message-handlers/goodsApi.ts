@@ -31,7 +31,7 @@ export class GoodsApi extends BaseApi {
     const headLists = await GoodsHeadBorder.find().lean();
     let param = {_id: {$ne: null}};
     if (message.numberId) {
-      param["numberId"] = { $regex: new RegExp(message.numberId, 'i') } ;
+      param["numberId"] = message.numberId;
     }
 
     const beautyNumberLists = await GoodsBeautyNumber.aggregate([
