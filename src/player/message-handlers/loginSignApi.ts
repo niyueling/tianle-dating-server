@@ -92,6 +92,20 @@ export class LoginSignApi extends BaseApi {
     const rank = point === 1 ? 8 : point;
     const amount = 100000 * rank;
 
+    let user = await this.service.playerService.getPlayerModel(this.player.model._id);
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    // 记录日志
+    await StartPocketRecord.create({
+      playerId: user._id.toString(),
+      shortId: user.shortId,
+      amount: amount,
+      point,
+      rank,
+    });
+
     return this.replySuccess({point, rank, amount, base: 100000, receiveCount: count + 1});
   }
 
@@ -101,11 +115,8 @@ export class LoginSignApi extends BaseApi {
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
 
-    // 判断今日是否领取
+    // 今日领取次数
     const count = await StartPocketRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
-    if (count > 2) {
-      return this.replyFail(TianleErrorCode.prizeIsReceive);
-    }
 
     const rank = message.point === 1 ? 8 : message.point;
     const amount = 100000 * rank;
@@ -122,15 +133,6 @@ export class LoginSignApi extends BaseApi {
       user.gold, `领取开运红包`);
 
     await this.player.updateResource2Client();
-
-    // 记录日志
-    await StartPocketRecord.create({
-      playerId: user._id.toString(),
-      shortId: user.shortId,
-      amount: amount,
-      point: message.point,
-      rank,
-    });
 
     return this.replySuccess({point: message.point, rank, amount, base: 100000, receiveCount: count + 1});
   }
