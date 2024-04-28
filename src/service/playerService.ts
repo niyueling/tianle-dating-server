@@ -319,7 +319,6 @@ export default class PlayerService extends BaseService {
 
     user.voucher += order.diamond;
     user.dominateCount = Math.floor(Math.random() * 5) + 1;
-    await user.save();
 
     order.status = 1;
     order.transactionId = thirdOrderNo;
@@ -335,6 +334,8 @@ export default class PlayerService extends BaseService {
         user.vipExperience -= vipList[i].experience;
       }
     }
+
+    await user.save();
 
     return true;
   }
