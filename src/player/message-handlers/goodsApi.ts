@@ -437,7 +437,6 @@ export class GoodsApi extends BaseApi {
 
     //判断用户是否首次充值该模板
     const orderCount = await UserRechargeOrder.count({playerId: message.userId, status: 1, goodsId: message._id });
-    const rechargeCount = await UserRechargeOrder.count({playerId: message.userId, status: 1 });
 
     // 获取用户信息，判断openid和session_key是否绑定
     const player = await PlayerModel.findOne({_id: message.userId}).lean();
@@ -451,7 +450,7 @@ export class GoodsApi extends BaseApi {
     const data = {
       playerId: message.userId,
       shortId: player.shortId,
-      diamond: (rechargeCount > 0 ? template.amount : template.amount * 10) + (orderCount > 0 ? 0 : template.firstTimeAmount) + template.originPrice,
+      diamond: template.amount + (orderCount > 0 ? 0 : template.firstTimeAmount) + template.originPrice,
       price: template.price,
       goodsId: template._id,
       source: "wechat",
