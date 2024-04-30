@@ -672,9 +672,9 @@ export default class PlayerService extends BaseService {
         receive: !!isReceive
       };
 
-      if (livenessCount >= data.liveness && !data.receive) {
-        canReceive = true;
-      }
+      // if (livenessCount >= data.liveness && !data.receive) {
+      //   canReceive = true;
+      // }
 
       totalLists.push(data);
     }
