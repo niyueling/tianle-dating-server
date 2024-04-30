@@ -34,12 +34,14 @@ export class TurnTableApi extends BaseApi {
     }
 
     const freeCount = await this.service.utils.getGlobalConfigByName(GlobalConfigKeys.blockTurntableActiveFreeCount) || 0;
+    const shareCount = await this.service.utils.getGlobalConfigByName(GlobalConfigKeys.blockTurntableActiveShareCount) || 0;
     const count = await this.todayLotteryCount(user._id.toString(), user.shortId);
 
     this.replySuccess({
       prizeList: gifts,
       lotteryTimes: user.turntableTimes,
       freeCount: Number(freeCount),
+      shareCount: Number(shareCount),
       count,
     });
   }
