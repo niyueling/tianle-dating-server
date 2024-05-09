@@ -1199,10 +1199,7 @@ export class MockDataApi extends BaseApi {
       {
         cardName: "十二星座",
         multiple: 24,
-        isOrdinal: false,
-        constellateCount: 3,
-        condition: {gangCount: 3},
-        level: 1,
+        gameType: "majiang",
         cardId: 33
       },
       {cardName: "地胡", multiple: 32, gameType: "majiang", cardId: 34},
