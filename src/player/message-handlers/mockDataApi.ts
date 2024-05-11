@@ -1337,8 +1337,8 @@ export class MockDataApi extends BaseApi {
     const avatars = [];
 
     for (let i = 0; i < result.length; i++) {
-      result.avatar = result.avatar.replace(/https:\/\/im-serve.oss-cn-beijing.aliyuncs.com\//g, 'https://tianlegame.hfdsdas.cn/');
-      avatars.push(result.avatar);
+      result[i].avatar = result[i].avatar.replace(/https:\/\/im-serve.oss-cn-beijing.aliyuncs.com\//g, 'https://tianlegame.hfdsdas.cn/');
+      avatars.push(result[i].avatar);
     }
 
     // await CardTable.insertMany(datas);
