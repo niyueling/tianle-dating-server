@@ -1339,9 +1339,9 @@ export class MockDataApi extends BaseApi {
     for (let i = 0; i < result.length; i++) {
       result[i].avatar = result[i].avatar.replace(/https:\/\/im-serve.oss-cn-beijing.aliyuncs.com\//g, 'https://tianlegame.hfdsdas.cn/');
       avatars.push(result[i].avatar);
-    }
 
-    // await CardTable.insertMany(datas);
+      await Player.update({_id: result[i]._id }, {$set: { avatar: result[i].avatar }});
+    }
 
     return this.replySuccess(avatars);
   }
