@@ -1329,4 +1329,20 @@ export class MockDataApi extends BaseApi {
     ];
     await CardType.insertMany(cardTypes);
   }
+
+  // 更新头像信息
+  @addApi()
+  async updatePlayerAvatar() {
+    const result = await Player.find({avatar: { $regex: /https:\/\/im-serve.oss-cn-beijing.aliyuncs.com/}});
+    const avatars = [];
+
+    for (let i = 0; i < result.length; i++) {
+      result.avatar = result.avatar.replace(/https:\/\/im-serve.oss-cn-beijing.aliyuncs.com\//g, 'https://tianlegame.hfdsdas.cn/');
+      avatars.push(result.avatar);
+    }
+
+    // await CardTable.insertMany(datas);
+
+    return this.replySuccess(avatars);
+  }
 }
