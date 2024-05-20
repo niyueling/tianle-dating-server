@@ -1,6 +1,6 @@
-import {GameError} from "@fm/common/errors";
 import {RoomInfoModel} from "../../database/models/roomInfo";
 import {addApi, BaseApi} from "./baseApi";
+import {TianleErrorCode} from "@fm/common/constants";
 
 // 查询接口
 export class QueryApi extends BaseApi {
@@ -14,6 +14,7 @@ export class QueryApi extends BaseApi {
     if (res) {
       return this.replySuccess({gameType: res.gameType})
     }
-    throw new GameError('房间不存在');
+
+    return this.replyFail(TianleErrorCode.roomInvalid);
   }
 }
