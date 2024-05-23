@@ -80,9 +80,10 @@ export default class RoomRegister extends BaseService {
 
   // 获取房间加入人数
   async getRoomJoinCount(roomNumber) {
-    let playerCount = await this.redis.getAsync(`${roomNumber}:joinCount`);
+    let playerCount = await this.redis.hgetAsync(`room:join:${roomNumber}`, `joinCount`);
+    let capacity = await this.redis.hgetAsync(`room:join:${roomNumber}`, `capacity`);
 
-    return Number(playerCount);
+    return {joinCount: Number(playerCount), capaticy: Number(capacity)};
   }
 
   // 从 mongo 中获取掉线房间号
