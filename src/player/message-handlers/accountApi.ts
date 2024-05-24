@@ -355,7 +355,7 @@ export class AccountApi extends BaseApi {
         players: r.scores
       }
     })
-    this.replySuccessDirect(formatted);
+    this.replySuccessDirect({ok: true, data: formatted});
   }
 
   // 删除公共房记录
