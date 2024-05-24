@@ -184,14 +184,14 @@ export default {
         })
       })
 
-      player.sendMessage('account/gameReplayListReply', records)
+      player.sendMessage('account/gameReplayListReply', {ok: true, data: records})
     }
   },
   'account/gameReplay': async (player, message) => {
     if (player.model) {
       let id = message._id
       let replay = await GameRecord.findOne({_id: id}).lean().exec()
-      player.sendMessage('account/gameReplayReply', replay)
+      player.sendMessage('account/gameReplayReply', {ok: true, data: replay})
     }
   },
   'account/topPlayers': async (player) => {
