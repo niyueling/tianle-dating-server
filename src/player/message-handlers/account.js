@@ -364,7 +364,7 @@ export default {
 
         taskMsg = {taskIndex: null, taskName: null, taskProgress: null, taskStatus: null, progressStr: null}
         var endTaskindex = index;
-        if (endTaskindex == task.index) {
+        if (endTaskindex === task.index) {
           taskMsg.taskIndex = endTaskindex;
           taskMsg.taskName = task.name;
           taskMsg.taskStatus = 2//0完成领取奖励、1进行中、2已达成。
@@ -382,7 +382,7 @@ export default {
       cTasks.forEach((index) => {
         var curTaskindex = index;
         taskMsg = {taskIndex: null, taskName: null, taskProgress: null, taskStatus: null, progressStr: null}
-        if (curTaskindex == task.index) {
+        if (curTaskindex === task.index) {
           taskMsg.taskIndex = curTaskindex;
           taskMsg.taskName = task.name;
           if (task.condition.inviterShortId) {//填写短ID任务类型
@@ -473,7 +473,7 @@ export default {
             msgReply = "已填写过好友ID,领取失败"
             return false
           }
-          if (message.inviterShortId == player.model.shortId) {
+          if (message.inviterShortId === player.model.shortId) {
             msgReply = "不能填写自己的ID,领取失败"
             return false
           }
