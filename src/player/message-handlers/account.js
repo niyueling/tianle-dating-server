@@ -179,7 +179,7 @@ export default {
       records.forEach((record) => {
         record.record.sort((p1, p2) => {
           if (p1 && p2) {
-            p1.name.localeCompare(p2.name)
+            p1.nickname.localeCompare(p2.nickname)
           }
         })
       })
