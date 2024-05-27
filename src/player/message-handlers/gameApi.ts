@@ -73,8 +73,6 @@ export class GameApi extends BaseApi {
       // 玩家列表
       players,
       rule: result.rule,
-      // 总局数
-      juIndex: result && result.juIndex || 0,
       // 创建时间
       createAt: result && result.createAt || new Date(),
       // 游戏名称
