@@ -350,10 +350,9 @@ export class AccountApi extends BaseApi {
       for (let i = 0; i < gameRecords.length; i++) {
         const states = gameRecords[i].states;
         for (let j = 0; j < states.length; j++) {
-          console.warn("state.events-%s", roomNum, JSON.stringify(states[j].events))
           players[j].jieGang += states[j].jieGangCount;
           players[j].fangGang += states[j].fangGangCount;
-          if (states[j].events.ziMo) {
+          if (states[j].events.zimo) {
             players[j].ziMo++;
             players[j].huCount++;
           }
