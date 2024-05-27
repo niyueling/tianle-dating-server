@@ -316,7 +316,7 @@ export class AccountApi extends BaseApi {
     PlayerManager.getInstance().addPlayer(this.player);
 
     //测试分享战绩
-    await this.shareRecord("701157");
+    await this.shareRecord(701157);
 
     const channel = ChannelManager.getInstance().getChannel();
     channel.join(this.player);
@@ -329,9 +329,9 @@ export class AccountApi extends BaseApi {
     // this.player.sendMessage("account/getActivityReply", {ok: true, data: activity});
   }
 
-  async shareRecord(roomNum) {
-    const result = await RoomRecord.findOne({ roomNum: roomNum.toString() });
-    const gameRecords = await GameRecord.find({ roomId: roomNum.toString() });
+  async shareRecord(roomNum: number) {
+    const result = await RoomRecord.findOne({ roomNum: roomNum });
+    const gameRecords = await GameRecord.find({ roomId: roomNum });
     let players = [];
     if (result && result.scores) {
       // 过滤 null,从大到小排列
