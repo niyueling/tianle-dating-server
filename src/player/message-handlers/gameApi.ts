@@ -6,7 +6,10 @@ import CombatGain from "../../database/models/combatGain";
 import GameRecord from "../../database/models/gameRecord";
 
 const getGameName = {
-  [GameType.mj]: '浦城麻将'
+  [GameType.mj]: '十二星座',
+  [GameType.xueliu]: '血流红中',
+  [GameType.pcmj]: '浦城麻将',
+  [GameType.guobiao]: '国标血流'
 }
 
 // 游戏配置

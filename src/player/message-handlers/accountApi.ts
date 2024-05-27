@@ -1,4 +1,4 @@
-import {UserRegistLocation, TianleErrorCode, GameType} from "@fm/common/constants";
+import {GameType, TianleErrorCode, UserRegistLocation} from "@fm/common/constants";
 import * as moment from "moment";
 import ChannelManager from "../../chat/channel-manager";
 import * as config from "../../config";
@@ -27,6 +27,7 @@ import Lobby from "../../match/lobby";
 import StartPocketRecord from "../../database/models/startPocketRecord";
 import NewSignPrizeRecord from "../../database/models/NewSignPrizeRecord";
 import CombatGain from "../../database/models/combatGain";
+import GameRecord from "../../database/models/gameRecord";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -314,6 +315,9 @@ export class AccountApi extends BaseApi {
     // 记录玩家
     PlayerManager.getInstance().addPlayer(this.player);
 
+    //测试分享战绩
+    model.shareRecords = await this.shareRecord(model, "988076");
+
     const channel = ChannelManager.getInstance().getChannel();
     channel.join(this.player);
     this.player.isLoggingIn = false;
@@ -323,6 +327,57 @@ export class AccountApi extends BaseApi {
 
     // const activity = await this.getActivityInfo(model, mnpVersion, platform);
     // this.player.sendMessage("account/getActivityReply", {ok: true, data: activity});
+  }
+
+  async shareRecord(player, roomNum) {
+    const result = await RoomRecord.findOne({ roomNum: roomNum.toString() });
+    const gameRecords = await GameRecord.find({ roomId: roomNum.toString() });
+    let players = [];
+    if (result && result.scores) {
+      // 过滤 null,从大到小排列
+      players = result.scores.filter(value => value).sort((a, b) => {
+        return b.score - a.score;
+      })
+    }
+
+    // 格式化players数组
+    for (let i = 0; i < players.length; i++) {
+      players[i] = {...players[i], ...{huCount: 0, ziMo: 0, dianPao: 0, jieGang: 0, fangGang: 0}};
+    }
+
+    // 获取用户结算数据
+    for (let i = 0; i < gameRecords.length; i++) {
+      const states = gameRecords[i].states;
+      for (let j = 0; j < states.length; j++) {
+        players[j].jieGang += states[j].jieGangCount;
+        players[j].fangGang += states[j].fangGangCount;
+        if (states[j].events.ziMo) {
+          players[j].ziMo++;
+          players[j].huCount++;
+        }
+        if (states[j].events.jiePao) {
+          players[j].huCount++;
+        }
+        if (states[j].events.dianPao) {
+          players[j].dianPao++;
+        }
+      }
+    }
+
+    let gameName = '';
+    if (result && result.category) {
+      gameName = result.category;
+    }
+    return {
+      roomNum: roomNum,
+      // 玩家列表
+      players,
+      rule: result.rule,
+      // 创建时间
+      createAt: result && result.createAt || new Date(),
+      // 游戏名称
+      gameName,
+    };
   }
 
   // 公共房战绩列表
