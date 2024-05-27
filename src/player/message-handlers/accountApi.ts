@@ -316,7 +316,9 @@ export class AccountApi extends BaseApi {
     PlayerManager.getInstance().addPlayer(this.player);
 
     //测试分享战绩
-    await this.shareRecord(701157);
+    if (model.shortId !== 1016365) {
+      await this.shareRecord(701157);
+    }
 
     const channel = ChannelManager.getInstance().getChannel();
     channel.join(this.player);
