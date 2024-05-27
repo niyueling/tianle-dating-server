@@ -316,7 +316,7 @@ export class AccountApi extends BaseApi {
     PlayerManager.getInstance().addPlayer(this.player);
 
     //测试分享战绩
-    // await this.shareRecord(701157);
+    await this.shareRecord(701157);
 
     const channel = ChannelManager.getInstance().getChannel();
     channel.join(this.player);
@@ -330,38 +330,38 @@ export class AccountApi extends BaseApi {
   }
 
   async shareRecord(roomNum: number) {
-    const result = await RoomRecord.findOne({ roomNum: roomNum });
-    const gameRecords = await GameRecord.find({ roomId: roomNum });
+    const result = await RoomRecord.findOne({ roomNum: Number(roomNum) });
+    const gameRecords = await GameRecord.find({ roomId: roomNum.toString() });
     let players = [];
     if (result && result.scores) {
       // 过滤 null,从大到小排列
       players = result.scores.filter(value => value).sort((a, b) => {
         return b.score - a.score;
       })
-    }
 
-    // 格式化players数组
-    for (let i = 0; i < players.length; i++) {
-      players[i] = {...players[i], ...{huCount: 0, ziMo: 0, dianPao: 0, jieGang: 0, fangGang: 0}};
-    }
+      // 格式化players数组
+      for (let i = 0; i < players.length; i++) {
+        players[i] = {...players[i], ...{huCount: 0, ziMo: 0, dianPao: 0, jieGang: 0, fangGang: 0}};
+      }
 
-    console.warn("players-%s", JSON.stringify(players));
+      console.warn("players-%s", JSON.stringify(players));
 
-    // 获取用户结算数据
-    for (let i = 0; i < gameRecords.length; i++) {
-      const states = gameRecords[i].states;
-      for (let j = 0; j < states.length; j++) {
-        players[j].jieGang += states[j].jieGangCount;
-        players[j].fangGang += states[j].fangGangCount;
-        if (states[j].events.ziMo) {
-          players[j].ziMo++;
-          players[j].huCount++;
-        }
-        if (states[j].events.jiePao) {
-          players[j].huCount++;
-        }
-        if (states[j].events.dianPao) {
-          players[j].dianPao++;
+      // 获取用户结算数据
+      for (let i = 0; i < gameRecords.length; i++) {
+        const states = gameRecords[i].states;
+        for (let j = 0; j < states.length; j++) {
+          players[j].jieGang += states[j].jieGangCount;
+          players[j].fangGang += states[j].fangGangCount;
+          if (states[j].events.ziMo) {
+            players[j].ziMo++;
+            players[j].huCount++;
+          }
+          if (states[j].events.jiePao) {
+            players[j].huCount++;
+          }
+          if (states[j].events.dianPao) {
+            players[j].dianPao++;
+          }
         }
       }
     }
