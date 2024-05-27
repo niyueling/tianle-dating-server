@@ -316,7 +316,7 @@ export class AccountApi extends BaseApi {
     PlayerManager.getInstance().addPlayer(this.player);
 
     //测试分享战绩
-    model.shareRecords = await this.shareRecord(model, "988076");
+    await this.shareRecord(model, "988076");
 
     const channel = ChannelManager.getInstance().getChannel();
     channel.join(this.player);
@@ -368,7 +368,8 @@ export class AccountApi extends BaseApi {
     if (result && result.category) {
       gameName = result.category;
     }
-    return {
+
+    this.player.sendMessage("game/shareRecordReply", {
       roomNum: roomNum,
       // 玩家列表
       players,
@@ -377,7 +378,7 @@ export class AccountApi extends BaseApi {
       createAt: result && result.createAt || new Date(),
       // 游戏名称
       gameName,
-    };
+    });
   }
 
   // 公共房战绩列表
