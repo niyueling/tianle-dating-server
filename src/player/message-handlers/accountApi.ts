@@ -334,6 +334,7 @@ export class AccountApi extends BaseApi {
   async shareRecord(roomNum: number) {
     const result = await RoomRecord.findOne({ roomNum: Number(roomNum) });
     const gameRecords = await GameRecord.find({ roomId: roomNum.toString() });
+    console.warn("room-%s", JSON.stringify(result))
     let players = [];
     if (result && result.scores) {
       // 过滤 null,从大到小排列
