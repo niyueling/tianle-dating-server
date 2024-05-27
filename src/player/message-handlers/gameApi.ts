@@ -2,9 +2,8 @@ import {GameType} from "@fm/common/constants";
 import RoomRecord from "../../database/models/roomRecord";
 import {addApi, BaseApi} from "./baseApi";
 import moment = require("moment");
-import {service} from "../../service/importService";
-import GameCategory from "../../database/models/gameCategory";
 import CombatGain from "../../database/models/combatGain";
+import GameRecord from "../../database/models/gameRecord";
 
 const getGameName = {
   [GameType.mj]: '浦城麻将'
@@ -32,6 +31,7 @@ export class GameApi extends BaseApi {
   })
   async shareRecord(message) {
     const result = await RoomRecord.findOne({ roomNum: message.roomNum.toString() });
+    const gameRecords = await GameRecord.find({ roomId: message.roomNum.toString() });
     let players = [];
     if (result && result.scores) {
       // 过滤 null,从大到小排列
@@ -39,6 +39,31 @@ export class GameApi extends BaseApi {
         return b.score - a.score;
       })
     }
+
+    // 格式化players数组
+    for (let i = 0; i < players.length; i++) {
+      players[i] = {...players[i], ...{huCount: 0, ziMo: 0, dianPao: 0, jieGang: 0, fangGang: 0}};
+    }
+
+    // 获取用户结算数据
+    for (let i = 0; i < gameRecords.length; i++) {
+      const states = gameRecords[i].states;
+      for (let j = 0; j < states.length; j++) {
+        players[j].jieGang += states[j].jieGangCount;
+        players[j].fangGang += states[j].fangGangCount;
+        if (states[j].events.ziMo) {
+          players[j].ziMo++;
+          players[j].huCount++;
+        }
+        if (states[j].events.jiePao) {
+          players[j].huCount++;
+        }
+        if (states[j].events.dianPao) {
+          players[j].dianPao++;
+        }
+      }
+    }
+
     let gameName = '';
     if (result && result.category) {
       gameName = getGameName[result.category];
@@ -47,6 +72,7 @@ export class GameApi extends BaseApi {
       roomNum: message.roomNum,
       // 玩家列表
       players,
+      rule: result.rule,
       // 总局数
       juIndex: result && result.juIndex || 0,
       // 创建时间
