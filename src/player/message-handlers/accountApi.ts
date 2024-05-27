@@ -333,8 +333,7 @@ export class AccountApi extends BaseApi {
 
   async shareRecord(roomNum: number) {
     const result = await RoomRecord.findOne({ roomNum: Number(roomNum) });
-    const gameRecords = await GameRecord.find({ roomId: roomNum.toString() });
-    console.warn("roomNum-%s, room-%s", roomNum, JSON.stringify(result))
+    const gameRecords = await GameRecord.find({ roomId: roomNum.toString() }).sort({juShu: 1});
     let players = [];
     if (result && result.scores) {
       // 过滤 null,从大到小排列
@@ -347,12 +346,11 @@ export class AccountApi extends BaseApi {
         players[i] = {...players[i], ...{huCount: 0, ziMo: 0, dianPao: 0, jieGang: 0, fangGang: 0}};
       }
 
-      console.warn("players-%s", JSON.stringify(players));
-
       // 获取用户结算数据
       for (let i = 0; i < gameRecords.length; i++) {
         const states = gameRecords[i].states;
         for (let j = 0; j < states.length; j++) {
+          console.warn("state.events-%s", roomNum, JSON.stringify(states[j].events))
           players[j].jieGang += states[j].jieGangCount;
           players[j].fangGang += states[j].fangGangCount;
           if (states[j].events.ziMo) {
