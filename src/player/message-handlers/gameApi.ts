@@ -68,7 +68,7 @@ export class GameApi extends BaseApi {
       }
     }
 
-    let gameName = '';
+    let gameName = result.category;
     if (result && result.category) {
       gameName = getGameName[result.category];
     }
