@@ -9,6 +9,7 @@ const getGameName = {
   [GameType.mj]: '十二星座',
   [GameType.xueliu]: '血流红中',
   [GameType.pcmj]: '浦城麻将',
+  [GameType.xmmj]: '厦门麻将',
   [GameType.guobiao]: '国标血流'
 }
 
