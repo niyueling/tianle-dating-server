@@ -44,7 +44,7 @@ export class AccountApi extends BaseApi {
       user.disconnectedRoom = true;
     }
 
-    const allGameTypes = [GameType.mj, GameType.xueliu, GameType.guobiao, GameType.pcmj, GameType.xmmj];
+    const allGameTypes = [GameType.mj, GameType.xueliu, GameType.guobiao, GameType.pcmj, GameType.xmmj, GameType.ddz];
     for (let i = 0; i < allGameTypes.length; i++) {
       // 下发掉线子游戏
       const room = await service.roomRegister.getDisconnectRoomByPlayerId(user._id.toString(), allGameTypes[i]);
