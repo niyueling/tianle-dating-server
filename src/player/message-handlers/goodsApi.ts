@@ -319,15 +319,15 @@ export class GoodsApi extends BaseApi {
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
 
-    // 判断今日是否领取
-    const count = await FreeGoldRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
-    if (count > 0) {
-      return this.replyFail(TianleErrorCode.prizeIsReceive);
-    }
-
-    const goodInfo = await GoodsExchangeRuby.findOne({diamond: 0}).lean();
+    const goodInfo = await GoodsExchangeCurrency.findOne({diamond: 0, currency: TianLeGameCurrency.gold}).lean();
     if (!goodInfo) {
       return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    // 判断今日是否领取
+    const count = await FreeGoldRecord.count({playerId: this.player.model._id, goodsId: goodInfo._id, createAt: {$gte: start, $lt: end}});
+    if (count > 0) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
     }
 
     let user = await this.service.playerService.getPlayerModel(this.player.model._id);
@@ -335,18 +335,60 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
-    user.gold += goodInfo.gold;
+    user.gold += goodInfo.number;
     user.shopFreeGiftCount++;
     user.save();
 
-    await service.playerService.logGoldConsume(user._id, ConsumeLogType.freeShopGold, goodInfo.gold,
-      user.gold, `每日领取免费金豆`);
+    await service.playerService.logGoldConsume(user._id, ConsumeLogType.freeShopGold, goodInfo.number, user.gold, `每日领取免费金豆`);
 
     // 记录日志
     const record = await FreeGoldRecord.create({
       playerId: user._id.toString(),
       shortId: user.shortId,
-      gold: goodInfo.gold,
+      gold: goodInfo.number,
+      goodsId:goodInfo._id,
+      config: goodInfo
+    });
+
+    await this.player.updateResource2Client();
+
+    return this.replySuccess(record);
+  }
+
+  // 免费领取天乐豆
+  @addApi()
+  async receiveFreeTlGold() {
+    const start = moment(new Date()).startOf('day').toDate();
+    const end = moment(new Date()).endOf('day').toDate();
+
+    const goodInfo = await GoodsExchangeCurrency.findOne({diamond: 0, currency: TianLeGameCurrency.tianle}).lean();
+    if (!goodInfo) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    // 判断今日是否领取
+    const count = await FreeGoldRecord.count({playerId: this.player.model._id, goodsId: goodInfo._id, createAt: {$gte: start, $lt: end}});
+    if (count > 0) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
+    }
+
+    let user = await this.service.playerService.getPlayerModel(this.player.model._id);
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    user.tlGold += goodInfo.number;
+    user.shopFreeGiftCount++;
+    user.save();
+
+    await service.playerService.logGoldConsume(user._id, ConsumeLogType.freeShopGold, goodInfo.number, user.tlGold, `每日领取免费金豆`);
+
+    // 记录日志
+    const record = await FreeGoldRecord.create({
+      playerId: user._id.toString(),
+      shortId: user.shortId,
+      gold: goodInfo.number,
+      goodsId:goodInfo._id,
       config: goodInfo
     });
 
