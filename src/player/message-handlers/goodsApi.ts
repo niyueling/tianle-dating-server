@@ -141,7 +141,7 @@ export class GoodsApi extends BaseApi {
   // 钻石兑换金豆
   @addApi()
   async diamond2gold(message) {
-    let exchangeConf = await GoodsExchangeRuby.findById(message._id);
+    let exchangeConf = await GoodsExchangeCurrency.findById(message._id);
     // 兼容旧接口，如果没传_id和diamond
     if (!exchangeConf) {
       if (!message.diamond) {
@@ -159,13 +159,44 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.diamondInsufficient);
     }
 
-    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -exchangeConf.diamond, gold: exchangeConf.gold}});
+    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -exchangeConf.diamond, gold: exchangeConf.number}});
     this.player.model.diamond = model.diamond - exchangeConf.diamond;
-    this.player.model.gold = model.gold + exchangeConf.gold;
+    this.player.model.gold = model.gold + exchangeConf.number;
     await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -exchangeConf.diamond, this.player.model.diamond, `钻石兑换金豆`);
-    await service.playerService.logGoldConsume(model._id, ConsumeLogType.diamondToGold, exchangeConf.gold, this.player.model.gold, `钻石兑换金豆`);
+    await service.playerService.logGoldConsume(model._id, ConsumeLogType.diamondToGold, exchangeConf.number, this.player.model.gold, `钻石兑换金豆`);
 
-    this.replySuccess({diamond: exchangeConf.diamond, gold: exchangeConf.gold});
+    this.replySuccess({diamond: exchangeConf.diamond, gold: exchangeConf.number});
+    await this.player.updateResource2Client();
+  }
+
+  // 钻石兑换天乐豆
+  @addApi()
+  async diamond2tianle(message) {
+    let exchangeConf = await GoodsExchangeCurrency.findById(message._id);
+    // 兼容旧接口，如果没传_id和diamond
+    if (!exchangeConf) {
+      if (!message.diamond) {
+        return this.replyFail(TianleErrorCode.configNotFound);
+      }
+
+      exchangeConf = {
+        diamond: message.diamond,
+        number: message.diamond * config.game.diamondToTianLe
+      }
+    }
+
+    const model = await service.playerService.getPlayerModel(this.player.model._id);
+    if (exchangeConf.diamond > model.diamond && exchangeConf.diamond > 0) {
+      return this.replyFail(TianleErrorCode.diamondInsufficient);
+    }
+
+    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -exchangeConf.diamond, tlGold: exchangeConf.number}});
+    this.player.model.diamond = model.diamond - exchangeConf.diamond;
+    this.player.model.tlGold = model.tlGold + exchangeConf.number;
+    await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -exchangeConf.diamond, this.player.model.diamond, `钻石兑换天乐豆`);
+    await service.playerService.logGoldConsume(model._id, ConsumeLogType.diamondToTlGold, exchangeConf.number, this.player.model.tlGold, `钻石兑换天乐豆`);
+
+    this.replySuccess({diamond: exchangeConf.diamond, gold: exchangeConf.number});
     await this.player.updateResource2Client();
   }
 
