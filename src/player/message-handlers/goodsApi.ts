@@ -196,7 +196,29 @@ export class GoodsApi extends BaseApi {
     await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -exchangeConf.diamond, this.player.model.diamond, `钻石兑换天乐豆`);
     await service.playerService.logGoldConsume(model._id, ConsumeLogType.diamondToTlGold, exchangeConf.number, this.player.model.tlGold, `钻石兑换天乐豆`);
 
-    this.replySuccess({diamond: exchangeConf.diamond, gold: exchangeConf.number});
+    this.replySuccess({diamond: exchangeConf.diamond, tlGold: exchangeConf.number});
+    await this.player.updateResource2Client();
+  }
+
+  // 金豆兑换天乐豆
+  @addApi()
+  async gold2tianle(message) {
+    const exchangeConf = {
+      gold: message.gold,
+      number: message.gold * config.game.goldToTianLe
+    };
+
+    const model = await service.playerService.getPlayerModel(this.player.model._id);
+    if (exchangeConf.gold > model.gold) {
+      return this.replyFail(TianleErrorCode.goldInsufficient);
+    }
+
+    await PlayerModel.update({_id: model._id}, {$inc: {gold: -exchangeConf.gold, tlGold: exchangeConf.number}});
+    this.player.model.gold = model.gold - exchangeConf.gold;
+    this.player.model.tlGold = model.tlGold + exchangeConf.number;
+    await service.playerService.logGoldConsume(model._id, ConsumeLogType.goldToTlGold, -exchangeConf.gold, this.player.model.tlGold, `金豆兑换天乐豆`);
+
+    this.replySuccess({gold: exchangeConf.gold, tlGold: exchangeConf.number});
     await this.player.updateResource2Client();
   }
 
@@ -525,7 +547,7 @@ export class GoodsApi extends BaseApi {
     await this.player.updateResource2Client();
   }
 
-  // 安卓虚拟支付(购买代金券)
+  // 安卓虚拟支付(购买代金券,2024.06.18修改成充值钻石)
   @addApi()
   async voucherRecharge(message) {
     const lock = await service.utils.grantLockOnce(RedisKey.voucherRechargeLock + message.userId, 5);
@@ -535,7 +557,7 @@ export class GoodsApi extends BaseApi {
       return;
     }
 
-    const template = await GoodsModel.findOne({ isOnline: true, goodsType: 2, _id: message._id }).lean();
+    const template = await GoodsModel.findOne({ isOnline: true, goodsType: 1, _id: message._id }).lean();
     if (!template) {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
