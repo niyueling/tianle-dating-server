@@ -141,36 +141,31 @@ export class GoodsApi extends BaseApi {
   // 钻石兑换金豆
   @addApi()
   async diamond2gold(message) {
-    const exchangeConf = await GoodsExchangeRuby.findById(message._id);
+    let exchangeConf = await GoodsExchangeRuby.findById(message._id);
+    // 兼容旧接口，如果没传_id和diamond
     if (!exchangeConf) {
-      return this.replyFail(TianleErrorCode.configNotFound);
+      if (!message.diamond) {
+        return this.replyFail(TianleErrorCode.configNotFound);
+      }
+
+      exchangeConf = {
+        diamond: message.diamond,
+        number: message.diamond * config.game.diamondToGold
+      }
     }
 
-    const transferCount = await DiamondRecord.count({player: this.player.model._id, type: ConsumeLogType.gemForRuby });
-    const gem2ExchangeNum = exchangeConf.diamond;
     const model = await service.playerService.getPlayerModel(this.player.model._id);
-    const gold = (transferCount > 0 ? exchangeConf.gold : exchangeConf.gold * 10);
-    console.warn(transferCount, gold);
-    if (gem2ExchangeNum > model.diamond && gem2ExchangeNum > 0) {
+    if (exchangeConf.diamond > model.diamond && exchangeConf.diamond > 0) {
       return this.replyFail(TianleErrorCode.diamondInsufficient);
     }
 
-    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -gem2ExchangeNum, gold}});
-    this.player.model.diamond = model.diamond - gem2ExchangeNum;
-    this.player.model.gold = model.gold + gold;
-    let temp = '';
-    if (gold > 100000000) {
-      temp = (gold / 100000000) + "亿";
-    } else if (gold > 1000000000000) {
-      temp = (gold / 1000000000000) + "兆";
-    }
-    // 增加日志
-    await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -gem2ExchangeNum, this.player.model.diamond, `成功兑换${gem2ExchangeNum}钻石成${temp}金豆`);
-    // 记录金豆日志
-    await service.playerService.logGoldConsume(model._id, ConsumeLogType.diamondToGold, gold,
-      this.player.model.gold, `钻石兑换金豆`);
+    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -exchangeConf.diamond, gold: exchangeConf.gold}});
+    this.player.model.diamond = model.diamond - exchangeConf.diamond;
+    this.player.model.gold = model.gold + exchangeConf.gold;
+    await service.playerService.logGemConsume(model._id, ConsumeLogType.gemForRuby, -exchangeConf.diamond, this.player.model.diamond, `钻石兑换金豆`);
+    await service.playerService.logGoldConsume(model._id, ConsumeLogType.diamondToGold, exchangeConf.gold, this.player.model.gold, `钻石兑换金豆`);
 
-    this.replySuccess({diamond: gem2ExchangeNum, gold, goldFormat: temp});
+    this.replySuccess({diamond: exchangeConf.diamond, gold: exchangeConf.gold});
     await this.player.updateResource2Client();
   }
 
