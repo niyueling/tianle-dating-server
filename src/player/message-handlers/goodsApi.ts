@@ -1,7 +1,7 @@
 import GoodsModel from "../../database/models/goods";
 import GoodsExchangeRuby from "../../database/models/goodsExchangeRuby";
 import {addApi, BaseApi} from "./baseApi";
-import {ConsumeLogType, RedisKey, TianleErrorCode} from "@fm/common/constants";
+import {ConsumeLogType, RedisKey, TianleErrorCode, TianLeGameCurrency} from "@fm/common/constants";
 import UserRechargeOrder from "../../database/models/userRechargeOrder";
 import PlayerModel from "../../database/models/player";
 import crypto = require('crypto');
@@ -19,15 +19,19 @@ import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
 import GoodsHeadBorder from "../../database/models/GoodsHeadBorder";
 import GoodsBeautyNumber from "../../database/models/GoodsBeautyNumber";
 import PlayerBeautyNumberRecord from "../../database/models/PlayerBeautyNumberRecord";
+import GoodsExchangeCurrency from "../../database/models/goodsExchangeCurrency";
+import * as config from '../../config'
 
 // 商品
 export class GoodsApi extends BaseApi {
   // 商城列表
   @addApi()
   async getGoodsList(message) {
-    const goodsList = await GoodsModel.find({ isOnline: true, goodsType: 1 }).sort({price: 1}).lean();
-    const voucherList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1}).lean();
-    const rubyList = await GoodsExchangeRuby.find().sort({diamond: 1}).lean();
+    const diamondRechargeList = await GoodsModel.find({ isOnline: true, goodsType: 1 }).sort({price: 1}).lean();
+    const goldRechargeList = await GoodsModel.find({ isOnline: true, goodsType: 2 }).sort({price: 1}).lean();
+    const tianleRechargeList = await GoodsModel.find({ isOnline: true, goodsType: 3 }).sort({price: 1}).lean();
+    const goldExchangeList = await GoodsExchangeCurrency.find({currency: TianLeGameCurrency.gold}).sort({diamond: 1}).lean();
+    const tianleExchangeList = await GoodsExchangeCurrency.find({currency: TianLeGameCurrency.tianle}).sort({diamond: 1}).lean();
     const headLists = await GoodsHeadBorder.find().lean();
     let param = {_id: {$ne: null}};
     if (message.numberId) {
@@ -42,41 +46,71 @@ export class GoodsApi extends BaseApi {
     const start = moment(new Date()).startOf('day').toDate();
     const end = moment(new Date()).endOf('day').toDate();
 
+    // 兑换金豆
     let goldList = [];
-    for (let i = 0; i < rubyList.length; i++) {
+    for (let i = 0; i < goldExchangeList.length; i++) {
       let params = {
-        _id: rubyList[i]._id,
-        diamond: rubyList[i].diamond,
-        gold: rubyList[i].gold,
+        _id: goldExchangeList[i]._id,
+        diamond: goldExchangeList[i].diamond,
+        number: goldExchangeList[i].number,
         receive: false
       }
-      if (rubyList[i].diamond === 0) {
+      if (goldExchangeList[i].diamond === 0) {
         // 判断今日是否领取
-        const count = await FreeGoldRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
+        const count = await FreeGoldRecord.count({playerId: this.player.model._id, goodsId: goldExchangeList[i]._id, createAt: {$gte: start, $lt: end}});
         params.receive = !!count;
       }
 
       goldList.push(params);
     }
 
-    for (let i = 0; i < voucherList.length; i++) {
+    // 兑换天乐豆
+    let tianleList = [];
+    for (let i = 0; i < tianleExchangeList.length; i++) {
+      let params = {
+        _id: tianleExchangeList[i]._id,
+        diamond: tianleExchangeList[i].diamond,
+        number: tianleExchangeList[i].number,
+        receive: false
+      }
+      if (tianleExchangeList[i].diamond === 0) {
+        // 判断今日是否领取
+        const count = await FreeGoldRecord.count({playerId: this.player.model._id, goodsId: tianleExchangeList[i]._id, createAt: {$gte: start, $lt: end}});
+        params.receive = !!count;
+      }
+
+      tianleList.push(params);
+    }
+
+    // 判断钻石是否首充
+    for (let i = 0; i < diamondRechargeList.length; i++) {
       //判断用户是否首次充值该模板
-      const orderCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1, goodsId: voucherList._id });
-      voucherList[i].isFirst = orderCount === 0;
+      const orderCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1, goodsId: diamondRechargeList[i]._id });
+      diamondRechargeList[i].isFirst = orderCount === 0;
     }
 
-    for (let i = 0; i < goodsList.length; i++) {
-      //判断用户是否兑换钻石
-      const orderCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.voucherForDiamond, propId: goodsList[i]._id });
-      goodsList[i].isFirst = orderCount === 0;
+    // 判断金豆是否首充
+    for (let i = 0; i < goldRechargeList.length; i++) {
+      //判断用户是否首次充值该模板
+      const orderCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1, goodsId: goldRechargeList[i]._id });
+      goldRechargeList[i].isFirst = orderCount === 0;
     }
 
+    // 判断天乐豆是否首充
+    for (let i = 0; i < tianleRechargeList.length; i++) {
+      //判断用户是否首次充值该模板
+      const orderCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1, goodsId: tianleRechargeList[i]._id });
+      tianleRechargeList[i].isFirst = orderCount === 0;
+    }
+
+    // 靓号是否被使用
     for (let i = 0; i < beautyNumberLists.length; i++) {
       //判断Id是否被使用
       const orderCount = await Player.count({shortId: beautyNumberLists[i].numberId });
       beautyNumberLists[i].isPay = orderCount === 0;
     }
 
+    // 头像框是否被使用
     for (let i = 0; i < headLists.length; i++) {
       headLists[i].isUse = false;
       headLists[i].isGive = false;
@@ -95,10 +129,13 @@ export class GoodsApi extends BaseApi {
       }
     }
 
-    const rechargeCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1 });
-    const transferCount = await DiamondRecord.count({player: this.player._id, type: ConsumeLogType.gemForRuby });
-
-    this.replySuccess({ goodsList, voucherList, rubyList: goldList, headLists, beautyNumberLists, discountStatus: {recharge: rechargeCount === 0, transfer: transferCount === 0} });
+    this.replySuccess({
+      recharge: {diamondCurrency: diamondRechargeList, goldCurrency: goldRechargeList, tianleCurrency: tianleRechargeList},
+      exchange: {goldList, tianleList},
+      config: {diamondToGold: config.game.diamondToGold, diamondToTianLe: config.game.diamondToTianLe, goldToTianLe: config.game.goldToTianLe },
+      headLists,
+      beautyNumberLists
+    });
   }
 
   // 钻石兑换金豆

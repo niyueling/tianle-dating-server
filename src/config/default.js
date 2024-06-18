@@ -170,6 +170,9 @@ module.exports = {
 
   },
   game: {
+    diamondToGold: 10000,
+    diamondToTianLe: 1000000,
+    goldToTianLe: 1,
     regressionAmount: 1200,
     helpCount: 5,
     initModelGoldCount: 0,

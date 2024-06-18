@@ -16,6 +16,10 @@ const schema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  goodsId: {
+    type: String,
+    required: true
+  },
   config: {
     type: Object,
     required: true
