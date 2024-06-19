@@ -141,8 +141,6 @@ export class GoodsApi extends BaseApi {
       if (playerProp) {
         // 如果是按天收费类型，判断是否过期
         if (playerProp.payType === 1) {
-          delete propLists[i].number;
-
           if (playerProp.times !== -1 && playerProp.times <= new Date().getTime()) {
             await PlayerProp.remove({playerId: this.player._id, propId: propLists[i].propId });
           }
@@ -156,8 +154,6 @@ export class GoodsApi extends BaseApi {
         }
 
         if (playerProp.payType === 2) {
-          delete propLists[i].isAlways;
-
           // 如果是按次收费类型，记录用户剩余次数
           if (playerProp.payType === 2 && playerProp.number === 0) {
             await PlayerProp.remove({playerId: this.player._id, propId: propLists[i].propId });
@@ -169,6 +165,9 @@ export class GoodsApi extends BaseApi {
           }
         }
       }
+
+      // 按天收费删除数量字段，按次收费删除永久字段
+      propLists[i].payType === 1 ? delete propLists[i].number : delete propLists[i].isAlways;
     }
 
     this.replySuccess({
