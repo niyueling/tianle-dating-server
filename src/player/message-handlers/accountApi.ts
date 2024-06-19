@@ -28,6 +28,8 @@ import StartPocketRecord from "../../database/models/startPocketRecord";
 import NewSignPrizeRecord from "../../database/models/NewSignPrizeRecord";
 import CombatGain from "../../database/models/combatGain";
 import GameRecord from "../../database/models/gameRecord";
+import GoodsProp from "../../database/models/GoodsProp";
+import PlayerProp from "../../database/models/PlayerProp";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -509,7 +511,14 @@ export class AccountApi extends BaseApi {
       lists = await this.getBackPackByHeader();
     }
 
-    return this.replySuccess({lists, type: message.type});
+    // 道具
+    if (message.type === 3) {
+      lists = await this.getBackPackByProp();
+    }
+
+    const props = await this.getBackPackByProp();
+
+    return this.replySuccess({lists, props, type: message.type});
   }
 
   // 更换背包使用
@@ -703,6 +712,35 @@ export class AccountApi extends BaseApi {
       lists[i].times = playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime()) ? playerHeadBorder.times : null;
       // 头像框是否正在使用
       lists[i].isUse = playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times >= new Date().getTime()) ? playerHeadBorder.isUse : false;
+    }
+
+    return lists;
+  }
+
+  async getBackPackByProp() {
+    const lists = await GoodsProp.find().lean();
+
+    for (let i = 0; i < lists.length; i++) {
+      lists[i].isHave = false;
+      lists[i].times = 0;
+      lists[i].number = 0;
+      const playerProp = await PlayerProp.findOne({playerId: this.player._id, propId: lists[i].propId});
+
+      if (playerProp) {
+        if (playerProp.payType === 1) {
+          // 用户是否拥有该道具
+          lists[i].isHave = playerProp.times === -1 || playerProp.times >= new Date().getTime();
+          // 道具有效期
+          lists[i].times = playerProp.times === -1 || playerProp.times >= new Date().getTime() ? playerProp.times : null;
+        }
+
+        if (playerProp.payType === 2) {
+          // 用户是否拥有该道具
+          lists[i].isHave = playerProp.number > 0;
+          // 道具有效期
+          lists[i].number = playerProp.number;
+        }
+      }
     }
 
     return lists;
