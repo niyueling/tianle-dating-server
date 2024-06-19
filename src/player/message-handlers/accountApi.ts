@@ -742,7 +742,7 @@ export class AccountApi extends BaseApi {
         }
       }
 
-      lists[i].payType === 1 ? delete lists[i].number : lists[i].isAlways;
+      lists[i].payType === 1 ? delete lists[i].number : lists[i].times;
     }
 
     return lists;
