@@ -133,31 +133,31 @@ export class GoodsApi extends BaseApi {
 
     // 道具状态
     for (let i = 0; i < propLists.length; i++) {
-      headLists[i].isGive = false;
-      headLists[i].isAlways = false;
+      propLists[i].isGive = false;
+      propLists[i].isAlways = false;
       //判断用户是否拥有道具
-      const playerProp = await PlayerProp.findOne({playerId: this.player._id, propId: headLists[i].propId });
+      const playerProp = await PlayerProp.findOne({playerId: this.player._id, propId: propLists[i].propId });
       if (playerProp) {
         // 如果是按天收费类型，判断是否过期
         if (playerProp.payType === 1 && playerProp.times !== -1 && playerProp.times <= new Date().getTime()) {
-          await PlayerProp.remove({playerId: this.player._id, propId: headLists[i].propId });
+          await PlayerProp.remove({playerId: this.player._id, propId: propLists[i].propId });
         }
 
         // 如果是按天收费类型，判断是否持有永久道具
         if (playerProp.payType === 1 && (playerProp.times === -1 || playerProp.times >= new Date().getTime())) {
-          headLists[i].isGive = true;
-          headLists[i].isAlways = playerProp.times === -1;
-          headLists[i].times = playerProp.times;
+          propLists[i].isGive = true;
+          propLists[i].isAlways = playerProp.times === -1;
+          propLists[i].times = playerProp.times;
         }
 
         // 如果是按次收费类型，记录用户剩余次数
         if (playerProp.payType === 2 && playerProp.number === 0) {
-          await PlayerProp.remove({playerId: this.player._id, propId: headLists[i].propId });
+          await PlayerProp.remove({playerId: this.player._id, propId: propLists[i].propId });
         }
 
         if (playerProp.payType === 2 && playerProp.number > 0) {
-          headLists[i].isGive = true;
-          headLists[i].number = playerProp.number;
+          propLists[i].isGive = true;
+          propLists[i].number = playerProp.number;
         }
       }
     }
@@ -167,6 +167,7 @@ export class GoodsApi extends BaseApi {
       exchange: {goldList, tianleList},
       config: {diamondToGold: config.game.diamondToGold, diamondToTianLe: config.game.diamondToTianLe, goldToTianLe: config.game.goldToTianLe },
       headLists,
+      propLists,
       beautyNumberLists
     });
   }
