@@ -46,7 +46,7 @@ export class GiftApi extends BaseApi {
     const price = prizeInfo.dayList.find(item => item.day === message.day)?.price;
     const model = await service.playerService.getPlayerModel(this.player.model._id);
     if (model.diamond < price) {
-      const template = await GoodsModel.findOne({ isOnline: true, amount: {$gte: price} }).sort({price: 1}).lean();
+      const template = await GoodsModel.findOne({ isOnline: true, goodsType: 1, amount: {$gte: price} }).sort({price: 1}).lean();
       return this.replyFail(TianleErrorCode.diamondInsufficient, {goodsId: template._id});
     }
 
