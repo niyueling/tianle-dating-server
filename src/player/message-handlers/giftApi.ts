@@ -44,7 +44,7 @@ export class GiftApi extends BaseApi {
 
     const price = prizeInfo.dayList.find(item => item.day === message.day)?.price;
     const model = await service.playerService.getPlayerModel(this.player.model._id);
-    if (model.voucher < price) {
+    if (model.diamond < price) {
       return this.replyFail(TianleErrorCode.voucherInsufficient);
     }
 
@@ -56,7 +56,7 @@ export class GiftApi extends BaseApi {
     }
 
     // 更新月卡到期时间
-    model.voucher -= price * 100;
+    model.diamond -= price;
     model.turntableTimes += 10;
     if (!model.giftExpireTime || model.giftExpireTime < new Date().getTime()) {
       model.giftExpireTime = new Date().getTime();

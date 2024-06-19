@@ -445,7 +445,7 @@ export class GoodsApi extends BaseApi {
     user.shopFreeGiftCount++;
     user.save();
 
-    await service.playerService.logGoldConsume(user._id, ConsumeLogType.freeShopGold, goodInfo.number, user.tlGold, `每日领取免费金豆`);
+    await service.playerService.logGoldConsume(user._id, ConsumeLogType.freeShopGold, goodInfo.number, user.tlGold, `每日领取免费天乐豆`);
 
     // 记录日志
     const record = await FreeGoldRecord.create({
