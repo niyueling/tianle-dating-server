@@ -9,6 +9,7 @@ import PlayerFreeGoldRecord from "../../database/models/PlayerFreeGoldRecord";
 import {pick} from "lodash";
 import SevenSignPrizeRecord from "../../database/models/SevenSignPrizeRecord";
 import TurntablePrizeRecord from "../../database/models/turntablePrizeRecord";
+import GoodsModel from "../../database/models/goods";
 
 export class GiftApi extends BaseApi {
   // 日卡/周卡/月卡
@@ -45,7 +46,8 @@ export class GiftApi extends BaseApi {
     const price = prizeInfo.dayList.find(item => item.day === message.day)?.price;
     const model = await service.playerService.getPlayerModel(this.player.model._id);
     if (model.diamond < price) {
-      return this.replyFail(TianleErrorCode.voucherInsufficient);
+      const template = await GoodsModel.findOne({ isOnline: true, amount: {$gte: price} }).sort({price: 1}).lean();
+      return this.replyFail(TianleErrorCode.diamondInsufficient, {goodsId: template._id});
     }
 
     // 按照奖励类型领取奖励
