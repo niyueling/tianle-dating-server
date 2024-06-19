@@ -1,5 +1,4 @@
 import GoodsModel from "../../database/models/goods";
-import GoodsExchangeRuby from "../../database/models/goodsExchangeRuby";
 import {addApi, BaseApi} from "./baseApi";
 import {ConsumeLogType, RedisKey, TianleErrorCode, TianLeGameCurrency} from "@fm/common/constants";
 import UserRechargeOrder from "../../database/models/userRechargeOrder";
@@ -21,6 +20,8 @@ import GoodsBeautyNumber from "../../database/models/GoodsBeautyNumber";
 import PlayerBeautyNumberRecord from "../../database/models/PlayerBeautyNumberRecord";
 import GoodsExchangeCurrency from "../../database/models/goodsExchangeCurrency";
 import * as config from '../../config'
+import GoodsProp from "../../database/models/GoodsProp";
+import PlayerProp from "../../database/models/PlayerProp";
 
 // 商品
 export class GoodsApi extends BaseApi {
@@ -33,6 +34,7 @@ export class GoodsApi extends BaseApi {
     const goldExchangeList = await GoodsExchangeCurrency.find({currency: TianLeGameCurrency.gold}).sort({diamond: 1}).lean();
     const tianleExchangeList = await GoodsExchangeCurrency.find({currency: TianLeGameCurrency.tianle}).sort({diamond: 1}).lean();
     const headLists = await GoodsHeadBorder.find().lean();
+    const propLists = await GoodsProp.find().lean();
     let param = {_id: {$ne: null}};
     if (message.numberId) {
       param["numberId"] = message.numberId;
@@ -126,6 +128,37 @@ export class GoodsApi extends BaseApi {
         headLists[i].isGive = true;
         headLists[i].isAlways = playerHeadBorder.times === -1;
         headLists[i].times = playerHeadBorder.times;
+      }
+    }
+
+    // 道具状态
+    for (let i = 0; i < propLists.length; i++) {
+      headLists[i].isGive = false;
+      headLists[i].isAlways = false;
+      //判断用户是否拥有道具
+      const playerProp = await PlayerProp.findOne({playerId: this.player._id, propId: headLists[i].propId });
+      if (playerProp) {
+        // 如果是按天收费类型，判断是否过期
+        if (playerProp.payType === 1 && playerProp.times !== -1 && playerProp.times <= new Date().getTime()) {
+          await PlayerProp.remove({playerId: this.player._id, propId: headLists[i].propId });
+        }
+
+        // 如果是按天收费类型，判断是否持有永久道具
+        if (playerProp.payType === 1 && (playerProp.times === -1 || playerProp.times >= new Date().getTime())) {
+          headLists[i].isGive = true;
+          headLists[i].isAlways = playerProp.times === -1;
+          headLists[i].times = playerProp.times;
+        }
+
+        // 如果是按次收费类型，记录用户剩余次数
+        if (playerProp.payType === 2 && playerProp.number === 0) {
+          await PlayerProp.remove({playerId: this.player._id, propId: headLists[i].propId });
+        }
+
+        if (playerProp.payType === 2 && playerProp.number > 0) {
+          headLists[i].isGive = true;
+          headLists[i].number = playerProp.number;
+        }
       }
     }
 

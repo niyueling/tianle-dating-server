@@ -14,6 +14,7 @@ import DebrisTotalPrize from "../../database/models/DebrisTotalPrize";
 import VipConfig from "../../database/models/VipConfig";
 import RegressionSignPrize from "../../database/models/RegressionSignPrize";
 import CardType from "../../database/models/CardType";
+import GoodsProp from "../../database/models/GoodsProp";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -1087,6 +1088,29 @@ export class MockDataApi extends BaseApi {
       {propId: 1205, name: "熊猫幻想乡", describe: "熊猫幻想乡"},
       {propId: 1206, name: "赛博朋克", describe: "赛博朋克"},
       {propId: 1207, name: "贵族气质", describe: "贵族气质"},
+    ];
+
+    await CardTable.insertMany(datas);
+
+    return this.replySuccess(datas);
+  }
+
+  // 录入商城道具
+  @addApi()
+  async saveGoodsProp() {
+    const result = await GoodsProp.find();
+
+    if (result.length) {
+      await GoodsProp.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      {propId: 1301, name: "记牌器", describe: "对局中可以使用此道具查看剩余牌数", payType: 1, propType: 1, priceList: [{count: 1, price: 1}, {count: 10, price: 8}, {count: 100, price: 60}]},
+      {propId: 1302, name: "求签卡", describe: "对局中可以使用求签卡查看今日运势", payType: 2, propType: 2, priceList: [{count: 1, price: 10}, {count: 10, price: 80}, {count: 100, price: 600}]},
+      {propId: 1303, name: "洗牌卡", describe: "小局开始前可以使用洗牌卡进行洗牌", payType: 2, propType: 3, priceList: [{count: 1, price: 2}, {count: 10, price: 8}, {count: 100, price: 60}]},
+      {propId: 1304, name: "祈福卡", describe: "对局中可以使用祈福卡进行祈福", payType: 2, propType: 4, childType: 1, priceList: [{count: 1, price: 1}, {count: 10, price: 16}, {count: 100, price: 120}]},
+      {propId: 1305, name: "冷笑", describe: "对局中可以使用冷笑表情包", payType: 1, propType: 5, childType: 5, priceList: [{count: 1, price: 3}, {count: 10, price: 24}, {count: 100, price: 180}]},
+      {propId: 1306, name: "西红柿", describe: "对局中可以使用西红柿道具砸人", payType: 1, propType: 6, childType: 6, priceList: [{count: 1, price: 3}, {count: 10, price: 24}, {count: 100, price: 180}]},
     ];
 
     await CardTable.insertMany(datas);
