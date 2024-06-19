@@ -741,6 +741,8 @@ export class AccountApi extends BaseApi {
           lists[i].number = playerProp.number;
         }
       }
+
+      lists[i].payType === 1 ? delete lists[i].number : lists[i].isAlways;
     }
 
     return lists;
