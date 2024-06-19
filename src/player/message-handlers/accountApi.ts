@@ -512,13 +512,11 @@ export class AccountApi extends BaseApi {
     }
 
     // 道具
-    if (message.type === 3) {
+    if (message.type === 4) {
       lists = await this.getBackPackByProp();
     }
 
-    const props = await this.getBackPackByProp();
-
-    return this.replySuccess({lists, props, type: message.type});
+    return this.replySuccess({lists, type: message.type});
   }
 
   // 更换背包使用
