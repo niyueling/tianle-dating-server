@@ -849,7 +849,7 @@ export class GoodsApi extends BaseApi {
     return this.replySuccess(data);
   }
 
-  // 钻石兑换头像框
+  // 购买头像框
   @addApi()
   async payHeadBorder(message) {
     const exchangeConf = await GoodsHeadBorder.findById(message._id);
@@ -969,5 +969,71 @@ export class GoodsApi extends BaseApi {
     }
 
     return this.replySuccess(beautyNumberLists);
+  }
+
+  // 购买道具
+  @addApi()
+  async payProp(message) {
+    const exchangeConf = await GoodsProp.findById(message._id);
+    if (!exchangeConf) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    const price = exchangeConf.priceList.find(item => item.count === message.number)?.price;
+    const model = await service.playerService.getPlayerModel(this.player.model._id);
+    if (model.diamond < price) {
+      return this.replyFail(TianleErrorCode.diamondInsufficient);
+    }
+
+    // 录入道具数据
+    let playerProp = await PlayerProp.findOne({propId: exchangeConf.propId, playerId: model._id}).lean();
+
+    // 如果道具已过期或者个数为0，删除道具
+    if (playerProp && ((playerProp.payType === 1 && playerProp.times !== -1 && playerProp.times <= new Date().getTime()) ||
+      (playerProp.payType === 2 && playerProp.number === 0))) {
+      await PlayerProp.remove({_id: playerProp._id});
+      playerProp = null;
+    }
+
+    // 如果道具已经是永久，则禁止购买
+    if (playerProp && playerProp.payType === 1 && playerProp.times === -1) {
+      return this.replyFail(TianleErrorCode.headBorderIsAlways);
+    }
+
+    // 如果用户未拥有道具，则录入数据
+    if (!playerProp) {
+      const data = {
+        propId: exchangeConf.propId,
+        playerId: model._id,
+        payType: exchangeConf.payType,
+        // 道具类型，1记牌器，2求签卡，3洗牌卡，4祈福卡，5局内表情，6局内道具
+        propType: exchangeConf.propType,
+        // 子类型，祈福子类型，1财神卡，2关公卡，3老君卡，4招财猫卡
+        childType: exchangeConf.childType,
+        times: message.number === -1 ? -1 : (exchangeConf.payType === 1 ? (new Date().getTime() + 1000 * 60 * 60 * 24 * message.number) : -1),
+        number: exchangeConf.payType === 2 ? message.number : 0
+      }
+
+      await PlayerProp.create(data);
+    }
+
+    // 如果用户已经拥有道具，则在过期时间加上有效时间
+    if (playerProp && playerProp.payType === 1) {
+      await PlayerProp.update({playerId: model._id, propId: exchangeConf.propId}, {$set: {times: message.number !== -1 ? (playerProp.times + 1000 * 60 * 60 * 24 * message.number) : -1}})
+    }
+
+    // 如果用户已经拥有道具，则增加数量
+    if (playerProp && playerProp.payType === 2) {
+      await PlayerProp.update({playerId: model._id, propId: exchangeConf.propId}, {$set: {number: message.number + playerProp.number}});
+    }
+
+    // 扣除钻石
+    await PlayerModel.update({_id: model._id}, {$inc: {diamond: -price}});
+    this.player.model.diamond = model.diamond - price;
+    // 增加日志
+    await service.playerService.logGemConsume(model._id, ConsumeLogType.payProp, -price, this.player.model.diamond, `购买道具`, exchangeConf._id);
+
+    this.replySuccess({price, number: message.number, propId: exchangeConf.propId});
+    await this.player.updateResource2Client();
   }
 }
