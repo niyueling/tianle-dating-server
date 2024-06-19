@@ -809,7 +809,7 @@ export class GoodsApi extends BaseApi {
     this.replySuccess(giftInfo);
   }
 
-  // 代金券购买新手礼包
+  // 钻石购买新手礼包
   @addApi()
   async payNewDisCountGift(message) {
     const exchangeConf = await NewDiscountGift.findById(message._id);
@@ -818,8 +818,8 @@ export class GoodsApi extends BaseApi {
     }
 
     const model = await service.playerService.getPlayerModel(this.player.model._id);
-    if (model.voucher < exchangeConf.price) {
-      return this.replyFail(TianleErrorCode.voucherInsufficient);
+    if (model.diamond < exchangeConf.price) {
+      return this.replyFail(TianleErrorCode.diamondInsufficient);
     }
 
     const payCount = await NewDiscountGiftRecord.count({playerId: this.player._id.toString(), prizeId: exchangeConf._id});
@@ -827,7 +827,7 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.prizeIsReceive);
     }
 
-    model.voucher -= exchangeConf.price * 100;
+    model.diamond -= exchangeConf.price;
     await model.save();
 
     for (let i = 0; i < exchangeConf.prizeList.length; i++) {

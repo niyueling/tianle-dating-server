@@ -437,6 +437,12 @@ export default class PlayerService extends BaseService {
       user.helpCount += prize.number * multiple;
     }
 
+    if (prize.type === 7) {
+      user.tlGold += prize.number * multiple;
+      await service.playerService.logGoldConsume(user._id, type, prize.number * multiple,
+        user.tlGold, `获得${prize.number * multiple}天乐豆`);
+    }
+
     await user.save();
   }
 
