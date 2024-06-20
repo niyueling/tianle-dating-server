@@ -852,12 +852,12 @@ export class GoodsApi extends BaseApi {
   // 购买头像框
   @addApi()
   async payHeadBorder(message) {
-    const exchangeConf = await GoodsHeadBorder.findById(message._id);
+    const exchangeConf = await GoodsProp.findById(message._id);
     if (!exchangeConf) {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
 
-    const price = exchangeConf.priceList.find(item => item.day === message.day)?.price;
+    const price = exchangeConf.priceList.find(item => item.count === message.day)?.price;
     const model = await service.playerService.getPlayerModel(this.player.model._id);
     if (model.diamond < price) {
       return this.replyFail(TianleErrorCode.diamondInsufficient);
@@ -900,7 +900,7 @@ export class GoodsApi extends BaseApi {
     await PlayerModel.update({_id: model._id}, {$inc: {diamond: -price}});
     this.player.model.diamond = model.diamond - price;
     // 增加日志
-    await service.playerService.logGemConsume(model._id, ConsumeLogType.payHeadBorder, -price, this.player.model.diamond, `花费${price}钻石购买${exchangeConf.name}头像框`, exchangeConf._id);
+    await service.playerService.logGemConsume(model._id, ConsumeLogType.payHeadBorder, -price, this.player.model.diamond, `购买头像框`, exchangeConf._id);
 
     this.replySuccess({price, day: message.day, propId: exchangeConf.propId});
     await this.player.updateResource2Client();
