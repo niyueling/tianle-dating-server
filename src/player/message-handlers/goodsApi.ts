@@ -1036,4 +1036,76 @@ export class GoodsApi extends BaseApi {
     this.replySuccess({price, number: message.number, propId: exchangeConf.propId});
     await this.player.updateResource2Client();
   }
+
+  // 购买月卡回调
+  @addApi()
+  async payMonthGiftNotify(message) {
+    const order = await UserRechargeOrder.findOne({_id: message.orderId});
+    if (!order || order.status === 1) {
+      return this.replyFail(TianleErrorCode.orderNotExistOrPay);
+    }
+
+    const player = await PlayerModel.findOne({_id: order.playerId});
+    if (!player || !player.openid || !player.sessionKey) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    const accessToken = await this.service.utils.getGlobalConfigByName("MnpAccessToken");
+    const appKey = await this.service.utils.getGlobalConfigByName("appkey");
+    const userPostBody = {
+      openid: player.openid,
+      offer_id: await this.service.utils.getGlobalConfigByName("offerid"),
+      ts: Math.floor(Date.now() / 1000),
+      zone_id: await this.service.utils.getGlobalConfigByName("zoneid"),
+      env: message.env,
+      user_ip: this.player.getIpAddress()
+    }
+    const userPostBodyString = JSON.stringify(userPostBody);
+
+    // 生成登录态签名和支付请求签名
+    const signature = crypto.createHmac('sha256', player.sessionKey).update(userPostBodyString).digest('hex');
+    const needSignMsg = `/wxa/game/getbalance&${userPostBodyString}`;
+    const paySign = crypto.createHmac('sha256', appKey).update(needSignMsg).digest('hex');
+    // 查询用户游戏币余额
+    const balanceUrl = `https://api.weixin.qq.com/wxa/game/getbalance?access_token=${accessToken}&signature=${signature}&sig_method=hmac_sha256&pay_sig=${paySign}`;
+    const response = await this.service.base.postByJson(balanceUrl, userPostBody);
+    if (response.data.errcode !== 0) {
+      return this.replyFail(TianleErrorCode.payFail);
+    }
+
+    if (response.data.balance < order.price * 10) {
+      return this.replyFail(TianleErrorCode.gameBillInsufficient);
+    }
+
+    // 如果用户游戏币大于充值数量，扣除游戏币
+    const payBody = {
+      openid: player.openid,
+      offer_id: userPostBody.offer_id,
+      ts: userPostBody.ts,
+      zone_id: userPostBody.zone_id,
+      env: userPostBody.env,
+      user_ip: userPostBody.user_ip,
+      amount: order.price * 10,
+      bill_no: order._id
+    }
+
+    // 生成登录态签名和支付请求签名
+    const sign = crypto.createHmac('sha256', player.sessionKey).update(JSON.stringify(payBody)).digest('hex');
+    const needSign = "/wxa/game/pay&" + JSON.stringify(payBody);
+    const paySig = crypto.createHmac('sha256', appKey).update(needSign).digest('hex');
+    const payUrl = `https://api.weixin.qq.com/wxa/game/pay?access_token=${accessToken}&signature=${sign}&sig_method=hmac_sha256&pay_sig=${paySig}`;
+    const pay_response = await this.service.base.postByJson(payUrl, payBody);
+    if (pay_response.data.errcode !== 0) {
+      return this.replyFail(TianleErrorCode.payFail);
+    }
+
+    const result = await this.service.playerService.playerPayMonthGift(order._id, pay_response.data.bill_no, message);
+    if(!result) {
+      return this.replyFail(TianleErrorCode.payFail);
+    }
+
+    this.replySuccess(result);
+
+    await this.player.updateResource2Client();
+  }
 }

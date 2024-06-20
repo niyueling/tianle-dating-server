@@ -13,10 +13,8 @@ import * as moment from "moment";
 import PlayerLoginRecord from "../database/models/playerLoginRecord";
 import PlayerManager from "../player/player-manager";
 import UserRechargeOrder from "../database/models/userRechargeOrder";
-import {ConsumeLogType, TaskCategory, TaskType, TianleErrorCode} from "@fm/common/constants";
+import {ConsumeLogType, TaskType} from "@fm/common/constants";
 import GoldRecord from "../database/models/goldRecord";
-import GoodsReviveRuby from "../database/models/goodsReviveRuby";
-import GoodsModel from "../database/models/goods";
 import HeadBorder from "../database/models/HeadBorder";
 import PlayerHeadBorder from "../database/models/PlayerHeadBorder";
 import Medal from "../database/models/Medal";
@@ -35,14 +33,11 @@ import TaskTotalPrizeRecord from "../database/models/TaskTotalPrizeRecord";
 import Task from "../database/models/task";
 import RoomScoreRecord from "../database/models/roomScoreRecord";
 import VipConfig from "../database/models/VipConfig";
+import MonthGift from "../database/models/MonthGift";
+import MonthGiftRecord from "../database/models/MonthGiftRecord";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
-  async getPlayerPlainModel(playerId: string): Promise<any> {
-    // 将 model 转换为 plain 对象
-    return Player.findById(playerId).lean().exec();
-  }
-
   async getPlayerModel(playerId: string): Promise<any> {
     return Player.findById(playerId);
   }
@@ -54,14 +49,6 @@ export default class PlayerService extends BaseService {
   // 根据用户名获取玩家
   async getPlayerByName(name) {
     return Player.find({ name });
-  }
-
-  async findOrCreatePlayerByName(name) {
-    const players = await this.getPlayerByName(name);
-    if (players.length < 1) {
-      return this.createNewPlayer({ name });
-    }
-    return players[0];
   }
 
   // 创建用户
@@ -97,28 +84,6 @@ export default class PlayerService extends BaseService {
   async generateUsername() {
     const lastName = faker.name.lastName();
     return lastName.toLowerCase();
-  }
-
-  // 获取机器人
-  async getRobot(categoryId) {
-    // 金豆
-    const rubyRequired = await service.gameConfig.getPublicRoomCategoryByCategory(categoryId);
-    if (!rubyRequired) {
-      throw new Error('房间错误')
-    }
-    // 最高为随机下限的 20% - 30%
-    const rand = service.utils.randomIntBetweenNumber(2, 3) / 10;
-    const max = rubyRequired.minAmount + Math.floor(rand * (rubyRequired.maxAmount - rubyRequired.minAmount));
-    const ruby = service.utils.randomIntBetweenNumber(rubyRequired.minAmount, max);
-    const result = await Player.aggregate([
-      {$match: { platform: 'robot' }},
-      {$sample: { size: 1}}
-    ]);
-    const randomPlayer = await this.getPlayerModel(result[0]._id);
-    // 重新随机设置 ruby
-    randomPlayer.ruby = ruby;
-    await randomPlayer.save();
-    return randomPlayer;
   }
 
   async logOldGemConsume(playerId, note, gem) {
@@ -338,6 +303,75 @@ export default class PlayerService extends BaseService {
     await user.save();
 
     return true;
+  }
+
+  async playerPayMonthGift(orderId, thirdOrderNo, message) {
+    const order = await UserRechargeOrder.findOne({_id: orderId});
+    if (!order) {
+      return false;
+    }
+
+    const user = await Player.findOne({_id: order.playerId});
+    if (!user) {
+      return false;
+    }
+
+    user.diamond += order.diamond;
+    order.status = 1;
+    order.transactionId = thirdOrderNo;
+    await order.save();
+
+    // 判断vip是否升级
+    user.vipExperience += order.price * 100;
+
+    const vipList = await VipConfig.find({vip: {$gt: user.vip}}).sort({vip: 1}).lean();
+    for (let i = 0; i < vipList.length; i++) {
+      if (user.vipExperience >= vipList[i].experience) {
+        user.vip++;
+        user.vipExperience -= vipList[i].experience;
+      }
+    }
+
+    await user.save();
+
+    // 购买月卡
+    return await this.payGift(message, user);
+  }
+
+  async payGift(message, user) {
+    const prizeInfo = await MonthGift.findOne({_id: message.giftId});
+    const price = prizeInfo.dayList.find(item => item.day === message.day)?.price;
+    const model = await service.playerService.getPlayerModel(user._id);
+
+    // 按照奖励类型领取奖励
+    for (let i = 0; i < prizeInfo.prizeList.length; i++) {
+      prizeInfo.prizeList[i].number *= message.day;
+      prizeInfo.prizeList[i].day = message.day;
+      await this.receivePrize(prizeInfo.prizeList[i], user._id, 1, ConsumeLogType.payMonthGift);
+    }
+
+    // 更新月卡到期时间
+    model.diamond -= price;
+    model.turntableTimes += 10;
+    if (!model.giftExpireTime || model.giftExpireTime < new Date().getTime()) {
+      model.giftExpireTime = new Date().getTime();
+    }
+    model.giftExpireTime = model.giftExpireTime + 1000 * 60 * 60 * 24 * message.day;
+    await model.save();
+
+    // 创建领取记录
+    const data = {
+      playerId: user.toString(),
+      day: message.day,
+      prizeId: prizeInfo._id,
+      prizeConfig: prizeInfo,
+      multiple: message.multiple,
+      createAt: new Date()
+    };
+
+    await MonthGiftRecord.create(data);
+
+    return data;
   }
 
   async receivePrize(prize, playerId, multiple = 1, type) {

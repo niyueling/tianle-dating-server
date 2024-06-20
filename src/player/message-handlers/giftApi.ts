@@ -54,7 +54,7 @@ export class GiftApi extends BaseApi {
     for (let i = 0; i < prizeInfo.prizeList.length; i++) {
       prizeInfo.prizeList[i].number *= message.day;
       prizeInfo.prizeList[i].day = message.day;
-      await service.playerService.receivePrize(prizeInfo.prizeList[i], this.player._id, message.multiple, ConsumeLogType.receiveNewSign);
+      await service.playerService.receivePrize(prizeInfo.prizeList[i], this.player._id, message.multiple, ConsumeLogType.payMonthGift);
     }
 
     // 更新月卡到期时间
