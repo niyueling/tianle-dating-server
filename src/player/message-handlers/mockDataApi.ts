@@ -1108,12 +1108,28 @@ export class MockDataApi extends BaseApi {
       {propId: 1301, name: "记牌器", describe: "对局中可以使用此道具查看剩余牌数", payType: 1, propType: 1, priceList: [{count: 1, price: 1}, {count: 10, price: 8}, {count: 100, price: 60}]},
       {propId: 1302, name: "求签卡", describe: "对局中可以使用求签卡查看今日运势", payType: 2, propType: 2, priceList: [{count: 1, price: 10}, {count: 10, price: 80}, {count: 100, price: 600}]},
       {propId: 1303, name: "洗牌卡", describe: "小局开始前可以使用洗牌卡进行洗牌", payType: 2, propType: 3, priceList: [{count: 1, price: 2}, {count: 10, price: 8}, {count: 100, price: 60}]},
-      {propId: 1304, name: "祈福卡", describe: "对局中可以使用祈福卡进行祈福", payType: 2, propType: 4, childType: 1, priceList: [{count: 1, price: 1}, {count: 10, price: 16}, {count: 100, price: 120}]},
-      {propId: 1305, name: "冷笑", describe: "对局中可以使用冷笑表情包", payType: 1, propType: 5, childType: 5, priceList: [{count: 1, price: 3}, {count: 10, price: 24}, {count: 100, price: 180}]},
-      {propId: 1306, name: "西红柿", describe: "对局中可以使用西红柿道具砸人", payType: 1, propType: 6, childType: 6, priceList: [{count: 1, price: 3}, {count: 10, price: 24}, {count: 100, price: 180}]},
+      {propId: 1304, name: "财神祈福卡", describe: "对局中可以使用财神祈福卡进行财神祈福", payType: 2, propType: 4, childType: 1, priceList: [{count: 1, price: 1}, {count: 10, price: 16}, {count: 100, price: 120}]},
+      {propId: 1305, name: "关公祈福卡", describe: "对局中可以使用关公祈福卡进行关公祈福", payType: 2, propType: 4, childType: 2, priceList: [{count: 1, price: 1}, {count: 10, price: 16}, {count: 100, price: 120}]},
+      {propId: 1306, name: "老君祈福卡", describe: "对局中可以使用老君祈福卡进行老君祈福", payType: 2, propType: 4, childType: 3, priceList: [{count: 1, price: 1}, {count: 10, price: 16}, {count: 100, price: 120}]},
+      {propId: 1307, name: "招财猫祈福卡", describe: "对局中可以使用招财猫祈福卡进行招财猫祈福", payType: 2, propType: 4, childType: 4, priceList: [{count: 1, price: 1}, {count: 10, price: 16}, {count: 100, price: 120}]},
+      {propId: 1308, name: "冷笑", describe: "对局中可以使用冷笑表情包", payType: 1, propType: 5, childType: 5, priceList: [{count: 1, price: 3}, {count: 10, price: 24}, {count: 100, price: 180}]},
+      {propId: 1309, name: "西红柿", describe: "对局中可以使用西红柿道具砸人", payType: 1, propType: 6, childType: 6, priceList: [{count: 1, price: 3}, {count: 10, price: 24}, {count: 100, price: 180}]},
+      {propId: 1310, name: "星之王冠", describe: "星之王冠", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1311, name: "糖果世界", describe: "糖果世界", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1312, name: "童真风车", describe: "童真风车", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1313, name: "桃园风景", describe: "桃园风景", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1314, name: "海底世界", describe: "海底世界", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1315, name: "绅士帽子", describe: "绅士帽子", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1316, name: "太空时代", describe: "太空时代", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1317, name: "少女粉屋", describe: "少女粉屋", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1318, name: "招财猫", describe: "招财猫", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1319, name: "古巴比伦", describe: "古巴比伦", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1320, name: "熊猫憨憨", describe: "熊猫憨憨", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1321, name: "玩偶房子", describe: "玩偶房子", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
+      {propId: 1322, name: "机械之心", describe: "机械之心", payType: 1, propType: 7, priceList: [{count: 7, price: 28}, {count: 30, price: 98}, {count: -1, price: 598}]},
     ];
 
-    await CardTable.insertMany(datas);
+    await GoodsProp.insertMany(datas);
 
     return this.replySuccess(datas);
   }
