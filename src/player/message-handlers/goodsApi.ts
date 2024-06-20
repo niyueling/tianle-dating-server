@@ -1,6 +1,6 @@
 import GoodsModel from "../../database/models/goods";
 import {addApi, BaseApi} from "./baseApi";
-import {ConsumeLogType, RedisKey, TianleErrorCode, TianLeGameCurrency} from "@fm/common/constants";
+import {ConsumeLogType, RedisKey, TianleErrorCode, TianLeGameCurrency, shopPropType} from "@fm/common/constants";
 import UserRechargeOrder from "../../database/models/userRechargeOrder";
 import PlayerModel from "../../database/models/player";
 import crypto = require('crypto');
@@ -33,8 +33,8 @@ export class GoodsApi extends BaseApi {
     const tianleRechargeList = await GoodsModel.find({ isOnline: true, goodsType: 3 }).sort({price: 1}).lean();
     const goldExchangeList = await GoodsExchangeCurrency.find({currency: TianLeGameCurrency.gold}).sort({diamond: 1}).lean();
     const tianleExchangeList = await GoodsExchangeCurrency.find({currency: TianLeGameCurrency.tianle}).sort({diamond: 1}).lean();
-    const headLists = await GoodsHeadBorder.find().lean();
-    const propLists = await GoodsProp.find().lean();
+    const headLists = await GoodsProp.find({propType: shopPropType.headBorder}).lean();
+    const propLists = await GoodsProp.find({propType: {$ne: shopPropType.headBorder}}).lean();
     let param = {_id: {$ne: null}};
     if (message.numberId) {
       param["numberId"] = message.numberId;
