@@ -361,11 +361,11 @@ export default class PlayerService extends BaseService {
 
     // 创建领取记录
     const data = {
-      playerId: user.toString(),
+      playerId: user._id.toString(),
       day: message.day,
       prizeId: prizeInfo._id,
       prizeConfig: prizeInfo,
-      multiple: message.multiple,
+      multiple: 1,
       createAt: new Date()
     };
 
@@ -473,8 +473,7 @@ export default class PlayerService extends BaseService {
 
     if (prize.type === 7) {
       user.tlGold += prize.number * multiple;
-      await service.playerService.logGoldConsume(user._id, type, prize.number * multiple,
-        user.tlGold, `获得${prize.number * multiple}天乐豆`);
+      await service.playerService.logGoldConsume(user._id, type, prize.number * multiple, user.tlGold, `获得${prize.number * multiple}天乐豆`);
     }
 
     await user.save();
