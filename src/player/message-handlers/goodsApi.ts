@@ -1104,7 +1104,8 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.payFail);
     }
 
-    this.replySuccess(result);
+    this.replySuccessWithName("gift/payGiftReply", '', result);
+    // this.replySuccess(result);
 
     await this.player.updateResource2Client();
   }
