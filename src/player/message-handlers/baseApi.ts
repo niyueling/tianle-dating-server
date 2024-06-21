@@ -94,7 +94,7 @@ export class BaseApi {
     if (!data) {
       return this.player.sendMessage(name, {ok: true, info: info || ''})
     }
-    return this.player.sendMessage(name, { ok: true, info: info || '', ...data})
+    return this.player.sendMessage(name, { ok: true, info: info || '', data})
   }
 
   // 直接下发数据
