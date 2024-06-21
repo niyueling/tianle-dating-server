@@ -1033,7 +1033,7 @@ export class GoodsApi extends BaseApi {
     // 增加日志
     await service.playerService.logGemConsume(model._id, ConsumeLogType.payProp, -price, this.player.model.diamond, `购买道具`, exchangeConf._id);
 
-    this.replySuccess({price, number: message.number, propId: exchangeConf.propId});
+    this.replySuccess({price, number: message.number, propId: exchangeConf.propId, payType: exchangeConf.payType});
     await this.player.updateResource2Client();
   }
 
