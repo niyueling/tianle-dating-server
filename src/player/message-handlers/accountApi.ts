@@ -1,4 +1,4 @@
-import {GameType, TianleErrorCode, UserRegistLocation} from "@fm/common/constants";
+import {GameType, TianleErrorCode, UserRegistLocation, shopPropType} from "@fm/common/constants";
 import * as moment from "moment";
 import ChannelManager from "../../chat/channel-manager";
 import * as config from "../../config";
@@ -716,7 +716,7 @@ export class AccountApi extends BaseApi {
   }
 
   async getBackPackByProp() {
-    const lists = await GoodsProp.find().lean();
+    const lists = await GoodsProp.find({propType: {$ne: shopPropType.headBorder}}).lean();
 
     for (let i = 0; i < lists.length; i++) {
       lists[i].isHave = false;
