@@ -1,10 +1,11 @@
-import {ConsumeLogType, GameType, GlobalConfigKeys, TianleErrorCode} from "@fm/common/constants";
+import {ConsumeLogType, GameType, GlobalConfigKeys, TianleErrorCode, BlessItemList, playerAttributes} from "@fm/common/constants";
 import RoomRecord from "../../database/models/roomRecord";
 import {addApi, BaseApi} from "./baseApi";
 import moment = require("moment");
 import CombatGain from "../../database/models/combatGain";
 import GameRecord from "../../database/models/gameRecord";
 import {service} from "../../service/importService";
+import LuckyBless from "../../database/models/luckyBless";
 
 const getGameName = {
   [GameType.mj]: '十二星座',
@@ -99,6 +100,102 @@ export class GameApi extends BaseApi {
     const roomRecord = await CombatGain.find({playerId: this.player.model._id, time: {$gte: startTime, $lt: endTime}}).sort({time: -1})
 
     return this.replySuccess(roomRecord);
+  }
+
+  // 祈福列表
+  @addApi()
+  async getBlessList() {
+    const list = await LuckyBless.find().sort({orderIndex: 1});
+    const result = [];
+    let rows;
+    let isFree;
+    let item;
+    let itemCount;
+    for (let j = 0; j < list.length; j++) {
+      item = list[j];
+      rows = [];
+      for (let i = 0; i < item.times.length; i++) {
+        rows.push({
+          // 倍数
+          times: item.times[i],
+          // 钻石消耗
+          gem: item.gem[i],
+          // 运势
+          bless: item.bless[i],
+        })
+      }
+      itemCount = await service.item.getItemCount(this.player.model.shortId, BlessItemList[j]);
+      isFree = await service.playerService.getPlayerAttrValueByShortId(this.player.model.shortId,
+        playerAttributes.blessEndAt, item._id);
+      result.push({
+        _id: item._id,
+        name: item.name,
+        // 是否免费
+        isFree: !isFree,
+        rows,
+        index: j,
+        // 道具数量
+        itemCount,
+      })
+    }
+    this.replySuccess(result);
+  }
+
+  // 钻石祈福
+  @addApi()
+  async blessByGem(player, message) {
+    const list = await LuckyBless.find().sort({orderIndex: 1});
+    let bless;
+    let blessIndex;
+    for (let i = 0; i < list.length; i++) {
+      if (list[i]._id.toString() === message._id) {
+        bless = list[i];
+        blessIndex = i;
+        break;
+      }
+    }
+    if (!bless) {
+      console.error(`no such bless ${message._id}`);
+      return this.replyFail(TianleErrorCode.blessFail)
+    }
+    let index;
+    if (message.isUseItem) {
+      // 使用道具祈福，默认只祈福第一级
+      index = 0;
+      const isOk = await service.item.useItem(player.model.shortId, BlessItemList[blessIndex], 1)
+      if (!isOk) {
+        return this.replyFail(TianleErrorCode.propInsufficient)
+      }
+    } else {
+      // 钻石祈福
+      index = bless.times.indexOf(message.times);
+      if (index === -1) {
+        console.error(`no such times ${message.times}`);
+        return this.replyFail(TianleErrorCode.blessFail)
+      }
+      let needGem = 0;
+      // 更新祈福时长
+      const lastBless = await service.playerService.getPlayerAttrValueByShortId(player.model.shortId,
+        playerAttributes.blessEndAt, message._id);
+      if (lastBless) {
+        // 不是第一次，要扣钻石
+        needGem = bless.gem[index]
+      }
+      if (needGem > 0) {
+        const result = await service.playerService.logAndConsumeDiamond(player.model._id, ConsumeLogType.bless,
+          needGem, '祈福扣钻石')
+        if (!result.isOk) {
+          return this.replyFail(TianleErrorCode.blessFail)
+        }
+        player.model = result.model;
+      }
+    }
+    await service.playerService.createOrUpdatePlayerAttr(player.model._id, player.model.shortId,
+      playerAttributes.blessEndAt, Math.floor(Date.now() / 1000), message._id)
+    const model = await service.qian.saveBlessLevel(player.model.shortId, message.roomId, index + 1);
+    // this.blessLevel[player.model.shortId] = model.blessLevel;
+    this.replySuccess({ index: blessIndex, blessLevel: model.blessLevel });
+    await this.player.updateResource2Client(player);
   }
 
   // 求签

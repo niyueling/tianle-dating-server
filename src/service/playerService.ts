@@ -35,6 +35,7 @@ import RoomScoreRecord from "../database/models/roomScoreRecord";
 import VipConfig from "../database/models/VipConfig";
 import MonthGift from "../database/models/MonthGift";
 import MonthGiftRecord from "../database/models/MonthGiftRecord";
+import PlayerAttr from "../database/models/playerAttr";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
@@ -130,6 +131,41 @@ export default class PlayerService extends BaseService {
       note,
       createAt: new Date(),
     })
+  }
+
+  // 获取玩家属性值
+  async getPlayerAttrValueByShortId(shortId, attrType, name) {
+    const record = await PlayerAttr.findOne({
+      shortId,
+      attrType,
+      name,
+    })
+    if (record) {
+      return record.value;
+    }
+    return null;
+  }
+
+  // 添加或更新用户属性
+  async createOrUpdatePlayerAttr(playerId, shortId, attrType, attrValue, name) {
+    let record = await PlayerAttr.findOne({
+      shortId,
+      attrType,
+      name,
+    })
+    if (record) {
+      record.value = attrValue;
+      await record.save();
+    } else {
+      record = await PlayerAttr.create({
+        playerId,
+        shortId,
+        attrType,
+        name,
+        value: attrValue,
+      })
+    }
+    return record;
   }
 
   // 根据邀请码获取用户
