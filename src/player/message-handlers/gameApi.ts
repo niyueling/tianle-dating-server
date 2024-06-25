@@ -1,9 +1,10 @@
-import {GameType} from "@fm/common/constants";
+import {ConsumeLogType, GameType, GlobalConfigKeys, TianleErrorCode} from "@fm/common/constants";
 import RoomRecord from "../../database/models/roomRecord";
 import {addApi, BaseApi} from "./baseApi";
 import moment = require("moment");
 import CombatGain from "../../database/models/combatGain";
 import GameRecord from "../../database/models/gameRecord";
+import {service} from "../../service/importService";
 
 const getGameName = {
   [GameType.mj]: '十二星座',
@@ -98,5 +99,64 @@ export class GameApi extends BaseApi {
     const roomRecord = await CombatGain.find({playerId: this.player.model._id, time: {$gte: startTime, $lt: endTime}}).sort({time: -1})
 
     return this.replySuccess(roomRecord);
+  }
+
+  // 求签
+  @addApi()
+  async blessQian() {
+    const todayQian = await service.qian.getTodayQian(this.player.model.shortId);
+    // 第一次求签消耗房卡
+    const firstCost = await service.utils.getGlobalConfigByName(GlobalConfigKeys.firstQianCostGem) || 100;
+    // 改签消耗房卡
+    const changeCost = await service.utils.getGlobalConfigByName(GlobalConfigKeys.changeQianCostGem) || 200;
+    // 下次求签消耗
+    if (!todayQian.isFirst) {
+      let needGem;
+      if (todayQian.record) {
+        // 改签
+        needGem = changeCost;
+      } else {
+        needGem = firstCost;
+      }
+      // 检查房卡
+      const result = await service.playerService.logAndConsumeDiamond(this.player.model._id, ConsumeLogType.blessQian,
+        needGem, '抽签扣钻石')
+      if (!result.isOk) {
+        return this.replyFail(TianleErrorCode.blessQianFail);
+      }
+      this.player.model = result.model;
+      await this.player.updateResource2Client();
+    }
+    const newQian = await service.qian.createQian(this.player.model.shortId);
+    await service.qian.saveQian(this.player.model.shortId, newQian)
+    this.replySuccess({record: newQian, qianCost: changeCost});
+  }
+
+  // 进入求签界面
+  @addApi({})
+  async enterQian() {
+    const resp = {
+      // 今日签文
+      record: null,
+      // 求签钻石
+      qianCost: 0,
+    };
+    const todayQian = await service.qian.getTodayQian(this.player.model.shortId);
+    if (todayQian.record) {
+      resp.record = todayQian.record;
+      // 获取改签需要的钻石
+      resp.qianCost = await service.utils.getGlobalConfigByName(GlobalConfigKeys.changeQianCostGem) || 200;
+      resp.qianCost = parseInt(resp.qianCost.toString(), 10);
+    } else {
+      resp.record = null;
+      if (todayQian.isFirst) {
+        resp.qianCost = 0;
+      } else {
+        // 当天第一次抽签
+        resp.qianCost = await service.utils.getGlobalConfigByName(GlobalConfigKeys.firstQianCostGem) || 100;
+        resp.qianCost = parseInt(resp.qianCost.toString(), 10);
+      }
+    }
+    this.replySuccess(resp);
   }
 }

@@ -148,8 +148,9 @@ export default class UtilsService extends BaseService {
   }
 
   // 从 0 开始，随机取一个小于 max 的整数
-  randomIntLessMax(max) {
-    return Math.floor(Math.random() * max);
+  randomIntLessMax(max, seed?) {
+    const rand = this.randWithSeed(seed);
+    return Math.floor(rand() * max);
   }
 
   // 在最小数，最大数中随机选一个(包括最大、最小值)

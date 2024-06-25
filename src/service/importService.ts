@@ -11,6 +11,7 @@ import PlayerService from "./playerService";
 import RegionService from "./region";
 import RoomRegister from "./roomRegister";
 import TimesService from "./times";
+import QianService from "./qian";
 import UtilsService from "./utils";
 import Wechat from "./wechat";
 import WechatPay from "./wechatPay";
@@ -31,6 +32,7 @@ export interface ServiceType {
   lottery: Lottery,
   gameConfig: GameConfig,
   times: TimesService,
+  qian: QianService,
 }
 
 // 导出 service 目录下的所有 service
