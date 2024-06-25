@@ -198,7 +198,9 @@ export class GameApi extends BaseApi {
     }
     const newQian = await service.qian.createQian(this.player.model.shortId);
     await service.qian.saveQian(this.player.model.shortId, newQian)
-    this.replySuccess({ record: newQian, qianCost: changeCost });
+
+    const itemCount = await service.item.getItemCount(this.player._id, shopPropType.qiuqianCard);
+    this.replySuccess({ record: newQian, qianCost: changeCost, itemCount });
   }
 
   // 进入求签界面
