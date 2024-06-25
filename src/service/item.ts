@@ -24,12 +24,16 @@ export default class ItemService extends BaseService {
   }
 
   // 使用道具
-  async useItem(playerId, item, count) {
-    const record = await PlayerProp.findOne({
+  async useItem(playerId, propType, count, orderType?) {
+    const params = {
       playerId,
-      propType: 4,
-      childType: item.orderType
-    })
+      propType: propType,
+    };
+
+    if (orderType) {
+      params["childType"] = orderType;
+    }
+    const record = await PlayerProp.findOne(params);
     if (!record || record.number < count) {
       // 数量不足
       return false;
@@ -40,12 +44,16 @@ export default class ItemService extends BaseService {
   }
 
   // 获取道具数量
-  async getItemCount(playerId, item) {
-    const record = await PlayerProp.findOne({
+  async getItemCount(playerId, propType, orderType?) {
+    const params = {
       playerId,
-      propType: 4,
-      childType: item.orderType
-    })
+      propType: propType,
+    };
+
+    if (orderType) {
+      params["childType"] = orderType;
+    }
+    const record = await PlayerProp.findOne(params);
     if (record) {
       return record.number;
     }

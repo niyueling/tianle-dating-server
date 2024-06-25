@@ -1,4 +1,12 @@
-import {ConsumeLogType, GameType, GlobalConfigKeys, TianleErrorCode, BlessItemList, playerAttributes} from "@fm/common/constants";
+import {
+  ConsumeLogType,
+  GameType,
+  GlobalConfigKeys,
+  TianleErrorCode,
+  BlessItemList,
+  playerAttributes,
+  shopPropType
+} from "@fm/common/constants";
 import RoomRecord from "../../database/models/roomRecord";
 import {addApi, BaseApi} from "./baseApi";
 import moment = require("moment");
@@ -120,7 +128,7 @@ export class GameApi extends BaseApi {
           bless: item.bless[i],
         })
       }
-      let itemCount = await service.item.getItemCount(this.player._id, list[j]);
+      let itemCount = await service.item.getItemCount(this.player._id, shopPropType.qiFuCard, list[j]);
       let isFree = await service.playerService.getPlayerAttrValueByShortId(this.player.model.shortId, playerAttributes.blessEndAt, item._id);
       result.push({
         _id: item._id,
@@ -150,7 +158,7 @@ export class GameApi extends BaseApi {
     if (message.isUseItem) {
       // 使用道具祈福，默认只祈福第一级
       index = 0;
-      const isOk = await service.item.useItem(player.model.shortId, BlessItemList[blessIndex], 1)
+      const isOk = await service.item.useItem(player._id, shopPropType.qiFuCard, 1, bless.orderIndex);
       if (!isOk) {
         return this.replyFail(TianleErrorCode.propInsufficient)
       }
@@ -185,12 +193,12 @@ export class GameApi extends BaseApi {
 
   // 求签
   @addApi()
-  async blessQian() {
+  async blessQian(msg) {
     const todayQian = await service.qian.getTodayQian(this.player.model.shortId);
     // 第一次求签消耗房卡
-    const firstCost = await service.utils.getGlobalConfigByName(GlobalConfigKeys.firstQianCostGem) || 100;
+    const firstCost = await service.utils.getGlobalConfigByName(GlobalConfigKeys.firstQianCostGem) || 10;
     // 改签消耗房卡
-    const changeCost = await service.utils.getGlobalConfigByName(GlobalConfigKeys.changeQianCostGem) || 200;
+    const changeCost = await service.utils.getGlobalConfigByName(GlobalConfigKeys.changeQianCostGem) || 20;
     // 下次求签消耗
     if (!todayQian.isFirst) {
       let needGem;
@@ -200,18 +208,25 @@ export class GameApi extends BaseApi {
       } else {
         needGem = firstCost;
       }
-      // 检查房卡
-      const result = await service.playerService.logAndConsumeDiamond(this.player.model._id, ConsumeLogType.blessQian,
-        needGem, '抽签扣钻石')
-      if (!result.isOk) {
-        return this.replyFail(TianleErrorCode.blessQianFail);
+      if (msg.isUseItem) {
+        // 使用道具求签
+        const isOk = await service.item.useItem(this.player._id, shopPropType.qiuqianCard, 1)
+        if (!isOk) {
+          return this.replyFail(TianleErrorCode.propInsufficient);
+        }
+      } else {
+        // 检查房卡
+        const result = await service.playerService.logAndConsumeDiamond(this.player.model._id, ConsumeLogType.blessQian, needGem, '抽签扣钻石')
+        if (!result.isOk) {
+          return this.replyFail(TianleErrorCode.blessQianFail);
+        }
+        this.player.model = result.model;
+        await this.player.updateResource2Client();
       }
-      this.player.model = result.model;
-      await this.player.updateResource2Client();
     }
     const newQian = await service.qian.createQian(this.player.model.shortId);
     await service.qian.saveQian(this.player.model.shortId, newQian)
-    this.replySuccess({record: newQian, qianCost: changeCost});
+    this.replySuccess({ record: newQian, qianCost: changeCost });
   }
 
   // 进入求签界面
@@ -222,6 +237,8 @@ export class GameApi extends BaseApi {
       record: null,
       // 求签钻石
       qianCost: 0,
+      // 道具数量
+      itemCount: 0,
     };
     const todayQian = await service.qian.getTodayQian(this.player.model.shortId);
     if (todayQian.record) {
@@ -239,6 +256,7 @@ export class GameApi extends BaseApi {
         resp.qianCost = parseInt(resp.qianCost.toString(), 10);
       }
     }
+    resp.itemCount = await service.item.getItemCount(this.player._id, shopPropType.qiuqianCard);
     this.replySuccess(resp);
   }
 }
