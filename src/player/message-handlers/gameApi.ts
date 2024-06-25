@@ -3,7 +3,6 @@ import {
   GameType,
   GlobalConfigKeys,
   TianleErrorCode,
-  BlessItemList,
   playerAttributes,
   shopPropType
 } from "@fm/common/constants";
@@ -205,7 +204,7 @@ export class GameApi extends BaseApi {
   // 进入求签界面
   @addApi({})
   async enterQian() {
-    const resp = await service.qian.qiangList(this.player);
+    const resp = await service.qian.qianList(this.player);
     this.replySuccess(resp);
   }
 }

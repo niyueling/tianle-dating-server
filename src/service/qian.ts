@@ -4,7 +4,7 @@ import PlayerQian from "../database/models/playerQian";
 import BaseService from "./base";
 import {service} from "./importService";
 import LuckyBless from "../database/models/luckyBless";
-import {GlobalConfigKeys, playerAttributes, shopPropType} from "@fm/common/constants";
+import {ConsumeLogType, GlobalConfigKeys, playerAttributes, shopPropType, TianleErrorCode} from "@fm/common/constants";
 
 // 求签
 export default class QianService extends BaseService {
@@ -43,7 +43,7 @@ export default class QianService extends BaseService {
     return result;
   }
 
-  async qiangList(player) {
+  async qianList(player) {
     const resp = {
       // 今日签文
       record: null,

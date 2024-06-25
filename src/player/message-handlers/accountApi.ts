@@ -316,24 +316,12 @@ export class AccountApi extends BaseApi {
 
     // 记录玩家
     PlayerManager.getInstance().addPlayer(this.player);
-
-    // 测试祈福数据
-    const blessList = await service.qian.blessList(this.player);
-    this.player.sendMessage("account/blessListReply", {ok: true, data: blessList});
-
-    // 测试求签数据
-    const qianList = await service.qian.qiangList(this.player);
-    this.player.sendMessage("account/qianListReply", {ok: true, data: qianList});
-
     const channel = ChannelManager.getInstance().getChannel();
     channel.join(this.player);
     this.player.isLoggingIn = false;
     PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
 
     this.replySuccess(model);
-
-    // const activity = await this.getActivityInfo(model, mnpVersion, platform);
-    // this.player.sendMessage("account/getActivityReply", {ok: true, data: activity});
   }
 
   async shareRecord(roomNum: number) {
