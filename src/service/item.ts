@@ -1,5 +1,6 @@
 import PlayerItem from "../database/models/playerItem";
 import BaseService from "./base";
+import PlayerProp from "../database/models/PlayerProp";
 
 // 道具
 export default class ItemService extends BaseService {
@@ -23,28 +24,30 @@ export default class ItemService extends BaseService {
   }
 
   // 使用道具
-  async useItem(shortId, itemType, count) {
-    const record = await PlayerItem.findOne({
-      shortId,
-      itemType,
+  async useItem(playerId, item, count) {
+    const record = await PlayerProp.findOne({
+      playerId,
+      propType: 4,
+      childType: item.orderType
     })
-    if (!record || record.itemCount < count) {
+    if (!record || record.number < count) {
       // 数量不足
       return false;
     }
-    record.itemCount -= count;
+    record.number -= count;
     await record.save();
     return true;
   }
 
   // 获取道具数量
-  async getItemCount(shortId, itemType) {
-    const record = await PlayerItem.findOne({
-      shortId,
-      itemType,
+  async getItemCount(playerId, item) {
+    const record = await PlayerProp.findOne({
+      playerId,
+      propType: 4,
+      childType: item.orderType
     })
     if (record) {
-      return record.itemCount;
+      return record.number;
     }
     return 0;
   }
