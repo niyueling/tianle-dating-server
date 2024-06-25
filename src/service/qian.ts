@@ -23,10 +23,10 @@ export default class QianService extends BaseService {
           // 钻石消耗
           gem: item.gem[i],
           // 运势
-          bless: item.bless[i],
+          bless: item.bless[i]
         })
       }
-      let itemCount = await service.item.getItemCount(player._id, shopPropType.qiFuCard, list[j]);
+      let itemCount = await service.item.getItemCount(player._id, shopPropType.qiFuCard, list[j].orderIndex);
       let isFree = await service.playerService.getPlayerAttrValueByShortId(player.model.shortId, playerAttributes.blessEndAt, item._id);
       result.push({
         _id: item._id,
