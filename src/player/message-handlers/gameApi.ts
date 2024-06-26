@@ -118,9 +118,8 @@ export class GameApi extends BaseApi {
 
   // 钻石祈福
   @addApi()
-  async blessByGem(player, message) {
+  async blessByGem(message) {
     const list = await LuckyBless.find().sort({orderIndex: 1});
-    console.error(`message ${JSON.stringify(message)}`);
     let blessIndex = list.findIndex(bless => bless._id.toString() === message._id);
     let bless = list[blessIndex];
     if (!bless) {
@@ -131,7 +130,7 @@ export class GameApi extends BaseApi {
     if (message.isUseItem) {
       // 使用道具祈福，默认只祈福第一级
       index = 0;
-      const isOk = await service.item.useItem(player._id, shopPropType.qiFuCard, 1, bless.orderIndex);
+      const isOk = await service.item.useItem(this.player._id, shopPropType.qiFuCard, 1, bless.orderIndex);
       if (!isOk) {
         return this.replyFail(TianleErrorCode.propInsufficient)
       }
@@ -144,24 +143,24 @@ export class GameApi extends BaseApi {
       }
       let needGem = 0;
       // 更新祈福时长
-      const lastBless = await service.playerService.getPlayerAttrValueByShortId(player.model.shortId, playerAttributes.blessEndAt, message._id);
+      const lastBless = await service.playerService.getPlayerAttrValueByShortId(this.player.model.shortId, playerAttributes.blessEndAt, message._id);
       if (lastBless) {
         // 不是第一次，要扣钻石
         needGem = bless.gem[index];
       }
       if (needGem > 0) {
-        const result = await service.playerService.logAndConsumeDiamond(player.model._id, ConsumeLogType.bless, needGem, '祈福扣钻石')
+        const result = await service.playerService.logAndConsumeDiamond(this.player.model._id, ConsumeLogType.bless, needGem, '祈福扣钻石')
         if (!result.isOk) {
           return this.replyFail(TianleErrorCode.blessFail)
         }
-        player.model = result.model;
+        this.player.model = result.model;
       }
     }
-    await service.playerService.createOrUpdatePlayerAttr(player.model._id, player.model.shortId, playerAttributes.blessEndAt, Math.floor(Date.now() / 1000), message._id);
-    const model = await service.qian.saveBlessLevel(player.model.shortId, message.roomId, index + 1);
+    await service.playerService.createOrUpdatePlayerAttr(this.player.model._id, this.player.model.shortId, playerAttributes.blessEndAt, Math.floor(Date.now() / 1000), message._id);
+    const model = await service.qian.saveBlessLevel(this.player.model.shortId, message.roomId, index + 1);
     // this.blessLevel[player.model.shortId] = model.blessLevel;
     this.replySuccess({ index: blessIndex, blessLevel: model.blessLevel });
-    await this.player.updateResource2Client(player);
+    await this.player.updateResource2Client();
   }
 
   // 求签
