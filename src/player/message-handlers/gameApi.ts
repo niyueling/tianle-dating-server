@@ -120,6 +120,7 @@ export class GameApi extends BaseApi {
   @addApi()
   async blessByGem(player, message) {
     const list = await LuckyBless.find().sort({orderIndex: 1});
+    console.error(`_id ${message._id}`);
     let blessIndex = list.findIndex(bless => bless._id.toString() === message._id);
     let bless = list[blessIndex];
     if (!bless) {
