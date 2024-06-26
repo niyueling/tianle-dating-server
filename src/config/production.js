@@ -23,21 +23,5 @@ module.exports = {
   jwt: {
     // 密钥
     secret: 'tv+-u:JV>cWG|K8H',
-  },
-  gmTool: {
-    port: 9598,
-    superAccounts: [
-      {
-        "username": "super",
-        "password": "qq42833131"
-      }
-    ],
-    allowOrigin: [
-      "https://admin.tianle.fanmengonline.com",
-      "http://admin.tianle.fanmengonline.com",
-    ],
-    server: {
-      api: "http://localhost:3001"
-    },
   }
 }
