@@ -87,7 +87,7 @@ export class TurnTableApi extends BaseApi {
     }
 
     const user = await service.playerService.getPlayerModel(this.player._id);
-    this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'voucher'])});
+    this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'tlGold'])});
 
     this.replySuccess({});
   }
