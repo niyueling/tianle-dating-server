@@ -319,7 +319,7 @@ export default class PlayerService extends BaseService {
     return true;
   }
 
-  async playerVoucherRecharge(orderId, thirdOrderNo) {
+  async playerVoucherRecharge(orderId, thirdOrderNo, player) {
     const order = await UserRechargeOrder.findOne({_id: orderId});
     if (!order) {
       return false;
@@ -339,6 +339,7 @@ export default class PlayerService extends BaseService {
 
     // 判断vip是否升级
     user.vipExperience += order.price * 100;
+    const oldVipLevel = user.vip;
 
     const vipList = await VipConfig.find({vip: {$gt: user.vip}}).sort({vip: 1}).lean();
     for (let i = 0; i < vipList.length; i++) {
@@ -346,6 +347,10 @@ export default class PlayerService extends BaseService {
         user.vip++;
         user.vipExperience -= vipList[i].experience;
       }
+    }
+
+    if (oldVipLevel < user.vip) {
+      player.sendMessage("vip/upgrade", {ok: true, data: {oldVipLevel, newVipLevel: user.vip}});
     }
 
     await user.save();

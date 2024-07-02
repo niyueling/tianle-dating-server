@@ -689,7 +689,7 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.payFail);
     }
 
-    const result = this.service.playerService.playerVoucherRecharge(record._id, pay_response.bill_no);
+    const result = this.service.playerService.playerVoucherRecharge(record._id, pay_response.bill_no, this.player);
     if(!result) {
       return this.replyFail(TianleErrorCode.payFail);
     }
@@ -761,7 +761,7 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.payFail);
     }
 
-    const result = await this.service.playerService.playerVoucherRecharge(order._id, pay_response.data.bill_no);
+    const result = await this.service.playerService.playerVoucherRecharge(order._id, pay_response.data.bill_no, this.player);
     if(!result) {
       return this.replyFail(TianleErrorCode.payFail);
     }
