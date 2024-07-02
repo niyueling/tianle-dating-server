@@ -42,13 +42,14 @@ export class LoginSignApi extends BaseApi {
     }
 
     // 判断是否领取
-    const start = moment(new Date()).startOf('day').toDate();
-    const end = moment(new Date()).endOf('day').toDate();
-    const receive = await SevenSignPrizeRecord.findOne({playerId: this.player._id, "prizeConfig.day": prizeInfo.day, createAt: {$gte: start, $lt: end}});
-
-    // if (receive) {
-    //   return this.replyFail(TianleErrorCode.prizeIsReceive);
-    // }
+    const receive = await SevenSignPrizeRecord.findOne({playerId: this.player._id, "prizeConfig.day": prizeInfo.day});
+    if (receive) {
+      if (Date.parse(receive.createAt) > new Date().setHours(0, 0, 0 , 0)) {
+        return this.replyFail(TianleErrorCode.prizeIsReceive);
+      } else {
+        await SevenSignPrizeRecord.remove({playerId: this.player._id, "prizeConfig.day": prizeInfo.day});
+      }
+    }
 
     // 按照奖励类型领取奖励
     await this.receivePrize(prizeInfo, this.player._id, message.multiple);
