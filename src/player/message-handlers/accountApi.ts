@@ -283,7 +283,7 @@ export class AccountApi extends BaseApi {
         giftState: 1,
         to: model._id,
         title: "欢迎来到天乐麻将",
-        content: "欢迎来到天乐麻将,如果您在游戏过程中遇到任何问题，可以通过客服联系我们，我们会第一时间给你提供必要的帮助!",
+        content: "欢迎来到天乐麻将,如果您在游戏过程中遇到任何问题，可以通过客服联系我们，我们会第一时间给您提供必要的帮助!",
         gift: { diamond : 0, gold : 0 },
         createAt: new Date() });
     }
