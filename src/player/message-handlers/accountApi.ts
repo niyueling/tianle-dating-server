@@ -387,7 +387,6 @@ export class AccountApi extends BaseApi {
     const records = await RoomRecord
       .find({
         "players": playerId,
-        "category": message.gameType,
         "isPlayerDel": { $ne: playerId },
         "createAt": {
           $gte: start,
