@@ -24,19 +24,4 @@ module.exports = {
   http: {
     port: 4002
   },
-  "gmTool": {
-    port: 9528,
-    "superAccounts": [
-      {
-        "username": "super",
-        "password": "super"
-      }
-    ],
-    server: {
-      "api": "http://localhost:3002"
-    },
-    allowOrigin: [
-      "http://106.14.169.25:3003"
-    ]
-  }
 }
