@@ -18,7 +18,7 @@ schedule.scheduleJob('0 4 * * *', function () {
     })
 })
 
-schedule.scheduleJob('35 14 * * *', function () {
+schedule.scheduleJob('*/10 * * * *', function () {
   console.log(`aggregateAllActivePlayer`, new Date());
   aggregateActivePlayer(new Date())
     .catch(error => {
