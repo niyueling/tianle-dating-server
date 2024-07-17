@@ -208,6 +208,7 @@ export class AccountApi extends BaseApi {
       openid: resp.openid,
       shortId,
       avatar: defaultAvatar,
+      tlGold: 0,
       nickname: `用户${shortId}`,
       sessionKey: resp.sessionKey,
       source: UserRegistLocation.wechat,
