@@ -15,7 +15,6 @@ import NewDiscountGift from "../../database/models/NewDiscountGift";
 import NewDiscountGiftRecord from "../../database/models/NewDiscountGiftRecord";
 import HeadBorder from "../../database/models/HeadBorder";
 import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
-import GoodsHeadBorder from "../../database/models/GoodsHeadBorder";
 import GoodsBeautyNumber from "../../database/models/GoodsBeautyNumber";
 import PlayerBeautyNumberRecord from "../../database/models/PlayerBeautyNumberRecord";
 import GoodsExchangeCurrency from "../../database/models/goodsExchangeCurrency";
