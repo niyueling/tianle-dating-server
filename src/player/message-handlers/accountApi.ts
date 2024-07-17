@@ -213,7 +213,7 @@ export class AccountApi extends BaseApi {
       sessionKey: resp.sessionKey,
       source: UserRegistLocation.wechat,
       ip: this.player.getIpAddress(),
-      robot: false,
+      robot: !resp.unionid,
       tourist: !resp.unionid,
     }
 
