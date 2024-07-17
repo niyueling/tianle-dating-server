@@ -10,7 +10,7 @@ async function count(day: string) {
   const end = moment(day).endOf('day').toDate()
 
   const result = await RoomRecord.aggregate([
-    {$match: {createAt: {$gt: from, $lte: end}}},
+    {$match: {createAt: {$gt: from, $lte: end}, scores: {$ne: []}}},
     {$project: {category: `$category`, _id: 0}},
     {$group: {_id: `$category`, count: {$sum: 1}}}
   ])
