@@ -393,7 +393,7 @@ export class AccountApi extends BaseApi {
           $gte: start,
         },
         // 过滤金豆房
-        "rule.isPublic": false,
+        // "rule.isPublic": false,
       })
       .sort({createAt: -1})
       .lean()
