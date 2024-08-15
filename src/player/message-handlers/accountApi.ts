@@ -46,7 +46,7 @@ export class AccountApi extends BaseApi {
       user.disconnectedRoom = true;
     }
 
-    const allGameTypes = [GameType.mj, GameType.xueliu, GameType.guobiao, GameType.pcmj, GameType.xmmj, GameType.ddz];
+    const allGameTypes = [GameType.mj, GameType.xueliu, GameType.guobiao, GameType.pcmj, GameType.xmmj, GameType.ddz, GameType.zd];
     for (let i = 0; i < allGameTypes.length; i++) {
       // 下发掉线子游戏
       const room = await service.roomRegister.getDisconnectRoomByPlayerId(user._id.toString(), allGameTypes[i]);
@@ -234,7 +234,7 @@ export class AccountApi extends BaseApi {
       model.disconnectedRoom = true;
     }
 
-    const allGameTypes = [GameType.mj, GameType.xueliu, GameType.guobiao, GameType.pcmj, GameType.xmmj, GameType.ddz];
+    const allGameTypes = [GameType.mj, GameType.xueliu, GameType.guobiao, GameType.pcmj, GameType.xmmj, GameType.ddz, GameType.zd];
     for (let i = 0; i < allGameTypes.length; i++) {
       // 下发掉线子游戏
       const room = await service.roomRegister.getDisconnectRoomByPlayerId(model._id.toString(), allGameTypes[i]);
