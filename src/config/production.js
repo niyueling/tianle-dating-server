@@ -4,7 +4,7 @@ module.exports = {
     url: "mongodb://172.19.148.251:27017/tianleServer"
   },
   websocket: {
-    "port": 9599
+    "port": 9597
   },
   logger: {
     "filename": "mahjong.log"
