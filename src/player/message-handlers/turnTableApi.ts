@@ -100,10 +100,10 @@ export class TurnTableApi extends BaseApi {
           turntableTimes: draw.times
         });
 
-        if (datas[draw.record._id]) {
+        if (datas[draw.record.prizeId]) {
           datas[draw.record.prizeId].count++;
         } else {
-          datas[draw.record.prizeId] = {prizeId: draw.record.prizeId, num: draw.record.prizeConfig && draw.record.prizeConfig.num, type: draw.record.prizeConfig && draw.record.prizeConfig.type, count: 0};
+          datas[draw.record.prizeId] = {prizeId: draw.record.prizeId, num: draw.record.prizeConfig && draw.record.prizeConfig.num, type: draw.record.prizeConfig && draw.record.prizeConfig.type, count: 1};
         }
       }
     }
