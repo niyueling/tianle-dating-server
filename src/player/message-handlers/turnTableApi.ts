@@ -100,10 +100,12 @@ export class TurnTableApi extends BaseApi {
           turntableTimes: draw.times
         });
 
-        if (datas[draw.record.prizeId]) {
-          datas[draw.record.prizeId].count++;
+        const title = `${draw.record.prizeConfig.num}${draw.record.prizeConfig.type === 1 ? "钻石" : "金豆"}`;
+
+        if (datas[title]) {
+          datas[title].count++;
         } else {
-          datas[draw.record.prizeId] = {
+          datas[title] = {
             probability: draw.record.prizeConfig.probability,
             title: `${draw.record.prizeConfig.num}${draw.record.prizeConfig.type === 1 ? "钻石" : "金豆"}`,
             count: 1
