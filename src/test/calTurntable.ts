@@ -1,47 +1,59 @@
 import TurntablePrize from "../database/models/turntablePrize";
 import {service} from "../service/importService";
+import TurntablePrizeRecord from "../database/models/turntablePrizeRecord";
 
 async function drawTurntable() {
-  let results = [];
-  let datas = {};
 
-  const user = await this.service.playerService.getPlayerModel("66d8208f2e0262636dfec158");
+}
 
-  const result = await TurntablePrize.find();
-  for (const conf of result) {
-    results.push({
-      prizeId: conf._id,
-      probability: conf.probability,
-      num: conf.num,
-      type: conf.type
-    })
-  }
+// 每日活跃抽奖
+async function draw(player) {
 
-  // 抽奖一万次
-  for (let i = 0; i < 10000; i++) {
-    const draw = await service.playerService.draw(user);
-    if (draw.isOk) {
-      result.push({
-        // 中奖记录 id
-        recordId: draw.record._id,
-        // 中奖 id
-        prizeId: draw.record.prizeId,
-        // 是否中奖
-        isHit: draw.record.isHit,
-        num: draw.record.prizeConfig && draw.record.prizeConfig.num,
-        type: draw.record.prizeConfig && draw.record.prizeConfig.type,
-        turntableTimes: draw.times
-      });
+  const list = await TurntablePrize.find({
+    // 忽略空奖励
+    probability: {
+      $gt: 0,
+    },
+    // 实际数量大于 0
+    residueNum: {
+      $gt: 0,
+    },
+  });
 
-      if (datas[draw.record._id]) {
-        datas[draw.record._id].count++;
-      } else {
-        datas[draw.record._id] = {recordId: draw.record._id, num: draw.record.prizeConfig && draw.record.prizeConfig.num, type: draw.record.prizeConfig && draw.record.prizeConfig.type, count: 0};
-      }
+  const hitPrize = await service.lottery.randomWithNoPrize(list);
+  // 抽奖记录
+  const record = await this.recordLottery(player._id.toString(), player.shortId,
+    hitPrize && hitPrize._id || null);
+  return { isOk: true, times: player.turntableTimes, record };
+}
+
+// 记录抽奖记录
+async function recordLottery(playerId, shortId, prizeId) {
+  // 是否中奖
+  const isHit = !!prizeId;
+  let conf;
+  if (prizeId) {
+    conf = await this.getPrize(prizeId);
+    if (!conf) {
+      // 没有奖品配置
+      console.error('no lottery prize', prizeId, playerId, shortId);
+      return null;
     }
   }
 
-  console.log("datas-%s", JSON.stringify(datas))
+  return await TurntablePrizeRecord.create({
+    playerId,
+    shortId,
+    prizeConfig: conf || null,
+    prizeId: conf && conf._id || null,
+    createAt: new Date(),
+    isHit,
+  });
+}
+
+// 检查奖品是否存在
+async function getPrize(prizeId) {
+  return await TurntablePrize.findById(prizeId);
 }
 
 drawTurntable();
