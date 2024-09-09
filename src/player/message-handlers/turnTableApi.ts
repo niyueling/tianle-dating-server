@@ -79,7 +79,7 @@ export class TurnTableApi extends BaseApi {
     let results = [];
     let datas = {};
 
-    const user = await this.service.playerService.getPlayerModel("66d8208f2e0262636dfec158");
+    const user = await this.service.playerService.getPlayerModel("66b4a981093ad41935f6fbe1");
     if (!user) {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
