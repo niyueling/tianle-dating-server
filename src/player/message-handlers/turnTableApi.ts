@@ -107,6 +107,7 @@ export class TurnTableApi extends BaseApi {
             prizeId: draw.record.prizeId,
             num: draw.record.prizeConfig && draw.record.prizeConfig.num,
             type: draw.record.prizeConfig && draw.record.prizeConfig.type,
+            probability: draw.record.prizeConfig.probability,
             title: `${draw.record.prizeConfig.num}${draw.record.prizeConfig.type === 1 ? "钻石" : "金豆"}`,
             count: 1
           };
