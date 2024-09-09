@@ -101,9 +101,9 @@ export class TurnTableApi extends BaseApi {
         });
 
         if (datas[draw.record._id]) {
-          datas[draw.record._id].count++;
+          datas[draw.record.prizeId].count++;
         } else {
-          datas[draw.record._id] = {recordId: draw.record._id, num: draw.record.prizeConfig && draw.record.prizeConfig.num, type: draw.record.prizeConfig && draw.record.prizeConfig.type, count: 0};
+          datas[draw.record.prizeId] = {prizeId: draw.record.prizeId, num: draw.record.prizeConfig && draw.record.prizeConfig.num, type: draw.record.prizeConfig && draw.record.prizeConfig.type, count: 0};
         }
       }
     }
