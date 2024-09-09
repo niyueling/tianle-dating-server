@@ -81,21 +81,11 @@ export class TurnTableApi extends BaseApi {
 
     const user = await this.service.playerService.getPlayerModel("66d8208f2e0262636dfec158");
 
-    const result = await TurntablePrize.find();
-    for (const conf of result) {
-      results.push({
-        prizeId: conf._id,
-        probability: conf.probability,
-        num: conf.num,
-        type: conf.type
-      })
-    }
-
     // 抽奖一万次
     for (let i = 0; i < 10000; i++) {
       const draw = await this.draw(user);
       if (draw.isOk) {
-        result.push({
+        results.push({
           // 中奖记录 id
           recordId: draw.record._id,
           // 中奖 id
@@ -115,7 +105,7 @@ export class TurnTableApi extends BaseApi {
       }
     }
 
-    this.replySuccess({result, datas});
+    this.replySuccess({results, datas});
   }
 
   // 领取奖品
