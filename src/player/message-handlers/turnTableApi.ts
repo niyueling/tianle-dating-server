@@ -103,7 +103,13 @@ export class TurnTableApi extends BaseApi {
         if (datas[draw.record.prizeId]) {
           datas[draw.record.prizeId].count++;
         } else {
-          datas[draw.record.prizeId] = {prizeId: draw.record.prizeId, num: draw.record.prizeConfig && draw.record.prizeConfig.num, type: draw.record.prizeConfig && draw.record.prizeConfig.type, count: 1};
+          datas[draw.record.prizeId] = {
+            prizeId: draw.record.prizeId,
+            num: draw.record.prizeConfig && draw.record.prizeConfig.num,
+            type: draw.record.prizeConfig && draw.record.prizeConfig.type,
+            title: `${draw.record.prizeConfig.num}${draw.record.prizeConfig.type === 1 ? "钻石" : "金豆"}`,
+            count: 1
+          };
         }
       }
     }
