@@ -80,6 +80,9 @@ export class TurnTableApi extends BaseApi {
     let datas = {};
 
     const user = await this.service.playerService.getPlayerModel("66d8208f2e0262636dfec158");
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
 
     // 抽奖一万次
     for (let i = 0; i < 10000; i++) {

@@ -196,7 +196,6 @@ export default class PlayerService extends BaseService {
 
   // 每日活跃抽奖
   async draw(player) {
-
     const list = await TurntablePrize.find({
       // 忽略空奖励
       probability: {
