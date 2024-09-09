@@ -83,7 +83,7 @@ export class TurnTableApi extends BaseApi {
 
     // 抽奖一万次
     for (let i = 0; i < 10000; i++) {
-      const draw = await this.draw(user);
+      const draw = await service.playerService.draw(user);
       if (draw.isOk) {
         results.push({
           // 中奖记录 id
