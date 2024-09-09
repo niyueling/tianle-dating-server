@@ -13,7 +13,7 @@ import * as moment from "moment";
 import PlayerLoginRecord from "../database/models/playerLoginRecord";
 import PlayerManager from "../player/player-manager";
 import UserRechargeOrder from "../database/models/userRechargeOrder";
-import {ConsumeLogType, TaskType} from "@fm/common/constants";
+import {ConsumeLogType, RedisKey, TaskType} from "@fm/common/constants";
 import GoldRecord from "../database/models/goldRecord";
 import HeadBorder from "../database/models/HeadBorder";
 import PlayerHeadBorder from "../database/models/PlayerHeadBorder";
@@ -36,6 +36,8 @@ import VipConfig from "../database/models/VipConfig";
 import MonthGift from "../database/models/MonthGift";
 import MonthGiftRecord from "../database/models/MonthGiftRecord";
 import PlayerAttr from "../database/models/playerAttr";
+import TurntablePrize from "../database/models/turntablePrize";
+import TurntablePrizeRecord from "../database/models/turntablePrizeRecord";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
@@ -190,6 +192,56 @@ export default class PlayerService extends BaseService {
     });
 
     return JSON.parse(res.data);
+  }
+
+  // 每日活跃抽奖
+  async draw(player) {
+
+    const list = await TurntablePrize.find({
+      // 忽略空奖励
+      probability: {
+        $gt: 0,
+      },
+      // 实际数量大于 0
+      residueNum: {
+        $gt: 0,
+      },
+    });
+
+    const hitPrize = await service.lottery.randomWithNoPrize(list);
+    // 抽奖记录
+    const record = await this.recordLottery(player._id.toString(), player.shortId,
+      hitPrize && hitPrize._id || null);
+    return { isOk: true, times: player.turntableTimes, record };
+  }
+
+  // 记录抽奖记录
+  async recordLottery(playerId, shortId, prizeId) {
+    // 是否中奖
+    const isHit = !!prizeId;
+    let conf;
+    if (prizeId) {
+      conf = await this.getPrize(prizeId);
+      if (!conf) {
+        // 没有奖品配置
+        console.error('no lottery prize', prizeId, playerId, shortId);
+        return null;
+      }
+    }
+
+    return await TurntablePrizeRecord.create({
+      playerId,
+      shortId,
+      prizeConfig: conf || null,
+      prizeId: conf && conf._id || null,
+      createAt: new Date(),
+      isHit,
+    });
+  }
+
+  // 检查奖品是否存在
+  async getPrize(prizeId) {
+    return await TurntablePrize.findById(prizeId);
   }
 
   async checkUserRegist(user, data) {
