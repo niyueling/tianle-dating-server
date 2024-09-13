@@ -217,7 +217,6 @@ export class AccountApi extends BaseApi {
       tourist: !resp.unionid,
     }
 
-
     const userInfo = await service.playerService.checkUserRegist(player, data);
 
     return await this.loginSuccess(userInfo, message.mnpVersion, message.platform);
