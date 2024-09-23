@@ -69,9 +69,15 @@ export class AccountApi extends BaseApi {
 
       // 如果机型是ios，查询抽奖次数和开房数
       if (message.platform && message.platform === "iOS") {
-        iosRoomCount = await RoomScoreRecord.count({
+        const roomScoreCount = await RoomScoreRecord.count({
           creatorId: user.shortId
         })
+
+        const roomCount = await RoomRecord.count({
+          creatorId: user.shortId
+        })
+
+        iosRoomCount = roomScoreCount + roomCount;
 
         iosLotteryCount = await TurntablePrizeRecord.count({
           playerId: user._id
@@ -258,9 +264,14 @@ export class AccountApi extends BaseApi {
 
       // 如果机型是ios，查询抽奖次数和开房数
       if (platform && platform === "iOS") {
-        iosRoomCount = await RoomScoreRecord.count({
+        const roomScoreCount = await RoomScoreRecord.count({
           creatorId: model.shortId
         })
+        const roomCount = await RoomRecord.count({
+          creatorId: model.shortId
+        })
+
+        iosRoomCount = roomScoreCount + roomCount;
 
         iosLotteryCount = await TurntablePrizeRecord.count({
           playerId: model._id
