@@ -313,7 +313,7 @@ export class NewSignApi extends BaseApi {
       }
     }
 
-    const taskList = await NewFirstRecharge.find().lean();
+    const taskList = await NewFirstRecharge.find().sort({day: 1}).lean();
 
     for (let i = 0; i < taskList.length; i++) {
       const receive = await NewFirstRechargeRecord.count({playerId: user._id, "prizeConfig.day": taskList[i].day});
