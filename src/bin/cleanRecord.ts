@@ -1,11 +1,11 @@
 import * as moment from 'moment'
+import CombatGain from "../database/models/combatGain";
+import GameCardRecord from "../database/models/gameCardRecord";
 import GameRecord from '../database/models/gameRecord'
 import GmNoteModel from "../database/models/gmNote";
-import RoomRecord from '../database/models/roomRecord'
 import GoldRecord from "../database/models/goldRecord";
+import RoomRecord from '../database/models/roomRecord'
 import RoomScoreRecord from "../database/models/roomScoreRecord";
-import GameCardRecord from "../database/models/gameCardRecord";
-import CombatGain from "../database/models/combatGain";
 
 async function cleanRecord() {
   const sevenDayBefore = moment().subtract(7, 'days').startOf('day').toDate()
