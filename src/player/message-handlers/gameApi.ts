@@ -120,8 +120,8 @@ export class GameApi extends BaseApi {
   @addApi()
   async blessByGem(message) {
     const list = await LuckyBless.find().sort({orderIndex: 1});
-    let blessIndex = list.findIndex(bless => bless._id.toString() === message._id);
-    let bless = list[blessIndex];
+    const blessIndex = list.findIndex(bless => bless._id.toString() === message._id);
+    const bless = list[blessIndex];
     if (!bless) {
       console.error(`no such bless ${message._id}`);
       return this.replyFail(TianleErrorCode.blessFail);
