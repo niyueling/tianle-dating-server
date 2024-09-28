@@ -412,6 +412,7 @@ export class AccountApi extends BaseApi {
       return {
         _id: r.room,
         roomId: r.roomNum,
+        game: r.category,
         time: r.createAt.getTime(),
         creatorId: r.creatorId,
         players: r.scores
