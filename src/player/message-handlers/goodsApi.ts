@@ -400,7 +400,7 @@ export class GoodsApi extends BaseApi {
 
     user.gold += goodInfo.number;
     user.shopFreeGiftCount++;
-    user.save();
+    await user.save();
 
     await service.playerService.logGoldConsume(user._id, ConsumeLogType.freeShopGold, goodInfo.number, user.gold, `每日领取免费金豆`);
 
@@ -442,7 +442,7 @@ export class GoodsApi extends BaseApi {
 
     user.tlGold += goodInfo.number;
     user.shopFreeGiftCount++;
-    user.save();
+    await user.save();
 
     await service.playerService.logGoldConsume(user._id, ConsumeLogType.freeShopGold, goodInfo.number, user.tlGold, `每日领取免费天乐豆`);
 
@@ -953,8 +953,6 @@ export class GoodsApi extends BaseApi {
     if (message.numberId) {
       param["numberId"] = message.numberId;
     }
-
-    console.log(param);
 
     const beautyNumberLists = await GoodsBeautyNumber.aggregate([
       {$match: param},
