@@ -15,6 +15,7 @@ import VipConfig from "../../database/models/VipConfig";
 import RegressionSignPrize from "../../database/models/RegressionSignPrize";
 import CardType from "../../database/models/CardType";
 import GoodsProp from "../../database/models/GoodsProp";
+import DailySupplementGift from "../../database/models/DailySupplementGift";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -1384,5 +1385,52 @@ export class MockDataApi extends BaseApi {
     }
 
     return this.replySuccess(avatars);
+  }
+
+  // 录入每日补充包
+  @addApi()
+  async saveDailySupplementGifts() {
+    const result = await DailySupplementGift.find();
+
+    if (result.length) {
+      await DailySupplementGift.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      {
+        name: "初级周卡",//名称
+        level: 1,//等级
+        payPrize: {type: 7, number: 500000000},
+        dailyPrize: {type: 7, number: 20000000},
+        price: 6,// 价格
+        originPrice: 92,// 原价
+        dailyReceiveCount: 3,//每日领取次数
+        currency: "tlGold",//币种
+      },
+      {
+        name: "进阶周卡",//名称
+        level: 2,//等级
+        payPrize: {type: 7, number: 2000000000},
+        dailyPrize: {type: 7, number: 500000000},
+        price: 30,// 价格
+        originPrice: 1250,// 原价
+        dailyReceiveCount: 3,//每日领取次数
+        currency: "tlGold",//币种
+      },
+      {
+        name: "高级周卡",//名称
+        level: 3,//等级
+        payPrize: {type: 7, number: 200000000000},
+        dailyPrize: {type: 7, number: 2000000000},
+        price: 128,// 价格
+        originPrice: 24200,// 原价
+        dailyReceiveCount: 3,//每日领取次数
+        currency: "tlGold",//币种
+      },
+    ];
+
+    await DailySupplementGift.insertMany(datas);
+
+    return this.replySuccess(datas);
   }
 }
