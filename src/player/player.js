@@ -39,6 +39,7 @@ import {GiftApi} from "./message-handlers/giftApi";
 import {DebrisApi} from "./message-handlers/debrisApi";
 import {VipApi} from "./message-handlers/vipApi";
 import {RegressionApi} from "./message-handlers/regressionApi";
+import {dailySupplementApi} from "./message-handlers/dailySupplementApi";
 import {TianleErrorCode} from "@fm/common/constants";
 
 const isTokenValid = async (apiName, token, player) => {
@@ -87,7 +88,8 @@ const apiClass = {
   gift: GiftApi,
   debris: DebrisApi,
   vip: VipApi,
-  regression: RegressionApi
+  regression: RegressionApi,
+  dailySupplement: dailySupplementApi
 }
 
 // 调用api
