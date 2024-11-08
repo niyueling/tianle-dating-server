@@ -174,7 +174,7 @@ class Player extends EventEmitter {
     if (!ip) {
       ip = this.getIpAddress();
     }
-    const res = await service.base.curl(`https://ipcity.market.alicloudapi.com/ip/city/query?ip=${ip}`, {
+    const res = await service.base.curl(`https://ips.market.alicloudapi.com/iplocaltion?ip=${ip}`, {
       method: "get",
       headers: {
         Authorization: "APPCODE " + config.ipConfig.appCode

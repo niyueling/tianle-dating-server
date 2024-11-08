@@ -184,7 +184,7 @@ export default class PlayerService extends BaseService {
       user_ip = current_ip;
     }
 
-    const res = await service.base.curl(`https://ipcity.market.alicloudapi.com/ip/city/query?ip=${user_ip}`, {
+    const res = await service.base.curl(`https://ips.market.alicloudapi.com/iplocaltion?ip=${user_ip}`, {
       method: "get",
       headers: {
         Authorization: "APPCODE " + config.ipConfig.appCode
