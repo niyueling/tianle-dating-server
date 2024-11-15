@@ -949,9 +949,11 @@ export class GoodsApi extends BaseApi {
   // 靓号换一换
   @addApi()
   async beautyNumberLists(message) {
-    let param = {_id: {$ne: null}};
+    let param = {};
     if (message.numberId) {
-      param["numberId"] = message.numberId;
+      param = {numberId: message.numberId};
+    } else {
+      param = {_id: {$ne: null}};
     }
 
     console.warn("param %s", JSON.stringify(param));
