@@ -39,8 +39,6 @@ export class GoodsApi extends BaseApi {
       param["numberId"] = message.numberId;
     }
 
-    console.warn("param %s", JSON.stringify(param));
-
     const beautyNumberLists = await GoodsBeautyNumber.aggregate([
       {$match: param},
       {$sample: { size: 20}}
@@ -955,6 +953,8 @@ export class GoodsApi extends BaseApi {
     if (message.numberId) {
       param["numberId"] = message.numberId;
     }
+
+    console.warn("param %s", JSON.stringify(param));
 
     const beautyNumberLists = await GoodsBeautyNumber.aggregate([
       {$match: param},
