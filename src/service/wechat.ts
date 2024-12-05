@@ -10,7 +10,7 @@ export default class Wechat extends BaseService {
   async getAccessToken(code, appId, secret) {
     const url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${secret}&code=${code}&grant_type=authorization_code`;
     const result = await service.base.getByJson(url);
-    this.logger.debug('get access token result', result.data);
+    console.warn('get access token result', result.data);
     if (result.status !== 200 || result.data.errcode) {
       // 获取失败
       this.logger.error('get access token fail for code', code, result.data);

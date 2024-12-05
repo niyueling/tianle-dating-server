@@ -40,6 +40,9 @@ module.exports = {
     // 小程序 appid
     quickAppId: 'wxb5e48d0993c3a40c',
     quickSecret: '7b5fb7ef42de397e4e1c3933542abf18',
+    // APP appid
+    mobileAppId: 'wxd168e488f38094e2',
+    mobileSecret: '03333e94aac6b1cafd298369ac866c25',
     // 方块战争小程序 appid
     blockQuickAppId: 'wx92355817f6face14',
     blockQuickSecret: '3f1ee0f633b74e371731c5be4d0df086',

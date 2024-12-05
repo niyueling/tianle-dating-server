@@ -184,14 +184,24 @@ export class AccountApi extends BaseApi {
   })
   async loginGame(message) {
     let resp = {
-      openid: null,
-      sessionKey: null,
-      unionid: null,
+      accessToken: '',
+      openid: '',
+      unionid: '',
+      sessionKey: '',
     };
     let player;
-    if (message.code) {
+    if (message.code && message.source === 1) {
+      // @ts-ignore
       resp = await service.wechat.getWechatInfoByQuickApp(config.wechat.quickAppId, config.wechat.quickSecret,
           message.code);
+      if (!resp) {
+        return this.replyFail(TianleErrorCode.codeInvalid);
+      }
+    }
+
+    if (message.code && message.source === 2) {
+      // @ts-ignore
+      resp = await service.wechat.getAccessToken(message.code, config.wechat.mobileAppId, config.wechat.mobileSecret);
       if (!resp) {
         return this.replyFail(TianleErrorCode.codeInvalid);
       }
