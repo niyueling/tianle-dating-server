@@ -137,15 +137,19 @@ export class AccountApi extends BaseApi {
 
   // 发放救济金
   @addApi()
-  async benefit() {
+  async benefit(message) {
     const user = await Player.findOne({shortId: this.player.model.shortId});
     if (!user) {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
+    if (!message.type) {
+      message.type = 1;
+    }
+
     let gold = 30000;
 
-    if (user.giftExpireTime && user.giftExpireTime > new Date().getTime()) {
+    if (user.giftExpireTime && user.giftExpireTime > new Date().getTime() && message.type === 2) {
       gold += 170000;
     }
 
