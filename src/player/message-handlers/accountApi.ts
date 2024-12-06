@@ -141,10 +141,10 @@ export class AccountApi extends BaseApi {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
 
-    let gold = 100000;
+    let gold = 30000;
 
     if (user.giftExpireTime && user.giftExpireTime > new Date().getTime()) {
-      gold += gold * 0.5;
+      gold += 170000;
     }
 
     if (user.helpCount > 0) {
@@ -236,7 +236,7 @@ export class AccountApi extends BaseApi {
 
     const userInfo = await service.playerService.checkUserRegist(player, data);
 
-    await this.saveGoodsReviveTlGolds();
+    // await this.saveGoodsReviveTlGolds();
 
     return await this.loginSuccess(userInfo, message.mnpVersion, message.platform);
   }
