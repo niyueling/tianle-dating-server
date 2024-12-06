@@ -121,10 +121,10 @@ export class AccountApi extends BaseApi {
       const start = moment(new Date()).startOf('day').toDate();
       const end = moment(new Date()).endOf('day').toDate();
       const helpCount = await PlayerBenefitRecord.count({playerId: this.player.model._id, createAt: {$gte: start, $lt: end}});
-      let gold = 100000;
+      let gold = 30000;
 
       if (user.giftExpireTime && user.giftExpireTime > new Date().getTime()) {
-        gold += gold * 0.5;
+        gold += 170000;
       }
 
       return this.replySuccess({gold: gold, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount});
