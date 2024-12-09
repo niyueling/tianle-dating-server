@@ -130,7 +130,7 @@ export class AccountApi extends BaseApi {
         isVip = true;
       }
 
-      return this.replySuccess({gold, giftGold, vip: isVip, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount});
+      return this.replySuccess({gold, giftGold, vip: isVip, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount, vip: user.vip});
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);
@@ -174,7 +174,7 @@ export class AccountApi extends BaseApi {
       await PlayerBenefitRecord.create(data);
 
       this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'tlGold'])})
-      return this.replySuccess({gold: gold, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount + 1});
+      return this.replySuccess({gold: gold, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount + 1, vip: user.vip});
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);
