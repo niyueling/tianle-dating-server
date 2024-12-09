@@ -1187,30 +1187,30 @@ export class MockDataApi extends BaseApi {
     }
 
     const datas = [
-      {gold: 100000, tlGold: 100000, category: "6570528ad62f7eaa7a4e3b0d", gameType: "majiang"},
-      {gold: 500000, tlGold: 500000, category: "6570528ad62f7eaa7a4e3b0d", gameType: "majiang"},
-      {gold: 1000000, tlGold: 1000000, category: "6570528ad62f7eaa7a4e3b0d", gameType: "majiang"},
-      {gold: 3000000, tlGold: 3000000, category: "6570528ad62f7eaa7a4e3b0d", gameType: "majiang"},
+      {gold: 100000, tlGold: 100000, category: "6570528ad62f7eaa7a4e3b0d", gameType: "majiang", level: 1},
+      {gold: 500000, tlGold: 500000, category: "6570528ad62f7eaa7a4e3b0d", gameType: "majiang", level: 1},
+      {gold: 1000000, tlGold: 1000000, category: "6570528ad62f7eaa7a4e3b0d", gameType: "majiang", level: 1},
+      {gold: 3000000, tlGold: 3000000, category: "6570528ad62f7eaa7a4e3b0d", gameType: "majiang", level: 1},
 
-      {gold: 20000000, tlGold: 20000000, category: "6570528ad62f7eaa7a4e3b0e", gameType: "majiang"},
-      {gold: 50000000, tlGold: 50000000, category: "6570528ad62f7eaa7a4e3b0e", gameType: "majiang"},
-      {gold: 100000000, tlGold: 100000000, category: "6570528ad62f7eaa7a4e3b0e", gameType: "majiang"},
-      {gold: 300000000, tlGold: 300000000, category: "6570528ad62f7eaa7a4e3b0e", gameType: "majiang"},
+      {gold: 20000000, tlGold: 20000000, category: "6570528ad62f7eaa7a4e3b0e", gameType: "majiang", level: 2},
+      {gold: 50000000, tlGold: 50000000, category: "6570528ad62f7eaa7a4e3b0e", gameType: "majiang", level: 2},
+      {gold: 100000000, tlGold: 100000000, category: "6570528ad62f7eaa7a4e3b0e", gameType: "majiang", level: 2},
+      {gold: 300000000, tlGold: 300000000, category: "6570528ad62f7eaa7a4e3b0e", gameType: "majiang", level: 2},
 
-      {gold: 500000000, tlGold: 500000000, category: "6570528ad62f7eaa7a4e3b0f", gameType: "majiang"},
-      {gold: 800000000, tlGold: 800000000, category: "6570528ad62f7eaa7a4e3b0f", gameType: "majiang"},
-      {gold: 100000000, tlGold: 100000000, category: "6570528ad62f7eaa7a4e3b0f", gameType: "majiang"},
-      {gold: 1500000000, tlGold: 1500000000, category: "6570528ad62f7eaa7a4e3b0f", gameType: "majiang"},
+      {gold: 500000000, tlGold: 500000000, category: "6570528ad62f7eaa7a4e3b0f", gameType: "majiang", level: 3},
+      {gold: 800000000, tlGold: 800000000, category: "6570528ad62f7eaa7a4e3b0f", gameType: "majiang", level: 3},
+      {gold: 100000000, tlGold: 100000000, category: "6570528ad62f7eaa7a4e3b0f", gameType: "majiang", level: 3},
+      {gold: 1500000000, tlGold: 1500000000, category: "6570528ad62f7eaa7a4e3b0f", gameType: "majiang", level: 3},
 
-      {gold: 2000000000, tlGold: 2000000000, category: "6570528ad62f7eaa7a4e3b10", gameType: "majiang"},
-      {gold: 3000000000, tlGold: 3000000000, category: "6570528ad62f7eaa7a4e3b10", gameType: "majiang"},
-      {gold: 4000000000, tlGold: 4000000000, category: "6570528ad62f7eaa7a4e3b10", gameType: "majiang"},
-      {gold: 5000000000, tlGold: 5000000000, category: "6570528ad62f7eaa7a4e3b10", gameType: "majiang"},
+      {gold: 2000000000, tlGold: 2000000000, category: "6570528ad62f7eaa7a4e3b10", gameType: "majiang", level: 4},
+      {gold: 3000000000, tlGold: 3000000000, category: "6570528ad62f7eaa7a4e3b10", gameType: "majiang", level: 4},
+      {gold: 4000000000, tlGold: 4000000000, category: "6570528ad62f7eaa7a4e3b10", gameType: "majiang", level: 4},
+      {gold: 5000000000, tlGold: 5000000000, category: "6570528ad62f7eaa7a4e3b10", gameType: "majiang", level: 4},
 
-      {gold: 6000000000, tlGold: 6000000000, category: "6570528ad62f7eaa7a4e3b11", gameType: "majiang"},
-      {gold: 8000000000, tlGold: 8000000000, category: "6570528ad62f7eaa7a4e3b11", gameType: "majiang"},
-      {gold: 10000000000, tlGold: 10000000000, category: "6570528ad62f7eaa7a4e3b11", gameType: "majiang"},
-      {gold: 30000000000, tlGold: 30000000000, category: "6570528ad62f7eaa7a4e3b11", gameType: "majiang"},
+      {gold: 6000000000, tlGold: 6000000000, category: "6570528ad62f7eaa7a4e3b11", gameType: "majiang", level: 5},
+      {gold: 8000000000, tlGold: 8000000000, category: "6570528ad62f7eaa7a4e3b11", gameType: "majiang", level: 5},
+      {gold: 10000000000, tlGold: 10000000000, category: "6570528ad62f7eaa7a4e3b11", gameType: "majiang", level: 5},
+      {gold: 30000000000, tlGold: 30000000000, category: "6570528ad62f7eaa7a4e3b11", gameType: "majiang", level: 5},
     ];
 
     await GoodsReviveTlGold.insertMany(datas);
