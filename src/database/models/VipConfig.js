@@ -7,6 +7,7 @@ const VipConfigSchema = new Schema({
   vip: {type: Number},//vip等级
   prizeList: {type: Array, default: []},//奖励
   noteList: {type: Array, default: []},//奖励说明
+  benifitMultiple: {type: Number, default: 1},// 救济金翻倍倍数
   createAt: {type: Date, default: Date.now}
 });
 
