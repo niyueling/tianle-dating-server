@@ -130,7 +130,7 @@ export class AccountApi extends BaseApi {
         isVip = true;
       }
 
-      return this.replySuccess({gold, giftGold, vip: isVip, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount, vip: user.vip});
+      return this.replySuccess({gold, giftGold, vip: isVip, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount, vipLevel: user.vip});
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);
