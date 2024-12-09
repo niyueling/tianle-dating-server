@@ -38,6 +38,7 @@ import MonthGiftRecord from "../database/models/MonthGiftRecord";
 import PlayerAttr from "../database/models/playerAttr";
 import TurntablePrize from "../database/models/turntablePrize";
 import TurntablePrizeRecord from "../database/models/turntablePrizeRecord";
+import PlayerPayDailySupplementRecord from "../database/models/PlayerPayDailySupplementRecord";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
@@ -1198,5 +1199,29 @@ export default class PlayerService extends BaseService {
     // task.taskDescribe = task.taskDescribe.replace("?", task.finishCount);
 
     return task;
+  }
+
+  async playerPaySupplement(orderId, thirdOrderNo) {
+    const order = await PlayerPayDailySupplementRecord.findOne({_id: orderId});
+    if (!order) {
+      return false;
+    }
+
+    const user = await Player.findOne({_id: order.playerId});
+    if (!user) {
+      return false;
+    }
+
+    user.tlGold += order.config.gold;
+    await user.save();
+
+    order.status = 1;
+    order.transactionId = thirdOrderNo;
+    await order.save();
+
+    // 增加日志
+    await this.logGoldConsume(user._id, ConsumeLogType.payReviveSupplement, order.config.gold, user.tlGold, "购买复活专享补充包");
+
+    return true;
   }
 }
