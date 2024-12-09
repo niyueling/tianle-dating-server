@@ -32,6 +32,7 @@ import GoodsProp from "../../database/models/GoodsProp";
 import PlayerProp from "../../database/models/PlayerProp";
 import GoodsReviveTlGold from "../../database/models/goodsReviveTlGold";
 import GoodsReviveSupplement from "../../database/models/goodsReviveSupplement";
+import VipConfig from "../../database/models/VipConfig";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -130,7 +131,9 @@ export class AccountApi extends BaseApi {
         isVip = true;
       }
 
-      return this.replySuccess({gold, giftGold, vip: isVip, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount, vipLevel: user.vip});
+      const vipConfig = await VipConfig.findOne({vip: user.vip});
+
+      return this.replySuccess({gold, giftGold, vip: isVip, helpCount: helpCount + 1, totalCount: user.helpCount + helpCount, vipLevel: user.vip, benifitMultiple: vipConfig.benifitMultiple});
     }
 
     return this.replyFail(TianleErrorCode.receiveFail);
