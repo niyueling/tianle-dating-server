@@ -1383,7 +1383,7 @@ export class GoodsApi extends BaseApi {
   // 兑换天乐币列表
   @addApi()
   async getReviveTlGoldList(message) {
-    const reviveList = await GoodsReviveTlGold.find({ category: message.category, gameType: message.gameType }).sort({gold: 1});
+    const reviveList = await GoodsReviveTlGold.find({ gameType: message.gameType }).sort({gold: 1});
 
     this.replySuccess(reviveList);
   }
