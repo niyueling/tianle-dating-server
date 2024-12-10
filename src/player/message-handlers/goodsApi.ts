@@ -1115,9 +1115,9 @@ export class GoodsApi extends BaseApi {
     await this.player.updateResource2Client();
   }
 
-  // 领取复活专享包
+  // 领取每日补充包
   @addApi()
-  async exchangeRevivePaySupplement(message) {
+  async exchangeDailyPaySupplement(message) {
     const exchangeConf = await GoodsDailySupplement.findById(message._id);
     if (!exchangeConf) {
       return this.replyFail(TianleErrorCode.configNotFound);
