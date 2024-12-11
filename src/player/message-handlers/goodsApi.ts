@@ -1164,7 +1164,7 @@ export class GoodsApi extends BaseApi {
 
   // 每日补充包列表
   @addApi()
-  async getPaySupplementList(message) {
+  async getDailySupplementList(message) {
     const reviveList = await GoodsDailySupplement.find({ gameType: message.gameType }).lean();
 
     for (let i = 0; i < reviveList.length; i++) {
