@@ -1155,6 +1155,14 @@ export class GoodsApi extends BaseApi {
 
     await PlayerModel.update({_id: model._id}, {$inc: {tlGold: exchangeConf.todayReceiveGold}});
 
+    await PlayerReceiveDailySupplementRecord.create({
+      config: exchangeConf,
+      gold: exchangeConf.todayReceiveGold,
+      sn: await this.service.utils.generateOrderNumber(),
+      playerId: this.player.model._id,
+      recordId: exchangeConf._id,
+    });
+
     // 增加日志
     await service.playerService.logGoldConsume(model._id, ConsumeLogType.receiveDailySupplement, exchangeConf.todayReceiveGold, model.tlGold, `领取每日专享补充包`);
 
