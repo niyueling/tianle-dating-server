@@ -1220,7 +1220,7 @@ export default class PlayerService extends BaseService {
     await order.save();
 
     // 增加日志
-    await this.logGoldConsume(user._id, ConsumeLogType.payReviveSupplement, order.config.gold, user.tlGold, "购买复活专享补充包");
+    await this.logGoldConsume(user._id, ConsumeLogType.payDailySupplement, order.config.gold, user.tlGold, "购买复活专享补充包");
 
     return true;
   }

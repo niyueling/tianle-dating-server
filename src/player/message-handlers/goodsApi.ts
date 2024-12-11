@@ -1156,44 +1156,46 @@ export class GoodsApi extends BaseApi {
     await PlayerModel.update({_id: model._id}, {$inc: {tlGold: exchangeConf.todayReceiveGold}});
 
     // 增加日志
-    await service.playerService.logGoldConsume(model._id, ConsumeLogType.receiveReviveSupplement, exchangeConf.todayReceiveGold, model.tlGold, `领取复活专享补充包`);
+    await service.playerService.logGoldConsume(model._id, ConsumeLogType.receiveDailySupplement, exchangeConf.todayReceiveGold, model.tlGold, `领取每日专享补充包`);
 
     this.replySuccess({tlGold: exchangeConf.todayReceiveGold});
     this.player.sendMessage('resource/update', {ok: true, data: {gold: model.gold, diamond: model.diamond, tlGold: model.tlGold}})
   }
 
-  // 复活专享包列表
+  // 每日补充包列表
   @addApi()
   async getPaySupplementList(message) {
-    const reviveInfo = await GoodsDailySupplement.findOne({ gameType: message.gameType }).lean();
+    const reviveList = await GoodsDailySupplement.find({ gameType: message.gameType }).lean();
 
-    // 判断是否已经购买复活专享包
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7); // 计算7天前的日期
+    for (let i = 0; i < reviveList.length; i++) {
+      // 判断是否已经购买每日补充包
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7); // 计算7天前的日期
 
-    const orderInfo = await PlayerPayDailySupplementRecord.findOne({
-      playerId: this.player.model._id,
-      status: 1,
-      recordId: reviveInfo._id,
-      createAt: { $gte: sevenDaysAgo } // 添加7天内的条件
-    }).sort({ createAt: -1 });
-    reviveInfo["isPay"] = !!orderInfo;
+      const orderInfo = await PlayerPayDailySupplementRecord.findOne({
+        playerId: this.player.model._id,
+        status: 1,
+        recordId: reviveList[i]._id,
+        createAt: { $gte: sevenDaysAgo } // 添加7天内的条件
+      }).sort({ createAt: -1 });
+      reviveList[i]["isPay"] = !!orderInfo;
 
-    // 判断今日已领取次数
-    const start = moment(new Date()).startOf('day').toDate();
-    const end = moment(new Date()).endOf('day').toDate();
-    reviveInfo["todayReceiveCount"] = await PlayerReceiveDailySupplementRecord.count({
-      playerId: this.player.model._id,
-      recordId: reviveInfo._id,
-      createAt: {$gte: start, $lt: end}
-    });
+      // 判断今日已领取次数
+      const start = moment(new Date()).startOf('day').toDate();
+      const end = moment(new Date()).endOf('day').toDate();
+      reviveList[i]["todayReceiveCount"] = await PlayerReceiveDailySupplementRecord.count({
+        playerId: this.player.model._id,
+        recordId: reviveList[i]._id,
+        createAt: {$gte: start, $lt: end}
+      });
+    }
 
-    this.replySuccess(reviveInfo);
+    this.replySuccess(reviveList);
   }
 
-  // 购买复活专享包
+  // 购买每日补充包
   @addApi()
-  async wxGamePaySupplement(message) {
+  async wxGamePayDailySupplement(message) {
     const lock = await service.utils.grantLockOnce(RedisKey.paySupplementLock + message.userId, 5);
     if (!lock) {
       // 有进程在处理
@@ -1310,7 +1312,7 @@ export class GoodsApi extends BaseApi {
 
   // 安卓虚拟支付回调
   @addApi()
-  async wxGamePaySupplementNotify(message) {
+  async wxGamePayDailySupplementNotify(message) {
     const order = await PlayerPayDailySupplementRecord.findOne({_id: message.orderId});
     if (!order || order.status === 1) {
       return this.replyFail(TianleErrorCode.orderNotExistOrPay);
