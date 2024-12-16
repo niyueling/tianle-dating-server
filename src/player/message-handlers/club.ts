@@ -84,12 +84,11 @@ async function checkOwnerClub(playerId, gameType) {
   return false
 }
 
-async function getClubExtra(clubId, gameType) {
+async function getClubExtra(clubId) {
   let clubExtra = await ClubExtra.findOne({ clubId });
   if (!clubExtra) {
     clubExtra = await ClubExtra.create({
-      clubId,
-      gameType,
+      clubId
     })
   }
   return clubExtra
@@ -439,11 +438,13 @@ export default {
     }
 
     player.model.myClub = tempClub;
+    player.model.joinClubShortIds = [];
 
     const playerShortIds = await getPlayerJoinClub(player.model._id);
     if (playerShortIds) {
       player.model.joinClubShortIds = playerShortIds;
     }
+
     player.sendMessage('club/updatePlayerInfoReply', {ok: true, data: {
         clubShortId: player.model.clubShortId,
         myClub: player.model.myClub
@@ -730,6 +731,7 @@ export default {
     }
     player.sendMessage('club/recordRankListReply', { ok: false, info: '无法查看！' });
   },
+  // 管理员查询发牌记录
   'club/recordRoomPlayerInfo': async (player, message) => {
     let myClub = await getOwnerClub(player.model._id, message.clubShortId);
     if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
@@ -769,6 +771,8 @@ export default {
     }
     player.sendMessage('club/recordRoomPlayerInfoReply', { ok: false, info: '没有权限！' });
   },
+
+  // 管理员清除战绩
   'club/changeClubRecordState': async (player, message) => {
     let myClub = await getOwnerClub(player.model._id, message.clubShortId);
     if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
@@ -787,6 +791,8 @@ export default {
       logger.error(e)
     }
   },
+
+  // 管理员战队已读
   'club/seenClubRecords': async (player, message) => {
     let myClub = await getOwnerClub(player.model._id, message.clubShortId);
     if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
@@ -805,33 +811,29 @@ export default {
       logger.error(e)
     }
   },
+
   'club/changeState': async (player, message) => {
-    if (!message.gameType) {
-      player.sendMessage('club/changeStateReply', { ok: false, info: '错误的请求' })
-      return
-    }
-    const myClub = await Club.findOne({ owner: player.model._id, gameType: message.gameType });
+    const myClub = await Club.findOne({ owner: player.model._id, shortId: message.clubShortId });
 
     if (myClub) {
       myClub.state = message.state
       await myClub.save()
-      const info = message.state === 'on' ? '已打开战队创建房间功能' : '已关闭战队创建房间功能'
-      player.sendMessage('club/changeStateReply', { ok: true, info, state: message.state })
+      player.sendMessage('club/changeStateReply', { ok: true, data: {state: message.state} })
     } else {
-      player.sendMessage('club/changeStateReply', { ok: false, info: '错误的请求' })
+      player.sendMessage('club/changeStateReply', { ok: false, info: TianleErrorCode.clubIsPause })
     }
   },
   'club/getClubMembers': async (player, message) => {
     let myClub = await getOwnerClub(player.model._id, message.clubShortId);
     if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
-      myClub = await Club.findOne({ shortId: message.clubShortId, gameType: message.gameType });
+      myClub = await Club.findOne({ shortId: message.clubShortId });
     }
     if (!myClub) {
-      player.sendMessage('club/getClubMembersReply', { ok: false, info: '非战队创建者不能查看' });
+      player.sendMessage('club/getClubMembersReply', { ok: false, info: TianleErrorCode.notClubAdmin });
       return
     }
-    const clubExtra = await getClubExtra(myClub._id, message.gameType)
-    const clubMembers = await ClubMember.find({ club: myClub._id, gameType: message.gameType })
+    const clubExtra = await getClubExtra(myClub._id)
+    const clubMembers = await ClubMember.find({ club: myClub._id })
     const clubMembersInfo = [];
     const clubExtraData = {
       blacklist: clubExtra && clubExtra.blacklist,
@@ -841,10 +843,10 @@ export default {
       const memberInfo = await PlayerModel.findOne({ _id: clubMember.member })
       if (memberInfo) {
         clubMembersInfo.push({
-          name: memberInfo.name,
+          name: memberInfo.nickname,
           id: memberInfo._id,
-          headImage: memberInfo.headImgUrl,
-          gem: memberInfo.gem,
+          headImage: memberInfo.avatar,
+          diamond: memberInfo.diamond,
           clubGold: clubMember.clubGold,
           shortId: memberInfo.shortId,
           isAdmin: clubMember.role === 'admin'
@@ -852,7 +854,7 @@ export default {
       }
     }
 
-    player.sendMessage('club/getClubMembersReply', { ok: true, clubMembersInfo, clubExtraData });
+    player.sendMessage('club/getClubMembersReply', { ok: true, data: {clubMembersInfo, clubExtraData} });
   },
   'club/renameClubPlayer': async (player, message) => {
     let myClub = await getOwnerClub(player.model._id, message.clubShortId);
