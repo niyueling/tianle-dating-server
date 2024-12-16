@@ -70,14 +70,6 @@ async function getOwnerClub(playerId, clubShortId) {
     return false
 }
 
-async function checkOwnerClub(playerId, gameType) {
-    const ownerClub = await Club.findOne({owner: playerId, gameType});
-    if (ownerClub) {
-        return ownerClub;
-    }
-    return false
-}
-
 async function getClubExtra(clubId) {
     let clubExtra = await ClubExtra.findOne({clubId});
     if (!clubExtra) {
