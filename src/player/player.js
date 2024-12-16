@@ -8,6 +8,7 @@ import * as ws from 'ws';
 import {pick} from 'lodash'
 import {serializeMessage, deserializeMessage} from '../network/utils';
 import accountHandlers from './message-handlers/account';
+import clubHandlers from './message-handlers/club';
 import matchHandlers from './message-handlers/match';
 import resourceHandlers from './message-handlers/resource';
 import gameHandlers from './message-handlers/game';
@@ -28,7 +29,6 @@ import {verifyWithRecord} from "../utils/jwt";
 import {InviteApi} from "./message-handlers/inviteApi";
 import {LotteryApi} from "./message-handlers/lotteryApi";
 import {GameApi} from "./message-handlers/gameApi";
-import {BattleBlockApi} from "./message-handlers/battleBlockApi";
 import {TurnTableApi} from "./message-handlers/turnTableApi";
 import {LoginSignApi} from "./message-handlers/loginSignApi";
 import {NewSignApi} from "./message-handlers/newSignApi";
@@ -78,7 +78,6 @@ const apiClass = {
   invite: InviteApi,
   lottery: LotteryApi,
   game: GameApi,
-  battleBlock: BattleBlockApi,
   turnTable: TurnTableApi,
   mockData: MockDataApi,
   loginSign: LoginSignApi,
@@ -135,6 +134,7 @@ const ipReg = /(\d+\.\d+\.\d+.\d+)/
 
 Object.assign(messageHandlers,
     accountHandlers,
+    clubHandlers,
     matchHandlers,
     resourceHandlers,
     gameHandlers,
@@ -338,6 +338,14 @@ class Player extends EventEmitter {
       logger.error(e);
     }
   }
+
+  // async listenClub(clubId = -1) {
+  //   if (this.channel && clubId) {
+  //     await this.channel.assertExchange(`exClubCenter`, 'topic', {durable: false})
+  //     await this.channel.bindQueue(this.myQueue, `exClubCenter`, `club:${clubId}`)
+  //     this.clubId = clubId;
+  //   }
+  // }
 
   async updateResource2Client() {
     if (!this.model) {

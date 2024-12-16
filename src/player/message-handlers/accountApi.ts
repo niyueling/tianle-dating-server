@@ -1,5 +1,6 @@
 import {GameType, TianleErrorCode, UserRegistLocation, shopPropType} from "@fm/common/constants";
 import * as moment from "moment";
+import * as mongoose from 'mongoose';
 import ChannelManager from "../../chat/channel-manager";
 import * as config from "../../config";
 import {getNewShortPlayerId} from "../../database/init";
@@ -33,6 +34,8 @@ import PlayerProp from "../../database/models/PlayerProp";
 import GoodsReviveTlGold from "../../database/models/goodsReviveTlGold";
 import GoodsReviveSupplement from "../../database/models/goodsReviveSupplement";
 import VipConfig from "../../database/models/VipConfig";
+import ClubMember from "../../database/models/clubMember";
+import Club from "../../database/models/club";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -362,6 +365,13 @@ export class AccountApi extends BaseApi {
           categoryName: roomInfo.caregoryName
         }
       }
+    }
+
+    const ObjectId = mongoose.Types.ObjectId
+    const playerInClub = await ClubMember.findOne({member: model._id});
+    if (playerInClub) {
+      const club = await Club.findOne({_id: ObjectId(playerInClub.club)});
+      model.clubShortId = club.shortId;
     }
 
     // 记录玩家
