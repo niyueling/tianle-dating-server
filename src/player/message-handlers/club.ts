@@ -257,7 +257,7 @@ export default {
             playerName: player.model.nickname,
         });
 
-        player.sendMessage('club/requestReply', {ok: true, data: {}});
+        player.sendMessage('club/requestReply', {ok: true, data: {shortId: message.clubShortId, clubName: haveThisClub.name}});
     },
     'club/create': createClubRoom,
     'club/getClubInfo': async (player, message) => {
@@ -739,63 +739,6 @@ export default {
         await ClubMember.remove({member: message.playerId, club: myClub._id})
         player.sendMessage('club/removePlayerReply', {ok: true, data: {}});
     },
-
-    // 设置默认规则
-    'club/setGameRule': async (player, message) => {
-        if (!message.gameType) {
-            player.sendMessage('club/setDefaultRuleReply', {ok: false, info: TianleErrorCode.systemError})
-            return
-        }
-
-        let myClub = await Club.findOne({owner: player.model._id});
-        if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
-            myClub = await Club.findOne({shortId: message.clubShortId});
-        }
-
-        if (myClub) {
-            myClub.defaultRule = message.rule
-            await myClub.save()
-            player.sendMessage('club/setDefaultRuleReply', {ok: true})
-        } else {
-            player.sendMessage('club/setDefaultRuleReply', {ok: false, info: '错误的请求'})
-        }
-    },
-    'club/setDefaultGoldRule': async (player, message) => {
-        if (!message.gameType) {
-            player.sendMessage('club/setDefaultGoldRuleReply', {ok: false, info: '错误的请求'})
-            return
-        }
-        let myClub = await Club.findOne({owner: player.model._id});
-        if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
-            myClub = await Club.findOne({shortId: message.clubShortId});
-        }
-
-        if (myClub) {
-            myClub.defaultGoldRule = message.rule
-            await myClub.save()
-            player.sendMessage('club/setDefaultGoldRuleReply', {ok: true})
-        } else {
-            player.sendMessage('club/setDefaultGoldRuleReply', {ok: false, info: '错误的请求'})
-        }
-    },
-    'club/setLockRule': async (player, message) => {
-        if (!message.gameType) {
-            player.sendMessage('club/setLockRuleReply', {ok: false, info: '错误的请求'})
-            return
-        }
-        let myClub = await Club.findOne({owner: player.model._id});
-        if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
-            myClub = await Club.findOne({shortId: message.clubShortId});
-        }
-
-        if (myClub) {
-            myClub.lockedRule = message.lockedRule
-            await myClub.save()
-            player.sendMessage('club/setLockRuleReply', {ok: true})
-        } else {
-            player.sendMessage('club/setLockRuleReply', {ok: false, info: '错误的请求'})
-        }
-    },
     'club/promoteAdmin': async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub) {
@@ -914,20 +857,20 @@ export default {
     [ClubAction.addRule]: async (player, message) => {
         const clubShortId = message.clubShortId;
         const gameType = message.gameType;
-        // 公共房还是金币房
         const ruleType = message.ruleType;
         const rule = message.rule;
         const playerCount = rule.playerCount;
-        const club = await Club.findOne({gameType, shortId: clubShortId});
+        const club = await Club.findOne({shortId: clubShortId});
         if (!club) {
-            player.replyFail(ClubAction.addRule, '俱乐部不存在');
-            return;
+            return player.replyFail(TianleErrorCode.clubNotExists);
         }
+
         const isOk = await hasRulePermission(club._id, player.model._id);
         if (!isOk) {
-            player.replyFail(ClubAction.addRule, '没有权限');
+            player.replyFail(TianleErrorCode.noPermission);
             return;
         }
+
         // 根据玩家数查找规则
         const find = await ClubRuleModel.findOne({clubId: club._id, gameType, ruleType, playerCount});
         if (find) {
@@ -990,19 +933,6 @@ async function getClubRule(club) {
     }
 
     return {publicRule: [], goldRule: []};
-}
-
-async function isClubOwner(clubShortId, gameType, playerId) {
-    // 检查是否创建者
-    const myClub = await Club.findOne({
-        shortId: clubShortId,
-        gameType,
-    });
-    if (!myClub) {
-        // 俱乐部不存在
-        return false;
-    }
-    return myClub.owner === playerId;
 }
 
 // 是否有权限更改规则
