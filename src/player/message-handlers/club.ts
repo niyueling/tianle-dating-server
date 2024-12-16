@@ -247,7 +247,7 @@ export default {
             return
         }
 
-        await requestToAllClubMember(player.channel, 'clubRequest', haveThisClub._id, {})
+        // await requestToAllClubMember(player.channel, 'clubRequest', haveThisClub._id, {})
 
         await ClubRequest.create({
             playerId: player.model._id,
