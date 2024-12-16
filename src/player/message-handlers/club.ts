@@ -294,7 +294,7 @@ export default {
         }
 
         // await player.listenClub(playerClub._id)
-        player.sendMessage('club/getClubInfoReply', {ok: true, roomInfo: room, clubInfo, clubs, isAdmin});
+        player.sendMessage('club/getClubInfoReply', {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin}});
     },
     'club/leave': async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
@@ -741,11 +741,12 @@ export default {
     },
 
     // 设置默认规则
-    'club/setDefaultRule': async (player, message) => {
+    'club/setGameRule': async (player, message) => {
         if (!message.gameType) {
-            player.sendMessage('club/setDefaultRuleReply', {ok: false, info: '错误的请求'})
+            player.sendMessage('club/setDefaultRuleReply', {ok: false, info: TianleErrorCode.systemError})
             return
         }
+
         let myClub = await Club.findOne({owner: player.model._id});
         if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
