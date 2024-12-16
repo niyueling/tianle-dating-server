@@ -167,7 +167,7 @@ async function gameIsRunning(playerId, currentGameType) {
 }
 
 export async function playerInClubBlacklist(clubId, gameType, playerId) {
-  const clubExtra = await getClubExtra(clubId, gameType)
+  const clubExtra = await getClubExtra(clubId)
   const clubBlacklist = clubExtra && clubExtra.blacklist || []
   return clubBlacklist.find(x => x === playerId)
 }
@@ -446,7 +446,7 @@ export default {
     }
 
     player.sendMessage('club/updatePlayerInfoReply', {ok: true, data: {
-        clubShortId: player.model.clubShortId,
+        joinClubShortId: player.model.joinClubShortIds,
         myClub: player.model.myClub
       }});
   },
