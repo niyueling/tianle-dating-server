@@ -31,7 +31,6 @@ import CombatGain from "../../database/models/combatGain";
 import GameRecord from "../../database/models/gameRecord";
 import GoodsProp from "../../database/models/GoodsProp";
 import PlayerProp from "../../database/models/PlayerProp";
-import GoodsReviveTlGold from "../../database/models/goodsReviveTlGold";
 import GoodsReviveSupplement from "../../database/models/goodsReviveSupplement";
 import VipConfig from "../../database/models/VipConfig";
 import ClubMember from "../../database/models/clubMember";

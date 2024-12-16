@@ -1,5 +1,4 @@
 import {GameType, GameTypeList, RedisKey} from "@fm/common/constants";
-import * as mongoose from 'mongoose';
 import RoomJoinModel from "../database/models/roomJoin";
 import {AsyncRedisClient, createClient} from "../utils/redis";
 import BaseService from "./base";
