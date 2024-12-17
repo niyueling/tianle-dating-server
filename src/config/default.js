@@ -13,6 +13,9 @@ module.exports = {
     host: "192.168.124.20",
     password: "8fkaetmR@@@@"
   },
+  rabbitmq: {
+    url: "amqp://user:password@localhost:5692"
+  },
   jwt: {
     secret: 'secret',
     // 有效期 30天
