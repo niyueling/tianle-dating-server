@@ -44,7 +44,6 @@ import {Channel, Connection} from 'amqplib'
 import {IPlayerModel, ISocketPlayer} from "./ISocketPlayer";
 import {GameTypes} from "../match/gameTypes";
 import * as uuid from 'uuid'
-import handlers from './message-handlers/match'
 import createClient from "../utils/redis"
 
 const isTokenValid = async (apiName, token, player) => {
@@ -187,7 +186,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
         logger.warn(err)
       }
     }
-    this.debugMessage = config.getDefault('debug.message', false)
+    this.debugMessage = config.debug.message
     this.location = null
     this.socketId = uuid()
     logger.info('socket start ===>', this.socketId)
@@ -213,7 +212,7 @@ try {
   const res = await service.base.curl(`https://ips.market.alicloudapi.com/iplocaltion?ip=${ip}`, {
     method: "get",
     headers: {
-      Authorization: "APPCODE " + config.get("ipConfig.appCode")
+      Authorization: "APPCODE " + config.ipConfig.appCode
     }
   });
 
