@@ -16,7 +16,7 @@ import * as config from './config';
 import {initPlayerShortId, initClubShortId, initPlayerInviteCode} from './database/init';
 import api from './api'
 import {service} from "./service/importService";
-import rabbitMq from "amqplib";
+import * as rabbitMq from 'amqplib'
 import PlayerManager from "./player/player-manager";
 
 logger.level = config.logger.level || 'info';
@@ -82,8 +82,7 @@ databasePromise.then(() => {
 });
 
 app.startPromise = Promise.all([databasePromise, httpPromise, websocketPromise,
-  injectRabbitMq(), service.utils.listenFromAdminByDating(),
-])
+  injectRabbitMq(), service.utils.listenFromAdminByDating()])
   .catch((e) => logger.error(e));
 
 
