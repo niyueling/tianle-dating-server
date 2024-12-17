@@ -232,10 +232,10 @@ export default {
             playerId: player.model._id,
             clubShortId: message.clubShortId
         });
-        if (clubRequest) {
-            player.sendMessage('club/requestReply', {ok: false, info: TianleErrorCode.alreadyApplyClub});
-            return
-        }
+        // if (clubRequest) {
+        //     player.sendMessage('club/requestReply', {ok: false, info: TianleErrorCode.alreadyApplyClub});
+        //     return
+        // }
 
         const haveThisClub = await Club.findOne({shortId: message.clubShortId})
         if (!haveThisClub) {
