@@ -75,9 +75,9 @@ async function getClubExtra(clubId) {
     if (!clubExtra) {
         clubExtra = await ClubExtra.create({
             clubId
-        })
+        });
     }
-    return clubExtra
+    return clubExtra;
 }
 
 async function getClubRooms(clubId) {
@@ -189,6 +189,12 @@ export async function requestToAllClubMember(channel, name, clubId, info) {
     if (!club) {
         return
     }
+
+    console.warn("channelInfo-%s", JSON.stringify({
+            name: `exClubCenter`,
+        club: `club:${clubId}`,
+        data: toBuffer({name, payload: info})
+    }));
 
     channel.publish(
         `exClubCenter`,
@@ -536,16 +542,14 @@ export default {
         const clubExtra = await getClubExtra(myClub._id);
         const clubMembers = await ClubMember.find(params);
         const clubMembersInfo = [];
-        const clubExtraData = {
-            blacklist: clubExtra && clubExtra.blacklist,
-            renameList: clubExtra && clubExtra.renameList,
-        }
         for (const clubMember of clubMembers) {
             const memberInfo = await PlayerModel.findOne({_id: clubMember.member})
             if (memberInfo) {
                 clubMembersInfo.push({
                     name: memberInfo.nickname,
                     id: memberInfo._id,
+                    isBlack: clubExtra.blacklist.includes(memberInfo._id.toString()),
+                    rename: clubExtra.renameList[memberInfo.shortId] || "",
                     headImage: memberInfo.avatar,
                     diamond: memberInfo.diamond,
                     clubGold: clubMember.clubGold,
@@ -555,7 +559,7 @@ export default {
             }
         }
 
-        player.sendMessage('club/getClubMembersReply', {ok: true, data: {clubMembersInfo, clubExtraData}});
+        player.sendMessage('club/getClubMembersReply', {ok: true, data: {clubMembersInfo}});
     },
     'club/renameClubPlayer': async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
