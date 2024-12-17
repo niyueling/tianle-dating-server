@@ -70,8 +70,8 @@ const websocketPromise = Promise.denodeify(startWebSocketServer)();
 const databasePromise = Database.connect(config.database.url, config.database.opt);
 
 const injectRabbitMq = async () => {
-  const connection = await rabbitMq.connect(config.rabbitmq.url)
-  PlayerManager.injectRmqConnection(connection)
+  const connection = await rabbitMq.connect(config.rabbitmq.url);
+  PlayerManager.injectRmqConnection(connection);
 }
 
 databasePromise.then(() => {
