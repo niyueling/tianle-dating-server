@@ -455,7 +455,7 @@ async listenClub(clubId = -1) {
 
 async cancelListenClub(clubId = -1) {
   if (this.channel && clubId) {
-    await this.channel.unbindQueue(this.myQueue, `exClubCenter`, `club:${this.gameName}:${clubId}`)
+    await this.channel.unbindQueue(this.myQueue, `exClubCenter`, `club:${clubId}`)
   }
 }
 
