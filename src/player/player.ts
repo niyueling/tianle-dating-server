@@ -257,7 +257,6 @@ onMessage(data) {
     if (req.length === 2 && apiClass[req[0]]) {
       return invokeApi(req[0], req[1], packet, this);
     }
-    this.requestToCurrentRoom(packet.name, packet.message)
     logger.error(`未知消息:${JSON.stringify(packet)}`)
   } catch (e) {
     logger.error(e)
@@ -476,23 +475,7 @@ requestTo(queue, name, message) {
     {replyTo: this.myQueue})
 }
 
-requestToCurrentRoom(name, message = {}) {
-  const playerIp = this.getIpAddress()
-  if (!this.currentRoom) {
-    logger.error('player is not in room', name, message)
-    return
-  }
-
-  try {
-    this.channel.publish(
-      'exGameCenter',
-      `${this.gameName}.${this.currentRoom}`,
-      this.toBuffer({name, from: this._id, payload: message, ip: playerIp}),
-      {replyTo: this.myQueue})
-  } catch (e) {
-    logger.error('publish error', e)
-  }
-}
+requestToCurrentRoom(name, message = {}) {}
 
 // 前端强制解散
 // forceCloseRoom(gameName, roomNum){
@@ -518,7 +501,6 @@ requestToRoom(roomId, name, message) {
 
 emit(event: string, message): boolean {
   super.emit(event, message)
-  this.requestToCurrentRoom(event, message)
   return true
 }
 

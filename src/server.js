@@ -71,7 +71,6 @@ const databasePromise = Database.connect(config.database.url, config.database.op
 
 const injectRabbitMq = async () => {
   const connection = await rabbitMq.connect(config.rabbitmq.url);
-  console.warn("RabbitMq connect by " + config.rabbitmq.url);
   PlayerManager.injectRmqConnection(connection);
 }
 
