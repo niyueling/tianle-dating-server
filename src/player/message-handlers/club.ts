@@ -247,7 +247,7 @@ export default {
             return
         }
 
-        // await requestToAllClubMember(player.channel, 'clubRequest', haveThisClub._id, {})
+        await requestToAllClubMember(player.channel, 'clubRequest', haveThisClub._id, {})
 
         await ClubRequest.create({
             playerId: player.model._id,
@@ -271,17 +271,12 @@ export default {
         }
 
         const allClubMemberShips = await ClubMember.find({member: player.model._id}).populate('club').lean();
-
         const clubs = allClubMemberShips.map(cm => cm.club);
-
         const room = await getClubRooms(playerClub._id);
         const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId);
-
         const isAdmin = currentClubMemberShip && currentClubMemberShip.role === 'admin';
-
         const clubOwnerId = playerClub.owner;
-        const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1})
-
+        const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
         const currentClubPlayerGold = currentClubMemberShip && currentClubMemberShip.clubGold || 0;
         const clubRule = await getClubRule(playerClub);
         const clubInfo = {
@@ -838,13 +833,11 @@ export default {
     [ClubAction.editRule]: async (player, message) => {
         const result = await ClubRuleModel.findById(message.ruleId);
         if (!result) {
-            player.replyFail(ClubAction.editRule, '没有此规则');
-            return;
+            return player.replyFail(TianleErrorCode.ruleNotExist);
         }
         const isOk = await hasRulePermission(result.clubId, player.model._id);
         if (!isOk) {
-            player.replyFail(ClubAction.editRule, '没有权限');
-            return;
+            return player.replyFail(TianleErrorCode.noPermission);
         }
         const rule = message.rule;
         // 人数不可更改
@@ -867,34 +860,33 @@ export default {
 
         const isOk = await hasRulePermission(club._id, player.model._id);
         if (!isOk) {
-            player.replyFail(TianleErrorCode.noPermission);
-            return;
+            return player.replyFail(TianleErrorCode.noPermission);
         }
 
         // 根据玩家数查找规则
-        const find = await ClubRuleModel.findOne({clubId: club._id, gameType, ruleType, playerCount});
+        const find = await ClubRuleModel.findOne({clubId: club._id, gameType, ruleType, playerCount, "rule.juShu": rule.juShu});
         if (find) {
-            // 当前玩家人数的规则已经有了
-            player.replyFail(ClubAction.addRule, '当前规则已存在');
-            return;
+            return player.replyFail(TianleErrorCode.ruleIsExist);
         }
+
         const {model} = await createClubRule(club._id, gameType, playerCount, ruleType, rule);
         // @ts-ignore
-        player.replySuccess(ClubAction.addRule, {...model.rule, ruleId: model._id.toString()})
+        player.replySuccess({...model.rule, ruleId: model._id.toString()})
     },
     [ClubAction.deleteRule]: async (player, message) => {
         const result = await ClubRuleModel.findById(message.ruleId);
         if (!result) {
-            player.replyFail(ClubAction.deleteRule, '没有此规则');
+            player.replyFail(TianleErrorCode.ruleNotExist);
             return;
         }
         const isOk = await hasRulePermission(result.clubId, player.model._id);
         if (!isOk) {
-            player.replyFail(ClubAction.deleteRule, '没有权限');
+            player.replyFail(ClubAction.deleteRule, TianleErrorCode.noPermission);
             return;
         }
+
         await result.remove();
-        player.replySuccess(ClubAction.deleteRule);
+        player.replySuccess(result);
     },
 }
 

@@ -38,7 +38,7 @@ export const ClubRuleModel = new ClubRule().getModelForClass(ClubRule)
 // 创建战队规则
 export async function createClubRule(clubId: mongoose.Types.ObjectId, gameType: string, playerCount,
                                      ruleType: RuleType, rule: any): Promise<{ isNew: boolean, model: ClubRule }> {
-  let model = await ClubRuleModel.findOne({ clubId, gameType, ruleType, playerCount });
+  let model = await ClubRuleModel.findOne({ clubId, gameType, ruleType, playerCount, "rule.juShu": rule.juShu });
   let isNew: boolean = false;
   if (model) {
     model.rule = rule;
@@ -47,5 +47,6 @@ export async function createClubRule(clubId: mongoose.Types.ObjectId, gameType: 
     model = new ClubRuleModel({ clubId, gameType, ruleType, playerCount, rule });
   }
   await model.save();
+
   return {isNew, model};
 }
