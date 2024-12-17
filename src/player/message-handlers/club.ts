@@ -190,12 +190,6 @@ export async function requestToAllClubMember(channel, name, clubId, info) {
         return
     }
 
-    console.warn("channelInfo-%s", JSON.stringify({
-            name: `exClubCenter`,
-        club: `club:${clubId}`,
-        data: toBuffer({name, payload: info})
-    }));
-
     channel.publish(
         `exClubCenter`,
         `club:${clubId}`,
@@ -232,10 +226,10 @@ export default {
             playerId: player.model._id,
             clubShortId: message.clubShortId
         });
-        // if (clubRequest) {
-        //     player.sendMessage('club/requestReply', {ok: false, info: TianleErrorCode.alreadyApplyClub});
-        //     return
-        // }
+        if (clubRequest) {
+            player.sendMessage('club/requestReply', {ok: false, info: TianleErrorCode.alreadyApplyClub});
+            return
+        }
 
         const haveThisClub = await Club.findOne({shortId: message.clubShortId})
         if (!haveThisClub) {
