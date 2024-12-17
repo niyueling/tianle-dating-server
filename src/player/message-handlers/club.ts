@@ -288,7 +288,7 @@ export default {
             publicRule: clubRule.publicRule
         }
 
-        await player.listenClub(playerClub._id)
+        // await player.listenClub(playerClub._id)
         player.sendMessage('club/getClubInfoReply', {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin}});
     },
     'club/leave': async (player, message) => {

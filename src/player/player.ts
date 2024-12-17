@@ -377,7 +377,6 @@ async connectToBackend(gameName: GameTypes) {
     logger.error("connectToBackend failed:connecttiong is null!")
     return
   }
-  await rediClient.incrAsync(`gameCounter.${this.gameName}`)
 
   this.channel = await this.connection.createChannel()
   this.channel.on('error', error => {
