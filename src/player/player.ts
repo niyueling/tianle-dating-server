@@ -374,7 +374,7 @@ get myQueue() {
 
 async connectToBackend() {
   if (!this.connection) {
-    logger.error("connectToBackend failed:connecttiong is null!")
+    logger.error("connectToBackend failed:connect is null!")
     return
   }
 

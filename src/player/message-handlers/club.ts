@@ -274,7 +274,7 @@ export default {
         const clubs = allClubMemberShips.map(cm => cm.club);
         const room = await getClubRooms(playerClub._id);
         const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId);
-        const isAdmin = currentClubMemberShip && currentClubMemberShip.role === 'admin';
+        const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin') || playerClub.owner === player._id.toString();
         const clubOwnerId = playerClub.owner;
         const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
         const currentClubPlayerGold = currentClubMemberShip && currentClubMemberShip.clubGold || 0;
