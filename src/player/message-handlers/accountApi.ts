@@ -380,6 +380,8 @@ export class AccountApi extends BaseApi {
     this.player.isLoggingIn = false;
     PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
 
+    await this.player.connectToBackend();
+
     this.replySuccess(model);
   }
 

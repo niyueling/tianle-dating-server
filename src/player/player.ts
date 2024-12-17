@@ -372,7 +372,7 @@ get myQueue() {
   return this.socketId
 }
 
-async connectToBackend(gameName: GameTypes) {
+async connectToBackend() {
   if (!this.connection) {
     logger.error("connectToBackend failed:connecttiong is null!")
     return
@@ -394,14 +394,13 @@ async connectToBackend(gameName: GameTypes) {
 
   try {
     await this.channel.bindQueue(this.myQueue, 'userCenter', `user.${this._id}`)
-    await this.channel.bindQueue(this.myQueue, 'userCenter', `user.${this._id}.${gameName}`)
     const {consumerTag} = await this.channel.consume(this.myQueue, async message => {
       if (!message) return
 
       try {
         const messageBody = JSON.parse(message.content.toString())
 
-        console.log(`from ${gameName} [${this.currentRoom}] to ${this._id}`, messageBody.name || messageBody.cmd)
+        console.log(`from dating [${this._id}`, messageBody.name || messageBody.cmd)
 
         if (messageBody.type === 'cmd' && messageBody.cmd === 'leave' && this.socketId !== messageBody.sid) {
           this.socket.close()
