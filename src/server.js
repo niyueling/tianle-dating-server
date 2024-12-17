@@ -16,6 +16,8 @@ import * as config from './config';
 import {initPlayerShortId, initClubShortId, initPlayerInviteCode} from './database/init';
 import api from './api'
 import {service} from "./service/importService";
+import rabbitMq from "amqplib";
+import PlayerManager from "./player/player-manager";
 
 logger.level = config.logger.level || 'info';
 if (config.logger.filename) {
@@ -67,6 +69,11 @@ const websocketPromise = Promise.denodeify(startWebSocketServer)();
 
 const databasePromise = Database.connect(config.database.url, config.database.opt);
 
+const injectRabbitMq = async () => {
+  const connection = await rabbitMq.connect(config.rabbitmq.url)
+  PlayerManager.injectRmqConnection(connection)
+}
+
 databasePromise.then(() => {
   initPlayerShortId();
   initClubShortId();
@@ -74,7 +81,7 @@ databasePromise.then(() => {
 });
 
 app.startPromise = Promise.all([databasePromise, httpPromise, websocketPromise,
-  service.utils.listenFromAdminByDating(),
+  injectRabbitMq(), service.utils.listenFromAdminByDating(),
 ])
   .catch((e) => logger.error(e));
 
