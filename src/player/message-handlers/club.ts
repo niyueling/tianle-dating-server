@@ -543,7 +543,7 @@ export default {
                     name: memberInfo.nickname,
                     id: memberInfo._id,
                     isBlack: clubExtra.blacklist.includes(memberInfo._id.toString()),
-                    rename: clubExtra.renameList[memberInfo.shortId] || "",
+                    rename: clubExtra.renameList[clubMember.member] || "",
                     headImage: memberInfo.avatar,
                     diamond: memberInfo.diamond,
                     clubGold: clubMember.clubGold,
