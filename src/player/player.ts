@@ -445,7 +445,6 @@ async connectToBackend() {
 }
 
 async listenClub(clubId = -1) {
-    console.warn("channel-%s", JSON.stringify(this.channel));
   if (this.channel && clubId) {
     await this.channel.assertExchange(`exClubCenter`, 'topic', {durable: false})
     await this.channel.bindQueue(this.myQueue, `exClubCenter`, `club:${clubId}`)
