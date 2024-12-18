@@ -419,6 +419,7 @@ async connectToBackend() {
         }
 
         if (messageBody.name === 'clubRequest') {
+          console.warn("clubId-%s messageBody-%s", this.clubId, JSON.stringify(messageBody));
           this.sendMessage('club/haveRequest', {})
           return;
         }
