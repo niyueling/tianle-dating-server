@@ -408,9 +408,9 @@ async connectToBackend() {
           return this.channel.close()
         }
 
-        if (messageBody.name === 'room/join-success') {
+        if (messageBody.name === 'room/joinReply') {
           this.currentRoom = messageBody.payload._id
-          this.cancelListenClub(this.clubId)
+          await this.cancelListenClub(this.clubId)
         }
 
         if (messageBody.name === 'newClubRoomCreated') {
