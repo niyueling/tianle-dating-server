@@ -1,4 +1,4 @@
-import {ConsumeLogType, GameType, TianleErrorCode} from "@fm/common/constants";
+import {ConsumeLogType, TianleErrorCode} from "@fm/common/constants";
 import * as logger from 'winston';
 import Club from '../../database/models/club'
 import ClubExtra from '../../database/models/clubExtra';
@@ -14,10 +14,6 @@ import {service} from "../../service/importService";
 import GlobalConfig from "../../database/models/globalConfig";
 import {createClient} from "../../utils/redis";
 
-function lobbyQueueNameFrom(gameType: string) {
-    return `${gameType}Lobby`
-}
-
 // 操作战队
 export const enum ClubAction {
     // 改名
@@ -28,10 +24,46 @@ export const enum ClubAction {
     editRule = 'club/editRule',
     // 创建规则
     addRule = 'club/addRule',
-    // 创建规则
+    // 规则列表
     ruleList = 'club/ruleList',
     // 删除规则
     deleteRule = 'club/deleteRule',
+    // 申请战队
+    request = "club/request",
+    // 获取俱乐部基本信息
+    getInfo = 'club/getInfo',
+    // 离开战队
+    leave = 'club/leave',
+    // 获取申请列表
+    getRequestInfo = 'club/getRequestInfo',
+    // 成员审核
+    dealRequest = 'club/dealRequest',
+    // 检测是否加入俱乐部
+    updatePlayerInfo = 'club/updatePlayerInfo',
+    // 战绩/排行明细
+    recordList = 'club/recordList',
+    // 排行汇总
+    recordRankList = 'club/recordRankList',
+    // 发牌记录
+    recordRoomPlayerInfo = 'club/recordRoomPlayerInfo',
+    // 清除战绩
+    changeClubRecordState = 'club/changeClubRecordState',
+    // 战绩已读
+    seenClubRecords = 'club/seenClubRecords',
+    // 战队开启/暂停
+    changeState = 'club/changeState',
+    // 成员列表
+    getClubMembers = 'club/getClubMembers',
+    // 设置备注
+    renameClubPlayer = 'club/renameClubPlayer',
+    // 设置黑名单
+    operateBlackList = 'club/operateBlackList',
+    // 踢出用户
+    removePlayer = 'club/removePlayer',
+    // 设置管理员
+    promoteAdmin = 'club/promoteAdmin',
+    // 创建俱乐部
+    createNewClub = 'club/createNewClub'
 }
 
 export async function getPlayerClub(playerId, clubId?: string) {
@@ -147,7 +179,7 @@ export async function playerIsAdmin(playerId, clubShortId) {
 }
 
 export default {
-    'club/request': async (player, message) => {
+    [ClubAction.request]: async (player, message) => {
         const alreadyJoinedClubs = await ClubMember.count({member: player.model._id}).lean()
 
         if (alreadyJoinedClubs >= 5) {
@@ -192,7 +224,7 @@ export default {
 
         player.sendMessage('club/requestReply', {ok: true, data: {shortId: message.clubShortId, clubName: haveThisClub.name}});
     },
-    'club/getClubInfo': async (player, message) => {
+    [ClubAction.getInfo]: async (player, message) => {
         const tempClub = await Club.findOne({shortId: message.clubShortId});
         const clubId = tempClub ? tempClub._id.toString() : '';
 
@@ -223,7 +255,7 @@ export default {
         await player.listenClub(playerClub._id)
         player.sendMessage('club/getClubInfoReply', {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin}});
     },
-    'club/leave': async (player, message) => {
+    [ClubAction.leave]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
         if (!club) {
             player.sendMessage('club/leaveReply', {ok: false, info: TianleErrorCode.clubNotExists});
@@ -246,7 +278,7 @@ export default {
         await ClubMember.remove({member: leaveId, club: club._id})
         player.sendMessage('club/leaveReply', {ok: true, data: {}});
     },
-    'club/getRequestInfo': async (player, message) => {
+    [ClubAction.getRequestInfo]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
@@ -263,7 +295,7 @@ export default {
         const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId});
         player.sendMessage('club/getRequestInfoReply', {ok: true, data: {requestList: clubRequestInfo}});
     },
-    'club/dealRequest': async (player, message) => {
+    [ClubAction.dealRequest]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
@@ -317,7 +349,7 @@ export default {
 
         player.sendMessage('club/dealRequestReply', {ok: false, info: TianleErrorCode.requestError});
     },
-    'club/updatePlayerInfo': async (player, message) => {
+    [ClubAction.updatePlayerInfo]: async (player, message) => {
         const ownerClub = await Club.find({owner: player.model._id});
         const tempClub = [];
         if (ownerClub && ownerClub.length > 0) {
@@ -342,11 +374,11 @@ export default {
             }
         });
     },
-    'club/recordList': async (player, message) => {
+    [ClubAction.recordList]: async (player, message) => {
         return getRecordListZD(player, message);
     },
-    'club/recordRankList': async (player, message) => {
-        const club = await Club.findOne({shortId: message.clubShortId, gameType: message.gameType});
+    [ClubAction.recordRankList]: async (player, message) => {
+        const club = await Club.findOne({shortId: message.clubShortId});
         if (!club) {
             return player.sendMessage('club/recordRankListReply', {ok: false, info: TianleErrorCode.noPermission});
         }
@@ -359,8 +391,7 @@ export default {
 
         return getRecordRankListByZD(player, message, onlyShowMySelf);
     },
-    // 管理员查询发牌记录
-    'club/recordRoomPlayerInfo': async (player, message) => {
+    [ClubAction.recordRoomPlayerInfo]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
@@ -399,9 +430,7 @@ export default {
         }
         player.sendMessage('club/recordRoomPlayerInfoReply', {ok: false, info: TianleErrorCode.noPermission});
     },
-
-    // 管理员清除战绩
-    'club/changeClubRecordState': async (player, message) => {
+    [ClubAction.changeClubRecordState]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
@@ -419,9 +448,7 @@ export default {
             logger.error(e)
         }
     },
-
-    // 管理员战队已读
-    'club/seenClubRecords': async (player, message) => {
+    [ClubAction.seenClubRecords]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
@@ -439,8 +466,7 @@ export default {
             logger.error(e)
         }
     },
-
-    'club/changeState': async (player, message) => {
+    [ClubAction.changeState]: async (player, message) => {
         const myClub = await Club.findOne({owner: player.model._id, shortId: message.clubShortId});
 
         if (myClub) {
@@ -451,7 +477,7 @@ export default {
             player.sendMessage('club/changeStateReply', {ok: false, info: TianleErrorCode.clubIsPause})
         }
     },
-    'club/getClubMembers': async (player, message) => {
+    [ClubAction.getClubMembers]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
@@ -487,7 +513,7 @@ export default {
 
         player.sendMessage('club/getClubMembersReply', {ok: true, data: {clubMembersInfo}});
     },
-    'club/renameClubPlayer': async (player, message) => {
+    [ClubAction.renameClubPlayer]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
@@ -504,7 +530,6 @@ export default {
         await ClubExtra.update({clubId: myClub._id}, {$set: {renameList}})
         player.sendMessage('club/renameClubPlayerReply', {ok: true, data: {}});
     },
-    // 俱乐部改名
     [ClubAction.rename]: async (player, message) => {
         const myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub) {
@@ -533,7 +558,6 @@ export default {
         // 添加日志
         await logRename(myClub._id, oldName, myClub.name, playerInfo._id);
     },
-    // 转移
     [ClubAction.transfer]: async (player, message) => {
         const myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub) {
@@ -597,7 +621,7 @@ export default {
         // 添加日志
         await logTransfer(myClub._id, playerInfo._id, transferee._id);
     },
-    'club/operateBlackList': async (player, message) => {
+    [ClubAction.operateBlackList]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
@@ -622,7 +646,7 @@ export default {
         await clubExtra.save();
         player.sendMessage('club/operateBlackListReply', {ok: true, data: {}});
     },
-    'club/removePlayer': async (player, message) => {
+    [ClubAction.removePlayer]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         let roleType = myClub ? 1 : -1;
         const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
@@ -664,7 +688,7 @@ export default {
         await ClubMember.remove({member: message.playerId, club: myClub._id})
         player.sendMessage('club/removePlayerReply', {ok: true, data: {}});
     },
-    'club/promoteAdmin': async (player, message) => {
+    [ClubAction.promoteAdmin]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub) {
             return player.sendMessage('club/promoteAdminReply', {ok: false, info: TianleErrorCode.noPermission});
@@ -687,7 +711,7 @@ export default {
         await memberShip.save();
         return player.sendMessage('club/promoteAdminReply', {ok: true, data: {}})
     },
-    'club/createNewClub': async (player, message) => {
+    [ClubAction.createNewClub]: async (player, message) => {
         const ownerClub = await Club.findOne({owner: player.model._id});
         if (ownerClub) {
             player.sendMessage('club/createNewClubReply', {ok: false, info: TianleErrorCode.alreadyCreateClub});
@@ -759,7 +783,6 @@ export default {
 
         }
     },
-
     [ClubAction.editRule]: async (player, message) => {
         const result = await ClubRuleModel.findById(message.ruleId);
         if (!result) {
