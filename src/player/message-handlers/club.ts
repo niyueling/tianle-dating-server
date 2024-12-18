@@ -1,4 +1,4 @@
-import {ConsumeLogType, TianleErrorCode} from "@fm/common/constants";
+import {ConsumeLogType, GameType, TianleErrorCode} from "@fm/common/constants";
 import * as logger from 'winston';
 import Club from '../../database/models/club'
 import ClubExtra from '../../database/models/clubExtra';
@@ -28,6 +28,8 @@ export const enum ClubAction {
     editRule = 'club/editRule',
     // 创建规则
     addRule = 'club/addRule',
+    // 创建规则
+    ruleList = 'club/ruleList',
     // 删除规则
     deleteRule = 'club/deleteRule',
 }
@@ -113,75 +115,6 @@ async function getClubRooms(clubId) {
     })
 }
 
-async function playerInClub(clubShortId: string, playerId: string) {
-    if (!clubShortId) {
-        return false;
-    }
-    const club = await Club.findOne({shortId: clubShortId});
-    if (!club) {
-        return false;
-    }
-
-    if (club.owner === playerId) {
-        return true;
-    }
-
-    return ClubMember.findOne({club: club._id, member: playerId}).exec();
-}
-
-export async function playerInClubBlacklist(clubId, gameType, playerId) {
-    const clubExtra = await getClubExtra(clubId)
-    const clubBlacklist = clubExtra && clubExtra.blacklist || []
-    return clubBlacklist.find(x => x === playerId)
-}
-
-// 创建俱乐部房间
-async function createClubRoom(player, message) {
-    if (!await playerInClub(message.clubShortId, player._id)) {
-        player.sendMessage('room/join-fail', {reason: '您不是该战队成员'});
-        return
-    }
-
-    const club = await Club.findOne({shortId: message.clubShortId, gameType: message.gameType})
-    if (!club) {
-        player.sendMessage('room/join-fail', {reason: '战队房错误。'});
-        return
-    }
-    if (club.state === 'off') {
-        player.sendMessage('room/join-fail', {reason: '该战队创建房间功能被圈主暂停，详情请联系圈主'});
-        return
-    }
-    const playerInBlacklist = await playerInClubBlacklist(club._id, message.gameType, player._id)
-    if (playerInBlacklist) {
-        player.sendMessage('room/join-fail', {reason: `您暂时不能参与游戏，详情咨询圈主或管理员！`});
-        return
-    }
-    const rule = message.rule
-
-    if (club.lockedRule && club.lockedRule.jokerCount && club.lockedRule.jokerCount === rule.jokerCount) {
-        player.sendMessage('room/join-fail', {reason: '房间限制规则已改变，无法创建带有' + rule.jokerCount + '王的游戏！'});
-        return
-    }
-
-    if (rule.useClubGold) {
-        /*
-        if(club.owner ==  player._id) {
-          player.sendMessage('room/join-fail', { reason: '战队主无法游玩本战队金币场房间' });
-          return
-        }*/
-        rule.useClubGold = true;
-        const clubMember = await ClubMember.findOne({club: club._id, member: player._id})
-        if (clubMember.clubGold < rule.leastGold) {
-            player.sendMessage('room/join-fail', {reason: '您的金币不足'});
-            return;
-        }
-    }
-
-    const gameType = rule.type || 'paodekuai'
-    player.setGameName(message.gameType)
-    player.requestTo(lobbyQueueNameFrom(gameType), 'createClubRoom', {rule, clubId: club._id})
-}
-
 export async function requestToAllClubMember(channel, name, clubId, info) {
 
     const club = await Club.findOne({_id: clubId});
@@ -226,10 +159,10 @@ export default {
             playerId: player.model._id,
             clubShortId: message.clubShortId
         });
-        // if (clubRequest) {
-        //     player.sendMessage('club/requestReply', {ok: false, info: TianleErrorCode.alreadyApplyClub});
-        //     return
-        // }
+        if (clubRequest) {
+            player.sendMessage('club/requestReply', {ok: false, info: TianleErrorCode.alreadyApplyClub});
+            return
+        }
 
         const haveThisClub = await Club.findOne({shortId: message.clubShortId})
         if (!haveThisClub) {
@@ -259,7 +192,6 @@ export default {
 
         player.sendMessage('club/requestReply', {ok: true, data: {shortId: message.clubShortId, clubName: haveThisClub.name}});
     },
-    'club/create': createClubRoom,
     'club/getClubInfo': async (player, message) => {
         const tempClub = await Club.findOne({shortId: message.clubShortId});
         const clubId = tempClub ? tempClub._id.toString() : '';
@@ -871,6 +803,20 @@ export default {
         // @ts-ignore
         player.replySuccess({...model.rule, ruleId: model._id.toString()})
     },
+    [ClubAction.ruleList]: async (player, message) => {
+        const club = await Club.findOne({shortId: message.clubShortId});
+        if (!club) {
+            return player.replyFail(TianleErrorCode.clubNotExists);
+        }
+
+        const isOk = await hasRulePermission(club._id, player.model._id);
+        if (!isOk) {
+            return player.replyFail(TianleErrorCode.noPermission);
+        }
+
+        const clubRule = await getClubRule(club, message.gameType);
+        player.replySuccess(clubRule)
+    },
     [ClubAction.deleteRule]: async (player, message) => {
         const result = await ClubRuleModel.findById(message.ruleId);
         if (!result) {
@@ -905,12 +851,17 @@ async function notifyTransfer(oldOwner, newOwner, clubName, clubId) {
 /**
  * 获取 club 规则
  * @param club club model
+ * @param gameType
  */
-async function getClubRule(club) {
+async function getClubRule(club, gameType = null) {
     const publicRule = [];
     const goldRule = [];
+    const params = {clubId: club._id};
+    if (gameType) {
+        params["gameType"] = gameType;
+    }
 
-    const result = await ClubRuleModel.find({clubId: club._id});
+    const result = await ClubRuleModel.find(params);
     if (result.length > 0) {
         for (const r of result) {
             if (r.ruleType === RuleType.public) {
