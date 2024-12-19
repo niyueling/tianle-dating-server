@@ -924,8 +924,8 @@ async function hasRulePermission(clubId, playerId) {
         // 俱乐部不存在
         return false;
     }
-    console.warn("owner-%s playerId-%s", myClub.owner, playerId);
-    if (myClub.owner === playerId) {
+    console.warn("owner-%s playerId-%s status-%s", myClub.owner, playerId, myClub.owner === playerId.toString());
+    if (myClub.owner === playerId.toString()) {
         // 创建者
         return true;
     }
