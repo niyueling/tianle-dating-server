@@ -512,6 +512,6 @@ toJSON() {
 }
 
 updateResource2Client() {
-  this.sendMessage('resource/update', pick(this.model, ['gold', 'gem', 'ruby']))
+  this.sendMessage('resource/update', pick(this.model, ['gold', 'diamond', 'tlGold']))
 }
 }

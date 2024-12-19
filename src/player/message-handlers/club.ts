@@ -558,6 +558,7 @@ export default {
         const remainDiamond = playerInfo.diamond - requiredDiamond;
         await PlayerModel.update({_id: player.model._id}, {$set: {diamond: remainDiamond}}).exec();
         player.replySuccess(ClubAction.rename, {diamond: remainDiamond, clubName: myClub.name});
+        await player.updateResource2Client();
         // 添加日志
         await logRename(myClub._id, oldName, myClub.name, playerInfo._id);
     },
@@ -602,8 +603,8 @@ export default {
         // 保存
         myClub.owner = transferee._id;
         await myClub.save();
-        await PlayerModel.update({_id: player.model._id}, {$set: {gem: playerInfo.gem - outDiamond}}).exec();
-        await PlayerModel.update({_id: transferee._id}, {$set: {gem: transferee.gem - inDiamond}}).exec();
+        await PlayerModel.update({_id: player.model._id}, {$set: {diamond: playerInfo.diamond - outDiamond}}).exec();
+        await PlayerModel.update({_id: transferee._id}, {$set: {diamond: transferee.diamond - inDiamond}}).exec();
         // 添加被转移人为成员
         const member = await ClubMember.findOne({member: transferee._id, club: myClub._id});
         if (!member) {
@@ -619,6 +620,7 @@ export default {
         }
 
         player.replySuccess(ClubAction.transfer, {diamond: playerInfo.diamond - outDiamond});
+        await player.updateResource2Client();
         // 通知被转移人
         await notifyTransfer(playerInfo, transferee, myClub.name, myClub.shortId);
         // 添加日志
@@ -881,7 +883,7 @@ async function notifyTransfer(oldOwner, newOwner, clubName, clubId) {
         content: `${oldOwner.name}(${oldOwner.shortId})将战队${clubName}(${clubId})转移给您`,
         state: MailState.UNREAD,
         createAt: new Date(),
-        gift: {gem: 0, ruby: 0, gold: 0}
+        gift: {diamond: 0, tlGold: 0, gold: 0}
     })
     await mail.save();
 }
