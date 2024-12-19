@@ -113,6 +113,19 @@ export class AccountApi extends BaseApi {
     this.replySuccess(user);
   }
 
+  // 根据 shortId 查询用户
+  @addApi()
+  async playerConnectSocket(message) {
+    const user = await Player.findOne({_id: message._id}).lean();
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    this.player.model = user;
+
+    this.replySuccess(user);
+  }
+
   // 救济金数据
   @addApi()
   async benefitData() {
