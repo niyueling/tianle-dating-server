@@ -31,7 +31,7 @@ export const enum ClubAction {
     // 申请战队
     request = "club/request",
     // 获取俱乐部基本信息
-    getInfo = 'club/getInfo',
+    getInfo = 'club/getClubInfo',
     // 离开战队
     leave = 'club/leave',
     // 获取申请列表
