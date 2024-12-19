@@ -188,7 +188,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
     this.debugMessage = config.debug.message
     this.location = null
     this.socketId = uuid()
-    logger.info('socket start ===>', this.socketId, this._id)
+    logger.info('socket start ===>', this.socketId)
   }
 
   getDebugMessage(data) {

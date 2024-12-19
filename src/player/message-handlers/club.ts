@@ -837,10 +837,10 @@ export default {
             return player.replyFail(ClubAction.ruleList, TianleErrorCode.clubNotExists);
         }
 
-        const isOk = await hasRulePermission(club._id, player.model._id);
-        if (!isOk) {
-            return player.replyFail(ClubAction.ruleList, TianleErrorCode.noPermission);
-        }
+        // const isOk = await hasRulePermission(club._id, player.model._id);
+        // if (!isOk) {
+        //     return player.replyFail(ClubAction.ruleList, TianleErrorCode.noPermission);
+        // }
 
         const clubRule = await getClubRule(club, message.gameType);
         player.replySuccess(ClubAction.ruleList, clubRule)
