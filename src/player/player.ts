@@ -75,7 +75,6 @@ const parameter = new Parameter({
 // 所有接口类
 const apiClass = {
   query: QueryApi,
-  club: NewClub,
   region: Region,
   goods: GoodsApi,
   account: AccountApi,
