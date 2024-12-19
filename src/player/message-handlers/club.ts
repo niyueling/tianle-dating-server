@@ -543,11 +543,11 @@ export default {
         const config = await GlobalConfig.findOne({name: "renameClubDiamond"}).lean();
         const requiredDiamond = config ? Number(config.value) : 200;
         if (playerInfo.diamond < requiredDiamond) {
-            return player.replyFail(TianleErrorCode.diamondInsufficient);
+            return player.replyFail(ClubAction.rename, TianleErrorCode.diamondInsufficient);
         }
 
         if (!message.newClubName || message.newClubName.length > config.club.maxNameLength) {
-            return player.replyFail(TianleErrorCode.invalidName);
+            return player.replyFail(ClubAction.rename, TianleErrorCode.invalidName);
         }
 
         // 保存新名字
@@ -556,21 +556,21 @@ export default {
         await myClub.save();
         const remainDiamond = playerInfo.diamond - requiredDiamond;
         await PlayerModel.update({_id: player.model._id}, {$set: {diamond: remainDiamond}}).exec();
-        player.replySuccess({diamond: remainDiamond, clubName: myClub.name});
+        player.replySuccess(ClubAction.rename, {diamond: remainDiamond, clubName: myClub.name});
         // 添加日志
         await logRename(myClub._id, oldName, myClub.name, playerInfo._id);
     },
     [ClubAction.transfer]: async (player, message) => {
         const myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub) {
-            return player.replyFail(TianleErrorCode.noPermission);
+            return player.replyFail(ClubAction.transfer, TianleErrorCode.noPermission);
         }
         const playerInfo = await PlayerModel.findOne({_id: player.model._id});
         // 检查房卡
         const outConfig = await GlobalConfig.findOne({name: "transferOutDiamond"}).lean();
         const outDiamond = outConfig ? Number(outConfig.value) : 500;
         if (playerInfo.diamond < outDiamond) {
-            return player.replyFail(TianleErrorCode.diamondInsufficient);
+            return player.replyFail(ClubAction.transfer, TianleErrorCode.diamondInsufficient);
 
         }
         // 转入的房卡
@@ -579,7 +579,7 @@ export default {
         // 接收人
         const transferee = await PlayerModel.findOne({shortId: message.toShortId});
         if (!transferee) {
-            player.replyFail(TianleErrorCode.playerNotExists);
+            player.replyFail(ClubAction.transfer, TianleErrorCode.playerNotExists);
             return
         }
         // if (!transferee.phone || !playerInfo.phone) {
@@ -587,16 +587,16 @@ export default {
         //   return
         // }
         if (transferee.diamond < inDiamond) {
-            player.replyFail(TianleErrorCode.tranferInPlayerDiamondInsufficient);
+            player.replyFail(ClubAction.transfer, TianleErrorCode.tranferInPlayerDiamondInsufficient);
             return
         }
         if (transferee.shortId === playerInfo.shortId) {
-            player.replyFail(TianleErrorCode.transferClubSamePlayer);
+            player.replyFail(ClubAction.transfer, TianleErrorCode.transferClubSamePlayer);
             return
         }
         const hasClub = await Club.findOne({owner: transferee._id});
         if (hasClub) {
-            return player.replyFail(TianleErrorCode.alreadyCreateClub);
+            return player.replyFail(ClubAction.transfer, TianleErrorCode.alreadyCreateClub);
         }
         // 保存
         myClub.owner = transferee._id;
@@ -617,7 +617,7 @@ export default {
             await ClubMember.update({_id: member._id}, {$set: {role: null}}).exec();
         }
 
-        player.replySuccess({diamond: playerInfo.diamond - outDiamond});
+        player.replySuccess(ClubAction.transfer, {diamond: playerInfo.diamond - outDiamond});
         // 通知被转移人
         await notifyTransfer(playerInfo, transferee, myClub.name, myClub.shortId);
         // 添加日志
@@ -788,11 +788,11 @@ export default {
     [ClubAction.editRule]: async (player, message) => {
         const result = await ClubRuleModel.findById(message.ruleId);
         if (!result) {
-            return player.replyFail(TianleErrorCode.ruleNotExist);
+            return player.replyFail(ClubAction.editRule, TianleErrorCode.ruleNotExist);
         }
         const isOk = await hasRulePermission(result.clubId, player.model._id);
         if (!isOk) {
-            return player.replyFail(TianleErrorCode.noPermission);
+            return player.replyFail(ClubAction.editRule, TianleErrorCode.noPermission);
         }
         const rule = message.rule;
         // 人数不可更改
@@ -800,7 +800,7 @@ export default {
         delete rule.ruleId;
         result.rule = rule;
         await result.save();
-        player.replySuccess(ClubAction.editRule);
+        player.replySuccess(ClubAction.editRule, rule);
     },
     [ClubAction.addRule]: async (player, message) => {
         const clubShortId = message.clubShortId;
@@ -810,42 +810,42 @@ export default {
         const playerCount = rule.playerCount;
         const club = await Club.findOne({shortId: clubShortId});
         if (!club) {
-            return player.replyFail(TianleErrorCode.clubNotExists);
+            return player.replyFail(ClubAction.addRule, TianleErrorCode.clubNotExists);
         }
 
         const isOk = await hasRulePermission(club._id, player.model._id);
         if (!isOk) {
-            return player.replyFail(TianleErrorCode.noPermission);
+            return player.replyFail(ClubAction.addRule, TianleErrorCode.noPermission);
         }
 
         // 根据玩家数查找规则
         const find = await ClubRuleModel.findOne({clubId: club._id, gameType, ruleType, playerCount, "rule.juShu": rule.juShu});
         if (find) {
-            return player.replyFail(TianleErrorCode.ruleIsExist);
+            return player.replyFail(ClubAction.addRule, TianleErrorCode.ruleIsExist);
         }
 
         const {model} = await createClubRule(club._id, gameType, playerCount, ruleType, rule);
         // @ts-ignore
-        player.replySuccess({...model.rule, ruleId: model._id.toString()})
+        player.replySuccess(ClubAction.addRule, {...model.rule, ruleId: model._id.toString()})
     },
     [ClubAction.ruleList]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId});
         if (!club) {
-            return player.replyFail(TianleErrorCode.clubNotExists);
+            return player.replyFail(ClubAction.ruleList, TianleErrorCode.clubNotExists);
         }
 
         const isOk = await hasRulePermission(club._id, player.model._id);
         if (!isOk) {
-            return player.replyFail(TianleErrorCode.noPermission);
+            return player.replyFail(ClubAction.ruleList, TianleErrorCode.noPermission);
         }
 
         const clubRule = await getClubRule(club, message.gameType);
-        player.replySuccess(clubRule)
+        player.replySuccess(ClubAction.ruleList, clubRule)
     },
     [ClubAction.deleteRule]: async (player, message) => {
         const result = await ClubRuleModel.findById(message.ruleId);
         if (!result) {
-            player.replyFail(TianleErrorCode.ruleNotExist);
+            player.replyFail(ClubAction.deleteRule, TianleErrorCode.ruleNotExist);
             return;
         }
         const isOk = await hasRulePermission(result.clubId, player.model._id);
@@ -855,7 +855,7 @@ export default {
         }
 
         await result.remove();
-        player.replySuccess(result);
+        player.replySuccess(ClubAction.deleteRule, result);
     },
     [ClubAction.clubConfig]: async (player) => {
         const renameClubConfig = await GlobalConfig.findOne({name: "renameClubDiamond"}).lean();
@@ -867,7 +867,7 @@ export default {
         const applyClubConfig = await GlobalConfig.findOne({name: "applyClubDiamond"}).lean();
         const applyDiamond = applyClubConfig ? Number(applyClubConfig.value) : 100;
 
-        player.replySuccess({apply: applyDiamond, rename: renameDiamond, transferOut: outDiamond, transferIn: inDiamond});
+        player.replySuccess(ClubAction.clubConfig, {apply: applyDiamond, rename: renameDiamond, transferOut: outDiamond, transferIn: inDiamond});
     },
 }
 
