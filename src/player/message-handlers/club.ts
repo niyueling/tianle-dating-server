@@ -13,6 +13,7 @@ import RoomRecord from '../../database/models/roomRecord'
 import {service} from "../../service/importService";
 import GlobalConfig from "../../database/models/globalConfig";
 import {createClient} from "../../utils/redis";
+import * as config from '../../config'
 
 // 操作战队
 export const enum ClubAction {
@@ -540,8 +541,8 @@ export default {
         }
         const playerInfo = await PlayerModel.findOne({_id: player.model._id})
         // 检查房卡
-        const config = await GlobalConfig.findOne({name: "renameClubDiamond"}).lean();
-        const requiredDiamond = config ? Number(config.value) : 200;
+        const renameConfig = await GlobalConfig.findOne({name: "renameClubDiamond"}).lean();
+        const requiredDiamond = renameConfig ? Number(renameConfig.value) : 200;
         if (playerInfo.diamond < requiredDiamond) {
             return player.replyFail(ClubAction.rename, TianleErrorCode.diamondInsufficient);
         }
