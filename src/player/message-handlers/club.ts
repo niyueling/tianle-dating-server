@@ -63,7 +63,9 @@ export const enum ClubAction {
     // 设置管理员
     promoteAdmin = 'club/promoteAdmin',
     // 创建俱乐部
-    createNewClub = 'club/createNewClub'
+    createNewClub = 'club/createNewClub',
+    // 俱乐部配置表
+    clubConfig = 'club/getClubConfig',
 }
 
 export async function getPlayerClub(playerId, clubId?: string) {
@@ -854,6 +856,18 @@ export default {
 
         await result.remove();
         player.replySuccess(result);
+    },
+    [ClubAction.clubConfig]: async (player) => {
+        const renameClubConfig = await GlobalConfig.findOne({name: "renameClubDiamond"}).lean();
+        const renameDiamond = renameClubConfig ? Number(renameClubConfig.value) : 200;
+        const outConfig = await GlobalConfig.findOne({name: "transferOutDiamond"}).lean();
+        const outDiamond = outConfig ? Number(outConfig.value) : 500;
+        const inConfig = await GlobalConfig.findOne({name: "transferInDiamond"}).lean();
+        const inDiamond = inConfig ? Number(inConfig.value) : 500;
+        const applyClubConfig = await GlobalConfig.findOne({name: "applyClubDiamond"}).lean();
+        const applyDiamond = applyClubConfig ? Number(applyClubConfig.value) : 100;
+
+        player.replySuccess({apply: applyDiamond, rename: renameDiamond, transferOut: outDiamond, transferIn: inDiamond});
     },
 }
 
