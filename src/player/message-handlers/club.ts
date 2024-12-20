@@ -139,7 +139,6 @@ async function getClubRooms(clubId, gameType = null) {
 
             for (let i = 0; i < roomInfo.players.length; i++) {
                 const p = roomInfo.players[i];
-                console.warn(p, '---', p._id);
 
                 if (p) {
                     const pModel = await service.playerService.getPlayerModel(p);
