@@ -69,6 +69,34 @@ export const enum ClubAction {
     clubConfig = 'club/getClubConfig',
 }
 
+export async function getClubInfo(clubId, player?) {
+    const playerClub = await getPlayerClub(player._id, clubId);
+    if (!playerClub) {
+        player.sendMessage('club/getClubInfoReply', {ok: false, info: TianleErrorCode.notClubPlayer});
+        return;
+    }
+
+    const allClubMemberShips = await ClubMember.find({member: player._id}).populate('club').lean();
+    const clubs = allClubMemberShips.map(cm => cm.club);
+    const room = await getClubRooms(playerClub._id);
+    const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId);
+    const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin') || playerClub.owner === player._id.toString();
+    const clubOwnerId = playerClub.owner;
+    const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
+    const clubRule = await getClubRule(playerClub);
+    const currentClubPlayerGold = currentClubMemberShip && currentClubMemberShip.clubGold || 0;
+    const clubInfo = {
+        diamond: clubOwner.diamond,
+        name: clubOwner.nickname,
+        clubGold: currentClubPlayerGold,
+        clubName: playerClub.name,
+        clubShortId: playerClub.shortId,
+        publicRule: clubRule.publicRule
+    }
+
+    return { ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin} };
+}
+
 export async function getPlayerClub(playerId, clubId?: string) {
     let clubMemberInfo;
     if (clubId) {

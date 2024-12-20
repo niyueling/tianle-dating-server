@@ -8,7 +8,7 @@ import * as ws from 'ws';
 import {pick} from 'lodash'
 import {serializeMessage, deserializeMessage} from '../network/utils';
 import accountHandlers from './message-handlers/account';
-import clubHandlers from './message-handlers/club';
+import clubHandlers, {getClubInfo} from './message-handlers/club';
 import matchHandlers from './message-handlers/match';
 import resourceHandlers from './message-handlers/resource';
 import gameHandlers from './message-handlers/game';
@@ -412,8 +412,17 @@ async connectToBackend() {
           await this.cancelListenClub(this.clubId)
         }
 
-        if (messageBody.name === 'newClubRoomCreated') {
-          this.sendMessage('club/updateClubInfo', messageBody.payload)
+        // 创建俱乐部房间通知俱乐部用户
+        // if (messageBody.name === 'newClubRoomCreated') {
+        //   const clubInfo = getClubInfo(this.clubId, this);
+        //   this.sendMessage('club/newClubRoomCreatedReply', clubInfo);
+        //   return;
+        // }
+
+        // 加入俱乐部房间通知用户
+        if (messageBody.name === 'club/updateClubRoom') {
+          const clubInfo = await getClubInfo(this.clubId, this);
+          this.sendMessage('club/getClubInfoReply', clubInfo);
           return;
         }
 
