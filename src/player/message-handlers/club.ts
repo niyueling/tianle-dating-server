@@ -135,15 +135,16 @@ async function getClubRooms(clubId, gameType = null) {
             const roomCreator = roomInfo.creatorName || 'err';
             const playerOnline = roomInfo.players.filter(x => x).length + roomInfo.disconnected.length;
             const juIndex = roomInfo.game.juIndex;
-            const playerAvatars = roomInfo.players.map(p => {
-                return p.model.avatar
-            });
+            // const playerAvatars = roomInfo.players.map(p => {
+            //
+            //     return p.model.avatar
+            // });
 
             if (gameType && rule.gameType !== gameType) {
                 continue;
             }
 
-            clubRooms.push({roomNum, roomCreator, rule, playerOnline, juIndex, gameType: rule.gameType, playerCount: rule.playerCount, playerAvatars});
+            clubRooms.push({roomNum, roomCreator, rule, playerOnline, juIndex, gameType: rule.gameType, playerCount: rule.playerCount, playerAvatars: roomInfo.players});
         }
     }
 
