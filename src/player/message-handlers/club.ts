@@ -146,6 +146,7 @@ async function getClubExtra(clubId) {
 }
 
 async function getClubRooms(clubId, gameType = null) {
+    console.warn("clubId-%s, gameType-%s", clubId, gameType);
     let clubRooms = [];
     const redis = createClient();
     const roomNumbers = await redis.smembersAsync('clubRoom:' + clubId);
