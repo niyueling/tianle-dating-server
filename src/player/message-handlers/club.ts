@@ -67,6 +67,8 @@ export const enum ClubAction {
     createNewClub = 'club/createNewClub',
     // 俱乐部配置表
     clubConfig = 'club/getClubConfig',
+    // 俱乐部配置表
+    promotePartner = 'club/promotePartner',
 }
 
 export async function getClubInfo(clubId, player?) {
@@ -219,7 +221,7 @@ export async function playerIsAdmin(playerId, clubShortId) {
     const clubMemberInfo = await ClubMember.findOne({member: playerId, club: club._id})
 
     if (clubMemberInfo) {
-        return clubMemberInfo.role === 'admin'
+        return clubMemberInfo.role === 'admin' || playerId.toString() === club.owner;
     }
     return false
 }
@@ -759,6 +761,24 @@ export default {
         await memberShip.save();
         return player.sendMessage('club/promoteAdminReply', {ok: true, data: {}})
     },
+    [ClubAction.promotePartner]: async (player, message) => {
+        let isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
+        if (!isAdmin) {
+            return player.sendMessage('club/promotePartnerReply', {ok: false, info: TianleErrorCode.noPermission});
+        }
+
+        const club = await Club.findOne({shortId: message.clubShortId});
+        const member = await PlayerModel.findOne({shortId: message.playerShortId});
+        const memberShip = await ClubMember.findOne({club: club._id, member: member._id});
+
+        if (!memberShip) {
+            return player.sendMessage('club/promotePartnerReply', {ok: false, info: TianleErrorCode.notClubMember})
+        }
+
+        memberShip.partner = message.type === "add";
+        await memberShip.save();
+        return player.sendMessage('club/promotePartnerReply', {ok: true, data: {}})
+    },
     [ClubAction.createNewClub]: async (player, message) => {
         const ownerClub = await Club.findOne({owner: player.model._id});
         if (ownerClub) {
@@ -786,10 +806,6 @@ export default {
             player.sendMessage('club/createNewClubReply', {ok: false, info: TianleErrorCode.diamondInsufficient})
             return
         }
-        // if (!player.model.phone) {
-        //   player.sendMessage('club/createNewClubReply', { ok: false, info: '请在大厅内先完成手机绑定，然后再创建战队' })
-        //   return
-        // }
 
         if (await Club.findOne({name: message.clubName})) {
             player.sendMessage('club/createNewClubReply', {ok: false, info: TianleErrorCode.clubNameIsRepeat})
@@ -879,11 +895,6 @@ export default {
         if (!club) {
             return player.replyFail(ClubAction.ruleList, TianleErrorCode.clubNotExists);
         }
-
-        // const isOk = await hasRulePermission(club._id, player.model._id);
-        // if (!isOk) {
-        //     return player.replyFail(ClubAction.ruleList, TianleErrorCode.noPermission);
-        // }
 
         const clubRule = await getClubRule(club, message.gameType);
         player.replySuccess(ClubAction.ruleList, clubRule)

@@ -8,6 +8,7 @@ const ClubMemberSchema = new mongoose.Schema({
   member: {type: String, required: true, ref: 'Player'},
   joinAt: {type: Date, required: true, default: Date.now},
   role: {type: String},
+  partner: {type: Boolean, default: false},
   clubGold: {type: Number, default: 0},
 });
 
