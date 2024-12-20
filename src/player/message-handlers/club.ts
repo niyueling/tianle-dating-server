@@ -135,12 +135,17 @@ async function getClubRooms(clubId, gameType = null) {
             const roomCreator = roomInfo.creatorName || 'err';
             const playerOnline = roomInfo.players.filter(x => x).length + roomInfo.disconnected.length;
             const juIndex = roomInfo.game.juIndex;
-            const playerAvatars = roomInfo.players.map(async p => {
+            const playerAvatars = [];
+
+            for (let i = 0; i < roomInfo.players.length; i++) {
+                const p = roomInfo.players[i];
+                console.warn(p, '---', p._id);
+
                 if (p) {
                     const pModel = await service.playerService.getPlayerModel(p);
-                    return pModel.avatar;
+                    playerAvatars.push(pModel.avatar);
                 }
-            });
+            }
 
             if (gameType && rule.gameType !== gameType) {
                 continue;
