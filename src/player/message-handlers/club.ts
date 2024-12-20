@@ -135,16 +135,18 @@ async function getClubRooms(clubId, gameType = null) {
             const roomCreator = roomInfo.creatorName || 'err';
             const playerOnline = roomInfo.players.filter(x => x).length + roomInfo.disconnected.length;
             const juIndex = roomInfo.game.juIndex;
-            // const playerAvatars = roomInfo.players.map(p => {
-            //
-            //     return p.model.avatar
-            // });
+            const playerAvatars = roomInfo.players.map(async p => {
+                if (p) {
+                    const pModel = await service.playerService.getPlayerModel(p);
+                    return pModel.avatar;
+                }
+            });
 
             if (gameType && rule.gameType !== gameType) {
                 continue;
             }
 
-            clubRooms.push({roomNum, roomCreator, rule, playerOnline, juIndex, gameType: rule.gameType, playerCount: rule.playerCount, playerAvatars: roomInfo.players});
+            clubRooms.push({roomNum, roomCreator, rule, playerOnline, juIndex, gameType: rule.gameType, playerCount: rule.playerCount, playerAvatars: playerAvatars});
         }
     }
 
@@ -252,8 +254,8 @@ export default {
         const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin') || playerClub.owner === player._id.toString();
         const clubOwnerId = playerClub.owner;
         const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
+        const clubRule = await getClubRule(playerClub, message.gameType);
         const currentClubPlayerGold = currentClubMemberShip && currentClubMemberShip.clubGold || 0;
-        const clubRule = await getClubRule(playerClub);
         const clubInfo = {
             diamond: clubOwner.diamond,
             name: clubOwner.nickname,
