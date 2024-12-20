@@ -117,7 +117,7 @@ async function getClubExtra(clubId) {
     return clubExtra;
 }
 
-async function getClubRooms(clubId) {
+async function getClubRooms(clubId, gameType = null) {
     let clubRooms = [];
     const redis = createClient();
     const roomNumbers = await redis.smembersAsync('clubRoom:' + clubId);
@@ -135,8 +135,15 @@ async function getClubRooms(clubId) {
             const roomCreator = roomInfo.creatorName || 'err';
             const playerOnline = roomInfo.players.filter(x => x).length + roomInfo.disconnected.length;
             const juIndex = roomInfo.game.juIndex;
+            const playerAvatars = roomInfo.players.map(p => {
+                return p.model.avatar
+            });
 
-            clubRooms.push({roomNum, roomCreator, rule, playerOnline, juIndex});
+            if (gameType && rule.gameType !== gameType) {
+                continue;
+            }
+
+            clubRooms.push({roomNum, roomCreator, rule, playerOnline, juIndex, gameType: rule.gameType, playerCount: rule.playerCount, playerAvatars});
         }
     }
 
@@ -239,7 +246,7 @@ export default {
 
         const allClubMemberShips = await ClubMember.find({member: player.model._id}).populate('club').lean();
         const clubs = allClubMemberShips.map(cm => cm.club);
-        const room = await getClubRooms(playerClub._id);
+        const room = await getClubRooms(playerClub._id, message.gameType);
         const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId);
         const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin') || playerClub.owner === player._id.toString();
         const clubOwnerId = playerClub.owner;

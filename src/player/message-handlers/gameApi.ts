@@ -82,7 +82,7 @@ export class GameApi extends BaseApi {
     if (result && result.category) {
       gameName = getGameName[result.category];
     }
-    console.warn("gameName-%s, category-%s, getGameName-%s", gameName, result.category, JSON.stringify(getGameName));
+
     const resp = {
       roomNum: message.roomNum,
       // 玩家列表
