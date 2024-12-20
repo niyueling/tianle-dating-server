@@ -1198,7 +1198,7 @@ async function getRecordListZD(player, message: any) {
         }
     }
     // 查找未删除的记录
-    const params = {club: club._id, scores: {$ne: []}};
+    const params = {club: club._id, scores: {$ne: []}, checked: false};
     if (message.gameType) {
         params["category"] = message.gameType;
     }
