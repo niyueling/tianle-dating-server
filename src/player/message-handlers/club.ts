@@ -74,7 +74,7 @@ export const enum ClubAction {
 export async function getClubInfo(clubId, player?) {
     const playerClub = await getPlayerClub(player._id, clubId);
     if (!playerClub) {
-        player.sendMessage('club/getClubInfoReply', {ok: false, info: TianleErrorCode.notClubPlayer});
+        player.replyFail(ClubAction.getInfo, TianleErrorCode.notClubPlayer);
         return;
     }
 
@@ -231,8 +231,7 @@ export default {
         const alreadyJoinedClubs = await ClubMember.count({member: player.model._id}).lean()
 
         if (alreadyJoinedClubs >= 5) {
-            player.sendMessage('club/requestReply', {ok: false, info: TianleErrorCode.joinMaxClub});
-            return
+            return player.replyFail(ClubAction.request, TianleErrorCode.joinMaxClub);
         }
 
         const clubRequest = await ClubRequest.findOne({
@@ -240,14 +239,12 @@ export default {
             clubShortId: message.clubShortId
         });
         if (clubRequest) {
-            player.sendMessage('club/requestReply', {ok: false, info: TianleErrorCode.alreadyApplyClub});
-            return
+            return player.replyFail(ClubAction.request, TianleErrorCode.alreadyApplyClub);
         }
 
         const haveThisClub = await Club.findOne({shortId: message.clubShortId})
         if (!haveThisClub) {
-            player.sendMessage('club/requestReply', {ok: false, info: TianleErrorCode.clubNotExists});
-            return
+            return player.replyFail(ClubAction.request, TianleErrorCode.clubNotExists);
         }
 
         const clubMember = await ClubMember.findOne({
@@ -256,8 +253,7 @@ export default {
         });
 
         if (clubMember) {
-            player.sendMessage('club/requestReply', {ok: false, info: TianleErrorCode.alreadyJoinClub});
-            return
+            return player.replyFail(ClubAction.request, TianleErrorCode.alreadyJoinClub);
         }
 
         await requestToAllClubMember(player.channel, 'clubRequest', haveThisClub._id, {})
@@ -270,7 +266,7 @@ export default {
             playerName: player.model.nickname,
         });
 
-        player.sendMessage('club/requestReply', {ok: true, data: {shortId: message.clubShortId, clubName: haveThisClub.name}});
+        return player.replySuccess(ClubAction.request, {shortId: message.clubShortId, clubName: haveThisClub.name});
     },
     [ClubAction.getInfo]: async (player, message) => {
         const tempClub = await Club.findOne({shortId: message.clubShortId});
@@ -278,8 +274,7 @@ export default {
 
         const playerClub = await getPlayerClub(player.model._id, clubId);
         if (!playerClub) {
-            player.sendMessage('club/getClubInfoReply', {ok: false, info: TianleErrorCode.notClubPlayer});
-            return;
+            return player.replyFail(ClubAction.getInfo, TianleErrorCode.notClubPlayer);
         }
 
         const allClubMemberShips = await ClubMember.find({member: player.model._id}).populate('club').lean();
@@ -300,31 +295,30 @@ export default {
             publicRule: clubRule.publicRule
         }
 
-        await player.listenClub(playerClub._id)
-        player.sendMessage('club/getClubInfoReply', {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin}});
+        await player.listenClub(playerClub._id);
+
+        return player.replySuccess(ClubAction.getInfo, {roomInfo: room, clubInfo, clubs, isAdmin});
     },
     [ClubAction.leave]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
         if (!club) {
-            player.sendMessage('club/leaveReply', {ok: false, info: TianleErrorCode.clubNotExists});
-            return
+            return player.replyFail(ClubAction.leave, TianleErrorCode.clubNotExists);
         }
         const leaveId = player.model._id;
         if (club.owner === leaveId) {
-            player.sendMessage('club/leaveReply', {ok: false, info: TianleErrorCode.ownerNotLeave});
-            return
+            return player.replyFail(ClubAction.leave, TianleErrorCode.ownerNotLeave);
         }
         const clubMemberInfo = await ClubMember.findOne({club: club._id, member: leaveId})
         if (!clubMemberInfo) {
-            player.sendMessage('club/leaveReply', {ok: false, info: TianleErrorCode.notClubMember});
-            return
+            return player.replyFail(ClubAction.leave, TianleErrorCode.notClubMember);
         }
         if (clubMemberInfo.clubGold !== undefined && clubMemberInfo.clubGold < 0) {
-            player.sendMessage('club/leaveReply', {ok: false, info: TianleErrorCode.dataNotAbnormal});
-            return
+            return player.replyFail(ClubAction.leave, TianleErrorCode.dataNotAbnormal);
         }
-        await ClubMember.remove({member: leaveId, club: club._id})
-        player.sendMessage('club/leaveReply', {ok: true, data: {}});
+
+        await ClubMember.remove({member: leaveId, club: club._id});
+        await player.cancelListenClub(club.clubId);
+        return player.replySuccess(ClubAction.leave, {});
     },
     [ClubAction.getRequestInfo]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
@@ -332,16 +326,14 @@ export default {
             myClub = await Club.findOne({shortId: message.clubShortId});
         }
         if (!myClub) {
-            player.sendMessage('club/getRequestInfoReply', {ok: false, info: TianleErrorCode.notClubAdmin});
-            return
+            return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.notClubAdmin);
         }
         if (myClub.shortId !== message.clubShortId) {
-            player.sendMessage('club/getRequestInfoReply', {ok: false, info: TianleErrorCode.noPermission});
-            return
+            return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.noPermission);
         }
 
         const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId});
-        player.sendMessage('club/getRequestInfoReply', {ok: true, data: {requestList: clubRequestInfo}});
+        return player.replySuccess(ClubAction.getRequestInfo, {requestList: clubRequestInfo});
     },
     [ClubAction.dealRequest]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
@@ -362,8 +354,7 @@ export default {
             });
 
             if (message.refuse) {
-                player.sendMessage('club/dealRequestReply', {ok: false, info: TianleErrorCode.refuseClubApply});
-                return;
+                return player.replyFail(ClubAction.dealRequest, TianleErrorCode.refuseClubApply);
             }
 
             const clubMember = await ClubMember.findOne({
@@ -372,8 +363,7 @@ export default {
             });
 
             if (clubMember) {
-                player.sendMessage('club/dealRequestReply', {ok: false, info: TianleErrorCode.alreadyJoinClub});
-                return
+                return player.replyFail(ClubAction.dealRequest, TianleErrorCode.alreadyJoinClub);
             }
 
             const nJoinedClub = await ClubMember.count({
@@ -381,8 +371,7 @@ export default {
             })
 
             if (nJoinedClub >= 5) {
-                player.sendMessage('club/dealRequestReply', {ok: false, info: TianleErrorCode.joinMaxClub});
-                return
+                return player.replyFail(ClubAction.dealRequest, TianleErrorCode.joinMaxClub);
             }
 
             const clubId = myClub._id
@@ -391,11 +380,11 @@ export default {
                 member: message.requestId,
                 clubGold: 0,
             })
-            player.sendMessage('club/dealRequestReply', {ok: true, data: {}});
-            return;
+
+            return player.replySuccess(ClubAction.dealRequest, {});
         }
 
-        player.sendMessage('club/dealRequestReply', {ok: false, info: TianleErrorCode.requestError});
+        return player.replyFail(ClubAction.dealRequest, TianleErrorCode.requestError);
     },
     [ClubAction.updatePlayerInfo]: async (player, message) => {
         const ownerClub = await Club.find({owner: player.model._id});
@@ -830,7 +819,7 @@ export default {
                 ConsumeLogType.createNewClub, applyDiamond, '创建新战队扣除钻石');
 
             if (!result.isOk) {
-                return player.sendMessage('club/createNewClubReply', {ok: true, info: TianleErrorCode.systemError})
+                return player.sendMessage('club/createNewClubReply', {ok: false, info: TianleErrorCode.systemError})
             }
 
             player.model = result.model;
@@ -1190,9 +1179,9 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
             })
         })
 
-        return player.sendMessage('club/recordRankListReply', {ok: true, rankData, summary: totalStatistic});
+        return player.sendMessage('club/recordRankListReply', {ok: true, data: {rankData, summary: totalStatistic}});
     }
-    player.sendMessage('club/recordRankListReply', {ok: false, info: '无法查看！'});
+    player.sendMessage('club/recordRankListReply', {ok: false, info: TianleErrorCode.noPermission});
 }
 
 // 炸弹榜详情
@@ -1257,5 +1246,5 @@ async function getRecordListZD(player, message: any) {
             })
         }
     }
-    return player.sendMessage('club/recordListReply', {ok: true, records: formatted});
+    return player.sendMessage('club/recordListReply', {ok: true, data: {records: formatted}});
 }
