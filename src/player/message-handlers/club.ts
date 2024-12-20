@@ -988,7 +988,6 @@ async function hasRulePermission(clubId, playerId) {
     return member && member.role === 'admin';
 }
 
-// 炸弹榜
 async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
     const club = await Club.findOne({shortId: message.clubShortId});
     if (club) {
@@ -1023,23 +1022,7 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
             .find(params)
             .sort({createAt: -1})
             .lean()
-            .exec()
-        // 局数字典
-        const juShuDict = {
-            4: '4',
-            6: '6',
-            8: '8',
-            12: '12',
-            18: '18',
-            24: '24',
-        }
-        const initJuValue = () => {
-            const dict = {};
-            for (const value of Object.values(juShuDict)) {
-                dict[value] = 0;
-            }
-            return dict;
-        }
+            .exec();
         const rankData = [];
         const totalStatistic = {};
         let currentDate = new Date(Date.now());
@@ -1059,21 +1042,17 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
                         roomJuCount: 0,
                         juData: {
                             club: {
-                                gold: initJuValue(),
-                                normal: initJuValue(),
+                                normal: 0,
                             },
                             person: {
-                                gold: initJuValue(),
-                                normal: initJuValue(),
+                                normal: 0,
                             }
                         },
                         scoreData: {
                             club: {
-                                gold: 0,
                                 normal: 0
                             },
                             person: {
-                                gold: 0,
                                 normal: 0
                             }
                         }
@@ -1098,13 +1077,11 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
             }
         }
         records.forEach(r => {
-            const juShu = r.rule.juShu;
             const isPerson = r.rule.clubPersonalRoom;
-            const isGoldRoom = r.rule.useClubGold;
             const roomTime = new Date(r.createAt).toLocaleDateString();
             if (!totalStatistic[roomTime]) {
                 totalStatistic[roomTime] = {
-                    juShu: initJuValue(),
+                    juShu: 0,
                     // 开房次数
                     createTimes: 0,
                     // 房卡消费
@@ -1122,42 +1099,25 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
                 }
             }
             // 统计每局
-            if (juShuDict[juShu]) {
-                totalStatistic[roomTime]['juShu'][juShuDict[juShu]]++;
-            }
+            totalStatistic[roomTime]['juShu']++;
+
             if (r.juIndex && r.juIndex === 1) {
                 // 一局内解散
                 totalStatistic[roomTime].dissolveRoom++;
             }
-            const juAdd = function (x, ju = "ju4") {
+            const juAdd = function (x) {
                 if (isPerson) {
-                    if (isGoldRoom) {
-                        x.juData.person.gold[ju] += 1;
-                    } else {
-                        x.juData.person.normal[ju] += 1;
-                    }
+                    x.juData.person.normal += 1;
                 } else {
                     x.roomJuCount += 1;
-                    if (isGoldRoom) {
-                        x.juData.club.gold[ju] += 1;
-                    } else {
-                        x.juData.club.normal[ju] += 1;
-                    }
+                    x.juData.club.normal += 1;
                 }
             }
             const scoreAdd = function (x, score) {
                 if (isPerson) {
-                    if (isGoldRoom) {
-                        x.scoreData.person.gold += score;
-                    } else {
-                        x.scoreData.person.normal += score;
-                    }
+                    x.scoreData.person.normal += score;
                 } else {
-                    if (isGoldRoom) {
-                        x.scoreData.club.gold += score;
-                    } else {
-                        x.scoreData.club.normal += score;
-                    }
+                    x.scoreData.club.normal += score;
                 }
             }
             r.scores.forEach(d => {
@@ -1175,21 +1135,17 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
                         bigWinnerRoomIds: [],
                         juData: {
                             club: {
-                                gold: initJuValue(),
-                                normal: initJuValue(),
+                                normal: 0,
                             },
                             person: {
-                                gold: initJuValue(),
-                                normal: initJuValue(),
+                                normal: 0,
                             }
                         },
                         scoreData: {
                             club: {
-                                gold: 0,
                                 normal: 0
                             },
                             person: {
-                                gold: 0,
                                 normal: 0
                             }
                         }
@@ -1225,14 +1181,12 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
                         }
                     }
                 })
-                if (juShuDict[juShu]) {
-                    // 有局数
-                    pData.detailData.forEach(x => {
-                        if (roomTime === x.time) {
-                            juAdd(x, juShuDict[juShu]);
-                        }
-                    })
-                }
+                // 有局数
+                pData.detailData.forEach(x => {
+                    if (roomTime === x.time) {
+                        juAdd(x);
+                    }
+                })
             })
         })
 
