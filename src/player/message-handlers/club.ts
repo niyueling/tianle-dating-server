@@ -917,6 +917,17 @@ export default {
 
         player.replySuccess(ClubAction.clubConfig, {apply: applyDiamond, rename: renameDiamond, transferOut: outDiamond, transferIn: inDiamond});
     },
+    [ClubAction.mergeClub]: async (player, message) => {
+        let myClub = await getOwnerClub(player.model._id, message.clubShortId);
+        if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
+            myClub = await Club.findOne({shortId: message.clubShortId});
+        }
+        if (!myClub) {
+            return player.sendMessage('club/recordRoomPlayerInfoReply', {ok: false, info: TianleErrorCode.noPermission});
+        }
+
+        player.sendMessage('club/recordRoomPlayerInfoReply', {ok: true, data: {}});
+    },
 }
 
 // 邮件通知战队转移
@@ -1200,7 +1211,7 @@ async function getRecordListZD(player, message: any) {
         }
     }
     // 查找未删除的记录
-    const params = {club: club._id, scores: {$ne: []}, checked: false};
+    const params = {club: club._id, scores: {$ne: []}};
     if (message.gameType) {
         params["category"] = message.gameType;
     }
