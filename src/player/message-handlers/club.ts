@@ -469,7 +469,7 @@ export default {
             return player.replySuccess(ClubAction.dealClubRequest, {});
         }
 
-        return player.replyFail(ClubAction.dealRequest, TianleErrorCode.requestError);
+        return player.replyFail(ClubAction.dealClubRequest, TianleErrorCode.requestError);
     },
     [ClubAction.updatePlayerInfo]: async (player, message) => {
         const ownerClub = await Club.find({owner: player.model._id});
@@ -532,7 +532,7 @@ export default {
             }
             records.forEach(record => {
                 const playerInfo = record.record;
-                const events = record.events.splice(0, 4);
+                const events = record.events.filter(e => e.type === "shuffle");
                 for (let i = 0; i < playerInfo.length; i++) {
                     const playerCardsInfo = events.find(x => x.index === i);
                     playerInfo[i].cards = [];
