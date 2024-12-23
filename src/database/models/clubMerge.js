@@ -7,6 +7,7 @@ const ClubMergeSchema = new mongoose.Schema({
   toClubId: {type: Number, required: true},
   fromClubName: {type: String, required: true},
   toClubName: {type: String, required: true},
+  type: {type: Number, default: 2},
   createAt: {type: Date, required: true, default: Date.now},
 });
 

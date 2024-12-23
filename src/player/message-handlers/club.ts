@@ -267,6 +267,7 @@ export default {
             avatar: player.model.avatar,
             playerShortId: player.model.shortId,
             playerName: player.model.nickname,
+            type: 1
         });
 
         return player.replySuccess(ClubAction.request, {shortId: message.clubShortId, clubName: haveThisClub.name});
@@ -336,7 +337,8 @@ export default {
         }
 
         const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId});
-        return player.replySuccess(ClubAction.getRequestInfo, {requestList: clubRequestInfo});
+        const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId});
+        return player.replySuccess(ClubAction.getRequestInfo, {requestList: [...clubRequestInfo, ...clubMergeInfo]});
     },
     [ClubAction.dealRequest]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
@@ -942,7 +944,8 @@ export default {
             fromClubId: mergeFromClub.shortId,
             toClubId: myClub.shortId,
             fromClubName: mergeFromClub.name,
-            toClubName: myClub.name
+            toClubName: myClub.name,
+            type: 2
         });
 
         return player.replySuccess(ClubAction.mergeClub, result);
