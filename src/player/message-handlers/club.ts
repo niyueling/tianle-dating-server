@@ -67,8 +67,10 @@ export const enum ClubAction {
     createNewClub = 'club/createNewClub',
     // 俱乐部配置表
     clubConfig = 'club/getClubConfig',
-    // 俱乐部配置表
+    // 设置/取消合伙人
     promotePartner = 'club/promotePartner',
+    // 合并战队
+    mergeClub = 'club/mergeClub',
 }
 
 export async function getClubInfo(clubId, player?) {
@@ -462,7 +464,7 @@ export default {
                 roomInfos.ju.push(record.juShu);
                 playerInfos.push(playerInfo);
             })
-            player.sendMessage('club/recordRoomPlayerInfoReply', {ok: true, data: {playerInfos, roomInfos, roomNum}});
+            player.sendMessage('club/recordRoomPlayerInfoReply', {ok: true, data: {playerInfos, roomInfos, roomNum, gameType: message.gameType}});
             return;
         }
         player.sendMessage('club/recordRoomPlayerInfoReply', {ok: false, info: TianleErrorCode.noPermission});
@@ -1021,7 +1023,7 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
         for (const clubMember of clubMembers) {
             if (clubMember.member) {
                 detailData = [];
-                for (let i = 0; i < 4; i++) {
+                for (let i = 0; i < 3; i++) {
                     currentDate = new Date(Date.now() - 24 * 60 * 60 * 1000 * i);
                     detailData.push({
                         time: currentDate.toLocaleDateString(),
