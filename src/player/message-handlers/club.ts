@@ -14,6 +14,7 @@ import {service} from "../../service/importService";
 import GlobalConfig from "../../database/models/globalConfig";
 import {createClient} from "../../utils/redis";
 import * as config from '../../config'
+import ClubMerge from "../../database/models/clubMerge";
 
 // 操作战队
 export const enum ClubAction {
@@ -914,19 +915,37 @@ export default {
         const inDiamond = inConfig ? Number(inConfig.value) : 500;
         const applyClubConfig = await GlobalConfig.findOne({name: "applyClubDiamond"}).lean();
         const applyDiamond = applyClubConfig ? Number(applyClubConfig.value) : 100;
+        const mergeClubConfig = await GlobalConfig.findOne({name: "mergeClubDiamond"}).lean();
+        const mergeDiamond = mergeClubConfig ? Number(mergeClubConfig.value) : 200;
 
-        player.replySuccess(ClubAction.clubConfig, {apply: applyDiamond, rename: renameDiamond, transferOut: outDiamond, transferIn: inDiamond});
+        player.replySuccess(ClubAction.clubConfig, {apply: applyDiamond, rename: renameDiamond, transferOut: outDiamond, transferIn: inDiamond, merge: mergeDiamond});
     },
     [ClubAction.mergeClub]: async (player, message) => {
-        let myClub = await getOwnerClub(player.model._id, message.clubShortId);
-        if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
-            myClub = await Club.findOne({shortId: message.clubShortId});
+        let myClub = await getOwnerClub(player.model._id, message.mergeToClubId);
+        if (!myClub && await playerIsAdmin(player.model._id, message.mergeToClubId)) {
+            myClub = await Club.findOne({shortId: message.mergeToClubId});
         }
         if (!myClub) {
-            return player.sendMessage('club/recordRoomPlayerInfoReply', {ok: false, info: TianleErrorCode.noPermission});
+            return player.replyFail(ClubAction.mergeClub, TianleErrorCode.noPermission);
         }
 
-        player.sendMessage('club/recordRoomPlayerInfoReply', {ok: true, data: {}});
+        // 查询想要合并的战队
+        const mergeFromClub = await Club.findOne({shortId: message.mergeFromClubId});
+        if (!mergeFromClub) {
+            return player.replyFail(ClubAction.mergeClub, TianleErrorCode.clubNotExists);
+        }
+
+        //生成审核记录
+        await requestToAllClubMember(player.channel, 'clubRequest', mergeFromClub._id, {});
+
+        const result = await ClubMerge.create({
+            fromClubId: mergeFromClub.shortId,
+            toClubId: myClub.shortId,
+            fromClubName: mergeFromClub.name,
+            toClubName: myClub.name
+        });
+
+        return player.replySuccess(ClubAction.mergeClub, result);
     },
 }
 
