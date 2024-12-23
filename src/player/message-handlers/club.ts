@@ -72,6 +72,8 @@ export const enum ClubAction {
     promotePartner = 'club/promotePartner',
     // 合并战队
     mergeClub = 'club/mergeClub',
+    // 同意/拒绝合并战队申请
+    dealClubRequest = 'club/dealClubRequest',
 }
 
 export async function getClubInfo(clubId, player?) {
@@ -387,6 +389,84 @@ export default {
             })
 
             return player.replySuccess(ClubAction.dealRequest, {});
+        }
+
+        return player.replyFail(ClubAction.dealRequest, TianleErrorCode.requestError);
+    },
+    [ClubAction.dealClubRequest]: async (player, message) => {
+        const club = await Club.findOne({shortId: message.fromClubId});
+        let fromClub = await getOwnerClub(player.model._id, message.fromClubId);
+        if (!fromClub && await playerIsAdmin(player.model._id, message.fromClubId)) {
+            fromClub = await Club.findOne({shortId: message.fromClubId});
+        }
+
+        const isClubOwnerAdmin = fromClub && fromClub.shortId === message.fromClubId;
+        const memberShip = await ClubMember.findOne({club: club._id, member: player._id}).lean();
+
+        const isAmin = memberShip.role === 'admin';
+
+        if (isClubOwnerAdmin || isAmin) {
+            const toClub = await Club.findOne({shortId: message.toClubId});
+
+            // 删除申请记录
+            await ClubMerge.remove({
+                fromClubId: message.fromClubId,
+                toClubId: message.toClubId
+            });
+
+            if (message.refuse) {
+                return player.replyFail(ClubAction.dealClubRequest, TianleErrorCode.refuseClubApply);
+            }
+
+            // 获取小战队成员列表
+            const fromClubMembers = await ClubMember.find({club: fromClub._id});
+
+            // 删除小战队成员
+            await ClubMember.remove({club: fromClub._id});
+
+            // 删除小战队战队信息
+            await Club.remove({_id: fromClub._id});
+
+            // 将小战队的成员并入大战队
+            for (let i = 0; i < fromClubMembers.length; i++) {
+                const member = fromClubMembers[i];
+                const clubMember = await ClubMember.findOne({
+                    club: toClub._id,
+                    member: member.member
+                });
+
+                if (clubMember) {
+                    if (clubMember.member === fromClub.owner && !clubMember.partner) {
+                        clubMember.partner = true;
+                        await clubMember.save();
+                    }
+
+                    continue;
+                }
+
+                const nJoinedClub = await ClubMember.count({
+                    member: member.member
+                })
+
+                if (nJoinedClub >= 5) {
+                    continue
+                }
+
+                const params = {
+                    club: toClub._id,
+                    member: member.member,
+                    clubGold: 0,
+                    partner: member.member === fromClub.owner
+                };
+
+                if (member.member !== fromClub.owner) {
+                    params["leader"] = fromClub.owner;
+                }
+
+                await ClubMember.create(params);
+            }
+
+            return player.replySuccess(ClubAction.dealClubRequest, {});
         }
 
         return player.replyFail(ClubAction.dealRequest, TianleErrorCode.requestError);
@@ -1236,6 +1316,9 @@ async function getRecordListZD(player, message: any) {
     const params = {club: club._id, scores: {$ne: []}};
     if (message.gameType) {
         params["category"] = message.gameType;
+    }
+    if (message.playerShortId) {
+        params["players"] = {$in: [message.playerShortId]};
     }
     const records = await RoomRecord
         .find(params)
