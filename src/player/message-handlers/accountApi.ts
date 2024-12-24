@@ -281,7 +281,7 @@ export class AccountApi extends BaseApi {
         }
 
         if (clubRequestInfo.length >= 0) {
-            this.player.sendMessage("account/saveGoodsReviveTlGoldsReply", {ok: true, data: clubRequestInfo});
+            this.player.sendMessage("account/sendInviteClubMessagesReply", {ok: true, data: clubRequestInfo});
         }
     }
 
