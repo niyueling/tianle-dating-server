@@ -79,6 +79,8 @@ export const enum ClubAction {
     inviteNormalPlayer = 'club/inviteNormalPlayer',
     // 用户同意合伙人战队邀请
     dealClubInviteRequest = 'club/dealClubInviteRequest',
+    // 合伙人列表
+    getClubPartner = 'club/getClubPartner',
 }
 
 export async function getClubInfo(clubId, player?) {
@@ -492,6 +494,8 @@ export default {
 
                 await ClubMember.create(params);
             }
+
+            await requestToAllClubMember(player.channel, 'club/updateClubRoom', toClub._id.toString(), {});
 
             return player.replySuccess(ClubAction.dealClubRequest, {});
         }
@@ -1026,6 +1030,9 @@ export default {
         delete rule.ruleId;
         result.rule = rule;
         await result.save();
+
+        await requestToAllClubMember(player.channel, 'club/updateClubRoom', result.clubId.toString(), {})
+
         player.replySuccess(ClubAction.editRule, rule);
     },
     [ClubAction.addRule]: async (player, message) => {
@@ -1057,6 +1064,9 @@ export default {
         }
 
         const {model} = await createClubRule(club._id, gameType, playerCount, ruleType, rule);
+
+        await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
+
         // @ts-ignore
         player.replySuccess(ClubAction.addRule, {...model.rule, ruleId: model._id.toString()})
     },
@@ -1082,6 +1092,9 @@ export default {
         }
 
         await result.remove();
+
+        await requestToAllClubMember(player.channel, 'club/updateClubRoom', result.clubId.toString(), {})
+
         player.replySuccess(ClubAction.deleteRule, result);
     },
     [ClubAction.clubConfig]: async (player) => {
