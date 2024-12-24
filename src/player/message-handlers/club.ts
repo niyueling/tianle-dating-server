@@ -592,12 +592,13 @@ export default {
         }
 
         let onlyShowMySelf = true;
+        let isPartner = await playerIsPartner(player.model._id, message.clubShortId);
         const myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (myClub || await playerIsAdmin(player.model._id, message.clubShortId)) {
             onlyShowMySelf = false;
         }
 
-        return getRecordRankListByZD(player, message, onlyShowMySelf);
+        return getRecordRankListByZD(player, message, onlyShowMySelf, isPartner);
     },
     [ClubAction.recordRoomPlayerInfo]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
@@ -1256,7 +1257,7 @@ async function hasRulePermission(clubId, playerId) {
     return member && member.role === 'admin';
 }
 
-async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
+async function getRecordRankListByZD(player, message: any, onlyShowMySelf, isPartner) {
     const club = await Club.findOne({shortId: message.clubShortId});
     if (club) {
         const clubExtra = await getClubExtra(club._id);
@@ -1339,12 +1340,16 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
                     if (clubMember.member.shortId === player.model.shortId) {
                         rankData.push(pData);
                     }
+                } else if (isPartner) {
+                    if (clubMember.leader && clubMember.leader === player.model.shortId) {
+                        rankData.push(pData);
+                    }
                 } else {
                     rankData.push(pData);
                 }
             }
         }
-        records.forEach(r => {
+        for (const r of records) {
             const isPerson = r.rule.clubPersonalRoom;
             const roomTime = new Date(r.createAt).toLocaleDateString();
             if (!totalStatistic[roomTime]) {
@@ -1388,10 +1393,12 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
                     x.scoreData.club.normal += score;
                 }
             }
-            r.scores.forEach(d => {
+            for (const d of r.scores) {
+                const joinPlayerInfo = await Player.findOne({shortId: d.shortId});
+                const clubMermber = await ClubMember.findOne({club: club._id, member: joinPlayerInfo._id});
                 // score 不为空
-                if (!d || onlyShowMySelf && d.shortId !== player.model.shortId) {
-                    return
+                if (!d || (onlyShowMySelf && d.shortId !== player.model.shortId) || (isPartner && clubMermber.leader && clubMermber.leader !== player.model.shortId)) {
+                    continue;
                 }
                 let tempIndex = rankData.findIndex(x => x.shortId === d.shortId);
                 detailData = [];
@@ -1455,15 +1462,15 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf) {
                         juAdd(x);
                     }
                 })
-            })
-        })
+            }
+        }
 
         return player.sendMessage('club/recordRankListReply', {ok: true, data: {rankData, summary: totalStatistic}});
     }
     player.sendMessage('club/recordRankListReply', {ok: false, info: TianleErrorCode.noPermission});
 }
 
-// 炸弹榜详情
+// 排行明细
 async function getRecordListZD(player, message: any) {
     const club = await Club.findOne({shortId: message.clubShortId});
     const clubExtra = await getClubExtra(club._id);
@@ -1527,7 +1534,7 @@ async function getRecordListZD(player, message: any) {
                 _id: record.room,
                 roomId: record.roomNum,
                 time: record.createAt.getTime(),
-                creatorId: record.creatorId || 233,
+                creatorId: record.creatorId,
                 players: scores,
                 winner: winnerIndex,
                 rule: record.rule,
