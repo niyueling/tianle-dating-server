@@ -1,4 +1,4 @@
-import {ConsumeLogType, TianleErrorCode} from "@fm/common/constants";
+import {ConsumeLogType, GameType, TianleErrorCode} from "@fm/common/constants";
 import * as logger from 'winston';
 import Club from '../../database/models/club'
 import ClubExtra from '../../database/models/clubExtra';
@@ -9,13 +9,13 @@ import {ClubRuleModel, createClubRule, RuleType} from "../../database/models/clu
 import GameRecord from '../../database/models/gameRecord'
 import {MailModel, MailState, MailType} from "../../database/models/mail";
 import PlayerModel from '../../database/models/player'
+import Player from '../../database/models/player'
 import RoomRecord from '../../database/models/roomRecord'
 import {service} from "../../service/importService";
 import GlobalConfig from "../../database/models/globalConfig";
 import {createClient} from "../../utils/redis";
 import * as config from '../../config'
 import ClubMerge from "../../database/models/clubMerge";
-import Player from "../../database/models/player";
 
 // 操作战队
 export const enum ClubAction {
@@ -94,7 +94,8 @@ export async function getClubInfo(clubId, player?) {
     const clubs = allClubMemberShips.map(cm => cm.club);
     const room = await getClubRooms(playerClub._id);
     const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId);
-    const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin') || playerClub.owner === player._id.toString();
+    const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin');
+    const isClubOwner = playerClub.owner === player._id.toString();
     const isPartner = currentClubMemberShip && currentClubMemberShip.partner;
     const clubOwnerId = playerClub.owner;
     const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
@@ -109,7 +110,7 @@ export async function getClubInfo(clubId, player?) {
         publicRule: clubRule.publicRule
     }
 
-    return {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin, isPartner}};
+    return {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin, isPartner, isClubOwner}};
 }
 
 export async function getPlayerClub(playerId, clubId?: string) {
@@ -317,7 +318,8 @@ export default {
         const clubs = allClubMemberShips.map(cm => cm.club);
         const room = await getClubRooms(playerClub._id, message.gameType);
         const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId);
-        const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin') || playerClub.owner === player._id.toString();
+        const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin');
+        const isClubOwner = playerClub.owner === player._id.toString();
         const isPartner = currentClubMemberShip && currentClubMemberShip.partner;
         const clubOwnerId = playerClub.owner;
         const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
@@ -334,7 +336,7 @@ export default {
 
         await player.listenClub(playerClub._id);
 
-        return player.replySuccess(ClubAction.getInfo, {roomInfo: room, clubInfo, clubs, isAdmin, isPartner});
+        return player.replySuccess(ClubAction.getInfo, {roomInfo: room, clubInfo, clubs, isAdmin, isPartner, isClubOwner});
     },
     [ClubAction.leave]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
@@ -738,35 +740,63 @@ export default {
             myClub = await Club.findOne({shortId: message.clubShortId});
         }
         if (!myClub) {
-            player.sendMessage('club/getClubMembersReply', {ok: false, info: TianleErrorCode.notClubAdmin});
-            return
+            return player.sendMessage('club/getClubPartnerReply', {ok: false, info: TianleErrorCode.notClubAdmin});
         }
-        const params = {club: myClub._id};
+
+        const minDate = new Date();
+        minDate.setHours(0);
+        minDate.setMinutes(0);
+        minDate.setSeconds(0);
+        minDate.setMilliseconds(0);
+        minDate.setDate(minDate.getDate() - await getPartnerDate(message.type));
+
+        const params = {club: myClub._id, partner: true};
         if (message.playerShortId) {
             const searchInfo = await PlayerModel.findOne({shortId: message.playerShortId});
             params["member"] = searchInfo._id;
         }
         const clubExtra = await getClubExtra(myClub._id);
         const clubMembers = await ClubMember.find(params);
-        const clubMembersInfo = [];
+        const clubPartnerInfo = [];
+        const gameCount =  {
+            [GameType.zd]: 0,
+            [GameType.ddz]: 0,
+            [GameType.guandan]: 0,
+            [GameType.pcmj]: 0,
+            [GameType.xmmj]: 0,
+        }
+        let totalGameJuCount = 0;
+
         for (const clubMember of clubMembers) {
             const memberInfo = await PlayerModel.findOne({_id: clubMember.member})
             if (memberInfo) {
-                clubMembersInfo.push({
+                const gameJuCount = await getRoomCountByGame(myClub, clubMember, minDate);
+                const gameJuCountKeys = Object.keys(gameJuCount);
+
+                for (let i = 0; i < gameJuCountKeys.length; i++) {
+                    gameCount[gameJuCountKeys[i]] += gameJuCount[gameJuCountKeys[i]];
+                }
+
+                clubPartnerInfo.push({
                     name: memberInfo.nickname,
                     id: memberInfo._id,
                     isBlack: clubExtra.blacklist.includes(memberInfo._id.toString()),
                     rename: clubExtra.renameList[clubMember.member] || "",
                     headImage: memberInfo.avatar,
-                    diamond: memberInfo.diamond,
-                    clubGold: clubMember.clubGold,
                     shortId: memberInfo.shortId,
-                    isAdmin: clubMember.role === 'admin'
+                    isAdmin: clubMember.role === 'admin',
+                    gameJuCount
                 })
             }
         }
 
-        player.sendMessage('club/getClubMembersReply', {ok: true, data: {clubMembersInfo}});
+        const gameJuCountKeys = Object.keys(gameCount);
+
+        for (let i = 0; i < gameJuCountKeys.length; i++) {
+            totalGameJuCount += gameCount[gameJuCountKeys[i]];
+        }
+
+        player.sendMessage('club/getClubPartnerReply', {ok: true, data: {clubPartnerInfo, total: {...gameCount, totalGameJuCount}}});
     },
     [ClubAction.renameClubPlayer]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
@@ -1307,6 +1337,54 @@ async function hasRulePermission(clubId, playerId) {
     const member = await ClubMember.findOne({club: clubId, member: playerId});
     // 是成员且为管理员
     return member && member.role === 'admin';
+}
+
+async function getPartnerDate(type) {
+    if (type === 1) {
+        return 0;
+    }
+
+    if (type === 2) {
+        const minDate = new Date();
+        return minDate.getDay();
+    }
+
+    if (type === 3) {
+        const minDate = new Date();
+        return minDate.getDate() - 1;
+    }
+}
+
+async function getRoomCountByGame(club, member, minDate) {
+    const params = {
+        club: club._id, scores: {$ne: []},
+        players: {$ne: []}, createAt: {$gt: minDate}
+    }
+    const records = await RoomRecord
+        .find(params)
+        .sort({createAt: -1})
+        .lean()
+        .exec();
+
+    const gameCount =  {
+        [GameType.zd]: 0,
+        [GameType.ddz]: 0,
+        [GameType.guandan]: 0,
+        [GameType.pcmj]: 0,
+        [GameType.xmmj]: 0,
+    }
+
+    for (let i = 0; i < records.length; i++) {
+        const record = records[i];
+
+        if (record.players.includes(member.member)) {
+            if (gameCount[record.category]) {
+                gameCount[record.category]++;
+            }
+        }
+    }
+
+    return gameCount;
 }
 
 async function getRecordRankListByZD(player, message: any, onlyShowMySelf, isPartner) {
