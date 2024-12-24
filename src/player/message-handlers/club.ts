@@ -724,7 +724,8 @@ export default {
                     diamond: memberInfo.diamond,
                     clubGold: clubMember.clubGold,
                     shortId: memberInfo.shortId,
-                    isAdmin: clubMember.role === 'admin'
+                    isAdmin: clubMember.role === 'admin',
+                    isPartner: clubMember.partner
                 })
             }
         }
