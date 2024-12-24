@@ -1529,7 +1529,7 @@ async function getRecordListZD(player, message: any) {
         });
 
         // 普通用户，查看自己的记录，合伙人，查看下级的记录，管理员，查看所有人的记录
-        if (isMyRecord || isClubOwnerOAdmin || isClubPartner) {
+        if (isMyRecord || isClubOwnerOAdmin || isTeamRecord) {
             formatted.push({
                 _id: record.room,
                 roomId: record.roomNum,
