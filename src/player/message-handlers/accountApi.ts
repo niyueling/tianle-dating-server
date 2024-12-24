@@ -280,7 +280,7 @@ export class AccountApi extends BaseApi {
             clubRequestInfo[i].clubInfo = await Club.findOne({shortId: clubRequestInfo[i].clubShortId});
         }
 
-        if (clubRequestInfo.length > 0) {
+        if (clubRequestInfo.length >= 0) {
             this.player.sendMessage("account/saveGoodsReviveTlGoldsReply", {ok: true, data: clubRequestInfo});
         }
     }
