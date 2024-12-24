@@ -95,6 +95,7 @@ export async function getClubInfo(clubId, player?) {
     const room = await getClubRooms(playerClub._id);
     const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId);
     const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin') || playerClub.owner === player._id.toString();
+    const isPartner = currentClubMemberShip && currentClubMemberShip.partner;
     const clubOwnerId = playerClub.owner;
     const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
     const clubRule = await getClubRule(playerClub);
@@ -108,7 +109,7 @@ export async function getClubInfo(clubId, player?) {
         publicRule: clubRule.publicRule
     }
 
-    return {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin}};
+    return {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin, isPartner}};
 }
 
 export async function getPlayerClub(playerId, clubId?: string) {
@@ -317,6 +318,7 @@ export default {
         const room = await getClubRooms(playerClub._id, message.gameType);
         const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId);
         const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin') || playerClub.owner === player._id.toString();
+        const isPartner = currentClubMemberShip && currentClubMemberShip.partner;
         const clubOwnerId = playerClub.owner;
         const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
         const clubRule = await getClubRule(playerClub, message.gameType);
@@ -332,7 +334,7 @@ export default {
 
         await player.listenClub(playerClub._id);
 
-        return player.replySuccess(ClubAction.getInfo, {roomInfo: room, clubInfo, clubs, isAdmin});
+        return player.replySuccess(ClubAction.getInfo, {roomInfo: room, clubInfo, clubs, isAdmin, isPartner});
     },
     [ClubAction.leave]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
@@ -694,6 +696,42 @@ export default {
         }
     },
     [ClubAction.getClubMembers]: async (player, message) => {
+        let myClub = await getOwnerClub(player.model._id, message.clubShortId);
+        if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
+            myClub = await Club.findOne({shortId: message.clubShortId});
+        }
+        if (!myClub) {
+            player.sendMessage('club/getClubMembersReply', {ok: false, info: TianleErrorCode.notClubAdmin});
+            return
+        }
+        const params = {club: myClub._id};
+        if (message.playerShortId) {
+            const searchInfo = await PlayerModel.findOne({shortId: message.playerShortId});
+            params["member"] = searchInfo._id;
+        }
+        const clubExtra = await getClubExtra(myClub._id);
+        const clubMembers = await ClubMember.find(params);
+        const clubMembersInfo = [];
+        for (const clubMember of clubMembers) {
+            const memberInfo = await PlayerModel.findOne({_id: clubMember.member})
+            if (memberInfo) {
+                clubMembersInfo.push({
+                    name: memberInfo.nickname,
+                    id: memberInfo._id,
+                    isBlack: clubExtra.blacklist.includes(memberInfo._id.toString()),
+                    rename: clubExtra.renameList[clubMember.member] || "",
+                    headImage: memberInfo.avatar,
+                    diamond: memberInfo.diamond,
+                    clubGold: clubMember.clubGold,
+                    shortId: memberInfo.shortId,
+                    isAdmin: clubMember.role === 'admin'
+                })
+            }
+        }
+
+        player.sendMessage('club/getClubMembersReply', {ok: true, data: {clubMembersInfo}});
+    },
+    [ClubAction.getClubPartner]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
