@@ -1071,7 +1071,7 @@ export default {
         return player.replySuccess(ClubAction.mergeClub, result);
     },
     [ClubAction.inviteNormalPlayer]: async (player, message) => {
-        const isPartner = await playerIsAdmin(player.model._id, message.clubShortId);
+        const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
         if (!isPartner) {
             return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.noPermission);
         }
