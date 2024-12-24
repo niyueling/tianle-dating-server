@@ -77,6 +77,8 @@ export const enum ClubAction {
     dealClubRequest = 'club/dealClubRequest',
     // 合伙人邀请普通用户加入战队
     inviteNormalPlayer = 'club/inviteNormalPlayer',
+    // 用户同意合伙人战队邀请
+    dealClubInviteRequest = 'club/dealClubInviteRequest',
 }
 
 export async function getClubInfo(clubId, player?) {
@@ -495,6 +497,65 @@ export default {
         }
 
         return player.replyFail(ClubAction.dealClubRequest, TianleErrorCode.requestError);
+    },
+    [ClubAction.dealClubInviteRequest]: async (player, message) => {
+        const clubInfo = await Club.findOne({shortId: message.clubShortId});
+        const clubRequest = await ClubRequest.findOne({
+            clubShortId: clubInfo.shortId,
+            playerId: player._id
+        });
+        if (!clubRequest) {
+            return player.replyFail(ClubAction.dealClubInviteRequest, TianleErrorCode.requestError);
+        }
+
+        const partnerInfo = await service.playerService.getPlayerModel(clubRequest.partner);
+
+        await ClubRequest.remove({
+            playerId: player._id,
+            clubShortId: message.clubShortId
+        });
+
+        if (message.refuse) {
+            return player.replyFail(ClubAction.dealClubInviteRequest, TianleErrorCode.refuseClubApply);
+        }
+
+        const clubMember = await ClubMember.findOne({
+            club: clubInfo._id,
+            member: player._id
+        });
+
+        if (clubMember) {
+            return player.replyFail(ClubAction.dealClubInviteRequest, TianleErrorCode.alreadyJoinClub);
+        }
+
+        const nJoinedClub = await ClubMember.count({
+            member: player._id
+        })
+
+        if (nJoinedClub >= 5) {
+            return player.replyFail(ClubAction.dealClubInviteRequest, TianleErrorCode.joinMaxClub);
+        }
+
+        await ClubMember.create({
+            club: clubInfo._id,
+            role: player._id,
+            leader: clubRequest.partner
+        })
+
+        const adminList = await ClubMember.count({
+            club: clubInfo._id,
+            role: "admin"
+        })
+
+        // 发送邮件给战队主
+        const ownerInfo = await service.playerService.getPlayerModel(clubInfo.owner);
+        await notifyNewPlayerJoin(ownerInfo, clubInfo.name, clubInfo.shortId, partnerInfo);
+        for (let i = 0; i < adminList.length; i++) {
+            const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
+            await notifyNewPlayerJoin(adminInfo, clubInfo.name, clubInfo.shortId, partnerInfo);
+        }
+
+        return player.replySuccess(ClubAction.dealClubInviteRequest, {});
     },
     [ClubAction.updatePlayerInfo]: async (player, message) => {
         const ownerClub = await Club.find({owner: player.model._id});
@@ -1121,13 +1182,27 @@ export default {
     },
 }
 
+// 邮件通知新成员加入
+async function notifyNewPlayerJoin(ownerInfo, clubName, clubId, partnerInfo) {
+    const mail = new MailModel({
+        to: ownerInfo._id,
+        type: MailType.MESSAGE,
+        title: '成员加入通知',
+        content: `${ownerInfo.nickname}(${ownerInfo.shortId})接受合伙人${partnerInfo.nickname}(${partnerInfo.shortId})邀请成功加入战队${clubName}(${clubId})`,
+        state: MailState.UNREAD,
+        createAt: new Date(),
+        gift: {diamond: 0, tlGold: 0, gold: 0}
+    })
+    await mail.save();
+}
+
 // 邮件通知战队转移
 async function notifyTransfer(oldOwner, newOwner, clubName, clubId) {
     const mail = new MailModel({
         to: newOwner._id,
         type: MailType.MESSAGE,
         title: '战队转移通知',
-        content: `${oldOwner.name}(${oldOwner.shortId})将战队${clubName}(${clubId})转移给您`,
+        content: `${oldOwner.nickname}(${oldOwner.shortId})将战队${clubName}(${clubId})转移给您`,
         state: MailState.UNREAD,
         createAt: new Date(),
         gift: {diamond: 0, tlGold: 0, gold: 0}
@@ -1406,9 +1481,6 @@ async function getRecordListZD(player, message: any) {
     if (message.gameType) {
         params["category"] = message.gameType;
     }
-    if (message.playerShortId) {
-        params["players"] = {$in: [message.playerShortId]};
-    }
     const records = await RoomRecord
         .find(params)
         .sort({createAt: -1})
@@ -1416,9 +1488,11 @@ async function getRecordListZD(player, message: any) {
         .lean()
         .exec()
     const isClubOwnerOAdmin = await hasRulePermission(club._id, player.model._id);
+    const isClubPartner = await playerIsPartner(player.model.shortId, message.clubShortId);
     const formatted = [];
     for (const record of records) {
         let isMyRecord = false;
+        let isTeamRecord = false;
         let maxScore = 0;
         let winnerIndex = 0;
         for (let i = 0; i < record.scores.length; i++) {
@@ -1428,17 +1502,27 @@ async function getRecordListZD(player, message: any) {
                 winnerIndex = i;
             }
         }
-        const scores = record.scores.map(s => {
+        const scores = record.scores.map(async s => {
             if (s.shortId === player.model.shortId) {
                 isMyRecord = true;
             }
+
+            const joinPlayerInfo = await Player.findOne({shortId: s.shortId});
+            const clubMermber = await ClubMember.findOne({club: club._id, member: joinPlayerInfo._id});
+            if (clubMermber.leader && clubMermber.leader === player.model.shortId) {
+                isTeamRecord = true;
+            }
+
+
             return {
                 ...s,
                 // 备注名
                 commentName: s && nameMap[s.shortId] || '',
             }
         });
-        if (isMyRecord || isClubOwnerOAdmin) {
+
+        // 普通用户，查看自己的记录，合伙人，查看下级的记录，管理员，查看所有人的记录
+        if (isMyRecord || isClubOwnerOAdmin || isClubPartner) {
             formatted.push({
                 _id: record.room,
                 roomId: record.roomNum,
