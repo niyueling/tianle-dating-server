@@ -278,9 +278,10 @@ export class AccountApi extends BaseApi {
 
         for (let i = 0; i < clubRequestInfo.length; i++) {
             clubRequestInfo[i].clubInfo = await Club.findOne({shortId: clubRequestInfo[i].clubShortId});
+            clubRequestInfo[i].partnerInfo = await Player.findOne({shortId: clubRequestInfo[i].partner});
         }
 
-        if (clubRequestInfo.length >= 0) {
+        if (clubRequestInfo.length > 0) {
             this.player.sendMessage("account/sendInviteClubMessagesReply", {ok: true, data: clubRequestInfo});
         }
     }
