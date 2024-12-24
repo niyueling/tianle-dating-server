@@ -9,6 +9,7 @@ const ClubRequestSchema = new mongoose.Schema({
   avatar: {type: String, required: true},
   playerShortId: {type: Number, required: true},
   type: {type: Number, default: 1},
+  partner: {type: Number},
   createAt: {type: Date, required: true, default: Date.now},
 });
 

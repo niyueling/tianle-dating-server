@@ -15,6 +15,7 @@ import GlobalConfig from "../../database/models/globalConfig";
 import {createClient} from "../../utils/redis";
 import * as config from '../../config'
 import ClubMerge from "../../database/models/clubMerge";
+import Player from "../../database/models/player";
 
 // 操作战队
 export const enum ClubAction {
@@ -74,6 +75,8 @@ export const enum ClubAction {
     mergeClub = 'club/mergeClub',
     // 同意/拒绝合并战队申请
     dealClubRequest = 'club/dealClubRequest',
+    // 合伙人邀请普通用户加入战队
+    inviteNormalPlayer = 'club/inviteNormalPlayer',
 }
 
 export async function getClubInfo(clubId, player?) {
@@ -101,7 +104,7 @@ export async function getClubInfo(clubId, player?) {
         publicRule: clubRule.publicRule
     }
 
-    return { ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin} };
+    return {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin}};
 }
 
 export async function getPlayerClub(playerId, clubId?: string) {
@@ -186,7 +189,16 @@ async function getClubRooms(clubId, gameType = null) {
                 continue;
             }
 
-            clubRooms.push({roomNum, roomCreator, rule, playerOnline, juIndex, gameType: rule.gameType, playerCount: rule.playerCount, playerAvatars: playerAvatars});
+            clubRooms.push({
+                roomNum,
+                roomCreator,
+                rule,
+                playerOnline,
+                juIndex,
+                gameType: rule.gameType,
+                playerCount: rule.playerCount,
+                playerAvatars: playerAvatars
+            });
         }
     }
 
@@ -227,6 +239,19 @@ export async function playerIsAdmin(playerId, clubShortId) {
 
     if (clubMemberInfo) {
         return clubMemberInfo.role === 'admin' || playerId.toString() === club.owner;
+    }
+    return false
+}
+
+export async function playerIsPartner(playerId, clubShortId) {
+    const club = await Club.findOne({shortId: clubShortId});
+    if (!club) {
+        return false;
+    }
+    const clubMemberInfo = await ClubMember.findOne({member: playerId, club: club._id});
+
+    if (clubMemberInfo) {
+        return clubMemberInfo.partner;
     }
     return false
 }
@@ -338,7 +363,7 @@ export default {
             return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.noPermission);
         }
 
-        const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId});
+        const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId, type: 1});
         const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId});
         return player.replySuccess(ClubAction.getRequestInfo, {requestList: [...clubRequestInfo, ...clubMergeInfo]});
     },
@@ -547,7 +572,10 @@ export default {
                 roomInfos.ju.push(record.juShu);
                 playerInfos.push(playerInfo);
             })
-            player.sendMessage('club/recordRoomPlayerInfoReply', {ok: true, data: {playerInfos, roomInfos, roomNum, gameType: message.gameType}});
+            player.sendMessage('club/recordRoomPlayerInfoReply', {
+                ok: true,
+                data: {playerInfos, roomInfos, roomNum, gameType: message.gameType}
+            });
             return;
         }
         player.sendMessage('club/recordRoomPlayerInfoReply', {ok: false, info: TianleErrorCode.noPermission});
@@ -955,7 +983,13 @@ export default {
         }
 
         // 根据玩家数查找规则
-        const find = await ClubRuleModel.findOne({clubId: club._id, gameType, ruleType, playerCount, "rule.juShu": rule.juShu});
+        const find = await ClubRuleModel.findOne({
+            clubId: club._id,
+            gameType,
+            ruleType,
+            playerCount,
+            "rule.juShu": rule.juShu
+        });
         if (find) {
             return player.replyFail(ClubAction.addRule, TianleErrorCode.ruleIsExist);
         }
@@ -1000,7 +1034,13 @@ export default {
         const mergeClubConfig = await GlobalConfig.findOne({name: "mergeClubDiamond"}).lean();
         const mergeDiamond = mergeClubConfig ? Number(mergeClubConfig.value) : 200;
 
-        player.replySuccess(ClubAction.clubConfig, {apply: applyDiamond, rename: renameDiamond, transferOut: outDiamond, transferIn: inDiamond, merge: mergeDiamond});
+        player.replySuccess(ClubAction.clubConfig, {
+            apply: applyDiamond,
+            rename: renameDiamond,
+            transferOut: outDiamond,
+            transferIn: inDiamond,
+            merge: mergeDiamond
+        });
     },
     [ClubAction.mergeClub]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.mergeToClubId);
@@ -1029,6 +1069,55 @@ export default {
         });
 
         return player.replySuccess(ClubAction.mergeClub, result);
+    },
+    [ClubAction.inviteNormalPlayer]: async (player, message) => {
+        const isPartner = await playerIsAdmin(player.model._id, message.clubShortId);
+        if (!isPartner) {
+            return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.noPermission);
+        }
+
+        const playerInfo = await service.playerService.getPlayerModel(message.playerShortId);
+        const alreadyJoinedClubs = await ClubMember.count({member: playerInfo._id}).lean()
+
+        if (alreadyJoinedClubs >= 5) {
+            return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.joinMaxClub);
+        }
+
+        const clubRequest = await ClubRequest.findOne({
+            playerId: playerInfo._id,
+            clubShortId: message.clubShortId
+        });
+        if (clubRequest) {
+            return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.alreadyApplyClub);
+        }
+
+        const haveThisClub = await Club.findOne({shortId: message.clubShortId})
+        if (!haveThisClub) {
+            return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.clubNotExists);
+        }
+
+        const clubMember = await ClubMember.findOne({
+            club: haveThisClub._id,
+            member: playerInfo._id
+        });
+
+        if (clubMember) {
+            return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.alreadyJoinClub);
+        }
+
+        await requestToAllClubMember(player.channel, 'clubRequest', haveThisClub._id, {})
+
+        const record = await ClubRequest.create({
+            playerId: playerInfo._id,
+            clubShortId: message.clubShortId,
+            avatar: playerInfo.avatar,
+            playerShortId: playerInfo.shortId,
+            playerName: playerInfo.nickname,
+            type: 3,
+            partner: player.model.shortId
+        });
+
+        return player.replySuccess(ClubAction.inviteNormalPlayer, record);
     },
 }
 
