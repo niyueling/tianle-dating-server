@@ -493,7 +493,8 @@ export default {
                 };
 
                 if (member.member !== fromClub.owner) {
-                    params["leader"] = fromClub.owner;
+                    const ownerInfo = await Player.findOne({_id: fromClub.owner});
+                    params["leader"] = ownerInfo.shortId;
                 }
 
                 await ClubMember.create(params);
