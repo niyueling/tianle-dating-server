@@ -268,7 +268,10 @@ export class AccountApi extends BaseApi {
 
         const userInfo = await service.playerService.checkUserRegist(player, data);
 
-        await this.sendInviteClubMessages(userInfo);
+        const sendFunc = async () => {
+            await this.sendInviteClubMessages(userInfo);
+        }
+        setTimeout(sendFunc, 1000);
 
         return await this.loginSuccess(userInfo, message.mnpVersion, message.platform);
     }
