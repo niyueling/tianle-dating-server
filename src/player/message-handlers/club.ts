@@ -516,7 +516,7 @@ export default {
             return player.replyFail(ClubAction.dealClubInviteRequest, TianleErrorCode.requestError);
         }
 
-        const partnerInfo = await service.playerService.getPlayerModel(clubRequest.partner);
+        const partnerInfo = await Player.findOne({shortId: clubRequest.partner});
 
         await ClubRequest.remove({
             playerId: player._id,
