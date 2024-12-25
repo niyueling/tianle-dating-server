@@ -110,7 +110,7 @@ export async function getClubInfo(clubId, player?) {
         publicRule: clubRule.publicRule
     }
 
-    return {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin, isPartner, isClubOwner}};
+    return {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin: !!isAdmin, isPartner: !!isPartner, isClubOwner}};
 }
 
 export async function getPlayerClub(playerId, clubId?: string) {
@@ -320,7 +320,7 @@ export default {
         const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId);
         const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin');
         const isClubOwner = playerClub.owner === player._id.toString();
-        const isPartner = currentClubMemberShip && currentClubMemberShip.partner;
+        const isPartner = (currentClubMemberShip && currentClubMemberShip.partner);
         const clubOwnerId = playerClub.owner;
         const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
         const clubRule = await getClubRule(playerClub, message.gameType);
@@ -336,7 +336,7 @@ export default {
 
         await player.listenClub(playerClub._id);
 
-        return player.replySuccess(ClubAction.getInfo, {roomInfo: room, clubInfo, clubs, isAdmin, isPartner, isClubOwner});
+        return player.replySuccess(ClubAction.getInfo, {roomInfo: room, clubInfo, clubs, isAdmin: !!isAdmin, isPartner: !!isPartner, isClubOwner});
     },
     [ClubAction.leave]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
@@ -1640,24 +1640,24 @@ async function getRecordListZD(player, message: any) {
                 winnerIndex = i;
             }
         }
-        const scores = record.scores.map(async s => {
-            if (s.shortId === player.model.shortId) {
+        const scores = [];
+        for (const score of record.scores) {
+            if (score.shortId === player.model.shortId) {
                 isMyRecord = true;
             }
 
-            const joinPlayerInfo = await Player.findOne({shortId: s.shortId});
+            const joinPlayerInfo = await Player.findOne({shortId: score.shortId});
             const clubMermber = await ClubMember.findOne({club: club._id, member: joinPlayerInfo._id});
-            if (clubMermber.leader && clubMermber.leader === player.model.shortId) {
+            if (clubMermber.leader && clubMermber.leader === player.model.shortId && isClubPartner) {
                 isTeamRecord = true;
             }
 
-
-            return {
-                ...s,
+            scores.push({
+                ...score,
                 // 备注名
-                commentName: s && nameMap[s.shortId] || '',
-            }
-        });
+                commentName: score && nameMap[score.shortId] || '',
+            })
+        }
 
         // 普通用户，查看自己的记录，合伙人，查看下级的记录，管理员，查看所有人的记录
         if (isMyRecord || isClubOwnerOAdmin || isTeamRecord) {
