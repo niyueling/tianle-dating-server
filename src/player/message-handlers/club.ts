@@ -550,7 +550,7 @@ export default {
             leader: clubRequest.partner
         })
 
-        const adminList = await ClubMember.count({
+        const adminList = await ClubMember.find({
             club: clubInfo._id,
             role: "admin"
         })
