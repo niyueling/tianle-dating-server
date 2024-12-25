@@ -938,9 +938,17 @@ export default {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         let roleType = myClub ? 1 : -1;
         const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
-        if (!myClub && isAdmin) {
-            roleType = 2;
-            myClub = await Club.findOne({shortId: message.clubShortId});
+        const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
+        if (!myClub) {
+            if (isAdmin) {
+                roleType = 2;
+                myClub = await Club.findOne({shortId: message.clubShortId});
+            }
+
+            if (isPartner) {
+                roleType = 3;
+                myClub = await Club.findOne({shortId: message.clubShortId});
+            }
         }
 
         if (!myClub) {
@@ -962,6 +970,39 @@ export default {
                 return player.sendMessage('club/adminRemovePlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveAdmin
+                });
+            }
+
+            if (message.playerId === player._id) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveSelf
+                });
+            }
+        }
+
+        // 做合伙人的校验
+        if (roleType === 3) {
+            const memberShip = await ClubMember.findOne({club: myClub._id, member: message.playerId}).lean()
+
+            if (memberShip.role === 'admin') {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveAdmin
+                });
+            }
+
+            if (memberShip.partner) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemovePartner
+                });
+            }
+
+            if (memberShip.leader !== player.model.shortId) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveLeader
                 });
             }
 
