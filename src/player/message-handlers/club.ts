@@ -801,7 +801,7 @@ export default {
     },
     [ClubAction.renameClubPlayer]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
-        if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
+        if (!myClub && (await playerIsAdmin(player.model._id, message.clubShortId) || await playerIsPartner(player.model._id, message.clubShortId))) {
             myClub = await Club.findOne({shortId: message.clubShortId});
         }
 
