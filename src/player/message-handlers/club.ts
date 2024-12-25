@@ -546,7 +546,7 @@ export default {
 
         await ClubMember.create({
             club: clubInfo._id,
-            role: player._id,
+            member: player._id,
             leader: clubRequest.partner
         })
 
