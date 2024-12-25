@@ -43,25 +43,25 @@ export const enum ClubAction {
     dealRequest = 'club/dealRequest',
     // 检测是否加入俱乐部
     updatePlayerInfo = 'club/updatePlayerInfo',
-    // 战绩/排行明细
+    // 战绩/排行明细(适配合伙人权限)
     recordList = 'club/recordList',
-    // 排行汇总
+    // 排行汇总(适配合伙人权限)
     recordRankList = 'club/recordRankList',
-    // 发牌记录
+    // 发牌记录(适配合伙人权限)
     recordRoomPlayerInfo = 'club/recordRoomPlayerInfo',
-    // 清除战绩
+    // 清除战绩(适配合伙人权限)
     changeClubRecordState = 'club/changeClubRecordState',
-    // 战绩已读
+    // 战绩已读(适配合伙人权限)
     seenClubRecords = 'club/seenClubRecords',
     // 战队开启/暂停
     changeState = 'club/changeState',
-    // 成员列表
+    // 成员列表(适配合伙人权限)
     getClubMembers = 'club/getClubMembers',
-    // 设置备注
+    // 设置备注(适配合伙人权限)
     renameClubPlayer = 'club/renameClubPlayer',
-    // 设置黑名单
+    // 设置黑名单(适配合伙人权限)
     operateBlackList = 'club/operateBlackList',
-    // 踢出用户
+    // 踢出用户(适配合伙人权限)
     removePlayer = 'club/removePlayer',
     // 设置管理员
     promoteAdmin = 'club/promoteAdmin',
@@ -1220,7 +1220,7 @@ export default {
             return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.noPermission);
         }
 
-        const playerInfo = await service.playerService.getPlayerModel(message.playerShortId);
+        const playerInfo = await Player.findOne({shortId: message.playerShortId});
         const alreadyJoinedClubs = await ClubMember.count({member: playerInfo._id}).lean()
 
         if (alreadyJoinedClubs >= 5) {
