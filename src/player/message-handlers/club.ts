@@ -700,7 +700,9 @@ export default {
     },
     [ClubAction.getClubMembers]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
-        if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
+        const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
+        const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
+        if (!myClub && (isAdmin || isPartner)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
         }
         if (!myClub) {
@@ -718,18 +720,20 @@ export default {
         for (const clubMember of clubMembers) {
             const memberInfo = await PlayerModel.findOne({_id: clubMember.member})
             if (memberInfo) {
-                clubMembersInfo.push({
-                    name: memberInfo.nickname,
-                    id: memberInfo._id,
-                    isBlack: clubExtra.blacklist.includes(memberInfo._id.toString()),
-                    rename: clubExtra.renameList[clubMember.member] || "",
-                    headImage: memberInfo.avatar,
-                    diamond: memberInfo.diamond,
-                    clubGold: clubMember.clubGold,
-                    shortId: memberInfo.shortId,
-                    isAdmin: clubMember.role === 'admin',
-                    isPartner: clubMember.partner
-                })
+                if ((isPartner && clubMember.leader === player.model.shortId) || !isPartner) {
+                    clubMembersInfo.push({
+                        name: memberInfo.nickname,
+                        id: memberInfo._id,
+                        isBlack: clubExtra.blacklist.includes(memberInfo._id.toString()),
+                        rename: clubExtra.renameList[clubMember.member] || "",
+                        headImage: memberInfo.avatar,
+                        diamond: memberInfo.diamond,
+                        clubGold: clubMember.clubGold,
+                        shortId: memberInfo.shortId,
+                        isAdmin: clubMember.role === 'admin',
+                        isPartner: clubMember.partner
+                    })
+                }
             }
         }
 
