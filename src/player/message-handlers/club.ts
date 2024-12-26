@@ -97,7 +97,6 @@ export async function getClubInfo(clubId, player?) {
     const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin');
     const isClubOwner = playerClub.owner === player._id.toString();
     const isPartner = currentClubMemberShip && currentClubMemberShip.partner;
-    console.warn("playerId-%s currentClubMemberShip-%s isAdmin-%s isClubOwner-%s isPartner-%s", player._id, JSON.stringify(currentClubMemberShip), isAdmin, isClubOwner, isPartner);
     const clubOwnerId = playerClub.owner;
     const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
     const clubRule = await getClubRule(playerClub);
