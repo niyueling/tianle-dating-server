@@ -19,7 +19,10 @@ const getGameName = {
   [GameType.xueliu]: '血流红中',
   [GameType.pcmj]: '浦城麻将',
   [GameType.xmmj]: '厦门麻将',
-  [GameType.guobiao]: '国标血流'
+  [GameType.guobiao]: '国标血流',
+  [GameType.zd]: '浦城炸弹',
+  [GameType.ddz]: '斗地主',
+  [GameType.guandan]: '天乐掼蛋'
 }
 
 // 游戏配置
