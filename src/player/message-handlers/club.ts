@@ -433,6 +433,7 @@ export default {
             fromClub = await Club.findOne({shortId: message.fromClubId});
         }
 
+        const ownerInfo = await Player.findOne({_id: fromClub.owner});
         const isClubOwnerAdmin = fromClub && fromClub.shortId === message.fromClubId;
         const memberShip = await ClubMember.findOne({club: club._id, member: player._id}).lean();
 
@@ -469,8 +470,15 @@ export default {
                 });
 
                 if (clubMember) {
+                    // 小战队主并且不是合伙人，设置合伙人身份
                     if (clubMember.member === fromClub.owner && !clubMember.partner) {
                         clubMember.partner = true;
+                        await clubMember.save();
+                    }
+
+                    // 小战队并且不是战队主，设置战队主为上级
+                    if (clubMember.member !== fromClub.owner && !clubMember.leader.includes(fromClub.shortId)) {
+                        clubMember.leader.push(ownerInfo.shortId);
                         await clubMember.save();
                     }
 
@@ -493,8 +501,7 @@ export default {
                 };
 
                 if (member.member !== fromClub.owner) {
-                    const ownerInfo = await Player.findOne({_id: fromClub.owner});
-                    params["leader"] = ownerInfo.shortId;
+                    params["leader"] = [ownerInfo.shortId];
                 }
 
                 await ClubMember.create(params);
@@ -548,7 +555,7 @@ export default {
         await ClubMember.create({
             club: clubInfo._id,
             member: player._id,
-            leader: clubRequest.partner
+            leader: [clubRequest.partner]
         })
 
         const adminList = await ClubMember.find({
@@ -558,10 +565,11 @@ export default {
 
         // 发送邮件给战队主
         const ownerInfo = await service.playerService.getPlayerModel(clubInfo.owner);
-        await notifyNewPlayerJoin(ownerInfo, clubInfo.name, clubInfo.shortId, partnerInfo);
+        const playerInfo = await service.playerService.getPlayerModel(player._id);
+        await notifyNewPlayerJoin(ownerInfo, clubInfo.name, clubInfo.shortId, partnerInfo, playerInfo);
         for (let i = 0; i < adminList.length; i++) {
             const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
-            await notifyNewPlayerJoin(adminInfo, clubInfo.name, clubInfo.shortId, partnerInfo);
+            await notifyNewPlayerJoin(adminInfo, clubInfo.name, clubInfo.shortId, partnerInfo, playerInfo);
         }
 
         return player.replySuccess(ClubAction.dealClubInviteRequest, {});
@@ -723,7 +731,7 @@ export default {
         for (const clubMember of clubMembers) {
             const memberInfo = await PlayerModel.findOne({_id: clubMember.member})
             if (memberInfo) {
-                if ((isPartner && clubMember.leader === player.model.shortId) || !isPartner) {
+                if ((isPartner && clubMember.leader.includes(player.model.shortId)) || !isPartner) {
                     clubMembersInfo.push({
                         name: memberInfo.nickname,
                         id: memberInfo._id,
@@ -1006,7 +1014,7 @@ export default {
                 });
             }
 
-            if (memberShip.leader !== player.model.shortId) {
+            if (!memberShip.leader.includes(player.model.shortId)) {
                 return player.sendMessage('club/adminRemovePlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveLeader
@@ -1315,12 +1323,12 @@ export default {
 }
 
 // 邮件通知新成员加入
-async function notifyNewPlayerJoin(ownerInfo, clubName, clubId, partnerInfo) {
+async function notifyNewPlayerJoin(ownerInfo, clubName, clubId, partnerInfo, playerInfo) {
     const mail = new MailModel({
         to: ownerInfo._id,
         type: MailType.MESSAGE,
         title: '成员加入通知',
-        content: `${ownerInfo.nickname}(${ownerInfo.shortId})接受合伙人${partnerInfo.nickname}(${partnerInfo.shortId})邀请成功加入战队${clubName}(${clubId})`,
+        content: `${playerInfo.nickname}(${playerInfo.shortId})接受合伙人${partnerInfo.nickname}(${partnerInfo.shortId})邀请成功加入战队${clubName}(${clubId})`,
         state: MailState.UNREAD,
         createAt: new Date(),
         gift: {diamond: 0, tlGold: 0, gold: 0}
@@ -1520,7 +1528,7 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf, isPar
                         rankData.push(pData);
                     }
                 } else if (isPartner) {
-                    if (clubMember.leader && clubMember.leader === player.model.shortId) {
+                    if (clubMember.leader && clubMember.leader.includes(player.model.shortId)) {
                         rankData.push(pData);
                     }
                 } else {
@@ -1576,7 +1584,7 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf, isPar
                 const joinPlayerInfo = await Player.findOne({shortId: d.shortId});
                 const clubMermber = await ClubMember.findOne({club: club._id, member: joinPlayerInfo._id});
                 // score 不为空
-                if (!d || (onlyShowMySelf && d.shortId !== player.model.shortId) || (isPartner && clubMermber.leader && clubMermber.leader !== player.model.shortId)) {
+                if (!d || (onlyShowMySelf && d.shortId !== player.model.shortId) || (isPartner && clubMermber.leader && !clubMermber.leader.includes(player.model.shortId))) {
                     continue;
                 }
                 let tempIndex = rankData.findIndex(x => x.shortId === d.shortId);
@@ -1696,7 +1704,7 @@ async function getRecordListZD(player, message: any) {
 
             const joinPlayerInfo = await Player.findOne({shortId: score.shortId});
             const clubMermber = await ClubMember.findOne({club: club._id, member: joinPlayerInfo._id});
-            if (clubMermber.leader && clubMermber.leader === player.model.shortId && isClubPartner) {
+            if (clubMermber.leader && clubMermber.leader.includes(player.model.shortId) && isClubPartner) {
                 isTeamRecord = true;
             }
 

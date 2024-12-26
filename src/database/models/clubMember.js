@@ -10,7 +10,7 @@ const ClubMemberSchema = new mongoose.Schema({
   role: {type: String},
   partner: {type: Boolean, default: false},
   clubGold: {type: Number, default: 0},
-  leader: {type: Number},
+  leader: {type: Array, default: []},
 });
 
 ClubMemberSchema.index({joinAt: -1});
