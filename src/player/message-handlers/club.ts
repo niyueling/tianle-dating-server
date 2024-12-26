@@ -81,6 +81,8 @@ export const enum ClubAction {
     dealClubInviteRequest = 'club/dealClubInviteRequest',
     // 合伙人列表
     getClubPartner = 'club/getClubPartner',
+    // 判断用户是否在黑名单
+    checkPlayerIsBlack = 'club/checkPlayerIsBlack',
 }
 
 export async function getClubInfo(clubId, player?) {
@@ -749,6 +751,14 @@ export default {
         }
 
         player.sendMessage('club/getClubMembersReply', {ok: true, data: {isClubOwner, isAdmin, isPartner, clubMembersInfo}});
+    },
+    [ClubAction.checkPlayerIsBlack]: async (player, message) => {
+        let myClub = await Club.findOne({shortId: message.clubShortId});
+        const clubExtra = await getClubExtra(myClub._id);
+        const isBlack = clubExtra.blacklist.includes(player._id.toString())
+
+
+        player.sendMessage('club/checkPlayerIsBlackReply', {ok: true, data: {black: isBlack}});
     },
     [ClubAction.getClubPartner]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
