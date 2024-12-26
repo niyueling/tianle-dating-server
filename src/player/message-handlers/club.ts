@@ -93,10 +93,11 @@ export async function getClubInfo(clubId, player?) {
     const allClubMemberShips = await ClubMember.find({member: player._id}).populate('club').lean();
     const clubs = allClubMemberShips.map(cm => cm.club);
     const room = await getClubRooms(playerClub._id);
-    const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId);
+    const currentClubMemberShip = allClubMemberShips.find(x => x.club._id.toString() === clubId.toString());
     const isAdmin = (currentClubMemberShip && currentClubMemberShip.role === 'admin');
     const isClubOwner = playerClub.owner === player._id.toString();
     const isPartner = currentClubMemberShip && currentClubMemberShip.partner;
+    console.warn("playerId-%s currentClubMemberShip-%s isAdmin-%s isClubOwner-%s isPartner-%s", player._id, JSON.stringify(currentClubMemberShip), isAdmin, isClubOwner, isPartner);
     const clubOwnerId = playerClub.owner;
     const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
     const clubRule = await getClubRule(playerClub);
@@ -702,6 +703,7 @@ export default {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
         const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
+
         if (!myClub && (isAdmin || isPartner)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
         }
@@ -714,6 +716,8 @@ export default {
             const searchInfo = await PlayerModel.findOne({shortId: message.playerShortId});
             params["member"] = searchInfo._id;
         }
+
+        const isClubOwner = myClub.owner === player._id.toString();
         const clubExtra = await getClubExtra(myClub._id);
         const clubMembers = await ClubMember.find(params);
         const clubMembersInfo = [];
@@ -737,7 +741,7 @@ export default {
             }
         }
 
-        player.sendMessage('club/getClubMembersReply', {ok: true, data: {clubMembersInfo}});
+        player.sendMessage('club/getClubMembersReply', {ok: true, data: {isClubOwner, isAdmin, isPartner, clubMembersInfo}});
     },
     [ClubAction.getClubPartner]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
