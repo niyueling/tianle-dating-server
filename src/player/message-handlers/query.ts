@@ -3,6 +3,7 @@ import {addApi, BaseApi} from "./baseApi";
 import {TianleErrorCode} from "@fm/common/constants";
 import {service} from "../../service/importService";
 import ClubMember from "../../database/models/clubMember";
+import {getClubExtra} from "./club";
 
 // 查询接口
 export class QueryApi extends BaseApi {
@@ -27,6 +28,12 @@ export class QueryApi extends BaseApi {
             let clubMember = await ClubMember.findOne({club: roomInfo.clubId, member: this.player._id});
             if (!clubMember) {
                 return this.replyFail(TianleErrorCode.notClubMember);
+            }
+
+            const clubExtra = await getClubExtra(roomInfo.clubId);
+            const isBlack = clubExtra.blacklist.includes(this.player._id.toString());
+            if (isBlack) {
+                return this.replyFail(TianleErrorCode.notJoinClubGame);
             }
         }
 

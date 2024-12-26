@@ -153,7 +153,7 @@ async function getOwnerClub(playerId, clubShortId) {
     return false
 }
 
-async function getClubExtra(clubId) {
+export async function getClubExtra(clubId) {
     let clubExtra = await ClubExtra.findOne({clubId});
     if (!clubExtra) {
         clubExtra = await ClubExtra.create({
