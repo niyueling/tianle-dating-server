@@ -376,8 +376,8 @@ export default {
             return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.noPermission);
         }
 
-        const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId, type: 1, status: 0});
-        const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId, status: 0});
+        const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId, type: 1});
+        const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId});
         return player.replySuccess(ClubAction.getRequestInfo, {requestList: [...clubRequestInfo, ...clubMergeInfo]});
     },
     [ClubAction.dealRequest]: async (player, message) => {
