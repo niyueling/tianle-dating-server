@@ -1254,7 +1254,7 @@ export default {
         if (message.type === 1) {
             result = await ClubRequest.findById(message._id);
         }
-        if (message.type === 1) {
+        if (message.type === 2) {
             result = await ClubMerge.findById(message._id);
         }
         if (!result) {
