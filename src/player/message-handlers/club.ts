@@ -274,7 +274,8 @@ export default {
 
         const clubRequest = await ClubRequest.findOne({
             playerId: player.model._id,
-            clubShortId: message.clubShortId
+            clubShortId: message.clubShortId,
+            status: 0
         });
         if (clubRequest) {
             return player.replyFail(ClubAction.request, TianleErrorCode.alreadyApplyClub);
@@ -373,8 +374,8 @@ export default {
             return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.noPermission);
         }
 
-        const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId, type: 1});
-        const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId});
+        const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId, type: 1, status: 0});
+        const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId, status: 0});
         return player.replySuccess(ClubAction.getRequestInfo, {requestList: [...clubRequestInfo, ...clubMergeInfo]});
     },
     [ClubAction.dealRequest]: async (player, message) => {
@@ -390,10 +391,13 @@ export default {
         const isAmin = memberShip.role === 'admin'
 
         if (isClubOwnerAdmin || isAmin) {
-            await ClubRequest.remove({
+            const requestInfo = await ClubRequest.findOne({
                 playerId: message.requestId,
-                clubShortId: message.clubShortId
+                clubShortId: message.clubShortId,
+                status: 0
             });
+            requestInfo.status = (message.refuse ? 2 : 1);
+            await requestInfo.save();
 
             if (message.refuse) {
                 return player.replyFail(ClubAction.dealRequest, TianleErrorCode.refuseClubApply);
@@ -445,10 +449,13 @@ export default {
             const toClub = await Club.findOne({shortId: message.toClubId});
 
             // 删除申请记录
-            await ClubMerge.remove({
+            const mergeInfo = await ClubMerge.findOne({
                 fromClubId: message.fromClubId,
-                toClubId: message.toClubId
+                toClubId: message.toClubId,
+                status: 0
             });
+            mergeInfo.status = (message.refuse ? 2 : 1);
+            await mergeInfo.save();
 
             if (message.refuse) {
                 return player.replyFail(ClubAction.dealClubRequest, TianleErrorCode.refuseClubApply);
@@ -520,7 +527,8 @@ export default {
         const clubInfo = await Club.findOne({shortId: message.clubShortId});
         const clubRequest = await ClubRequest.findOne({
             clubShortId: clubInfo.shortId,
-            playerId: player._id
+            playerId: player._id,
+            status: 0
         });
         if (!clubRequest) {
             return player.replyFail(ClubAction.dealClubInviteRequest, TianleErrorCode.requestError);
@@ -528,10 +536,8 @@ export default {
 
         const partnerInfo = await Player.findOne({shortId: clubRequest.partner});
 
-        await ClubRequest.remove({
-            playerId: player._id,
-            clubShortId: message.clubShortId
-        });
+        clubRequest.status = (message.refuse ? 2 : 1);
+        await clubRequest.save();
 
         if (message.refuse) {
             return player.replyFail(ClubAction.dealClubInviteRequest, TianleErrorCode.refuseClubApply);
@@ -1303,7 +1309,8 @@ export default {
 
         const clubRequest = await ClubRequest.findOne({
             playerId: playerInfo._id,
-            clubShortId: message.clubShortId
+            clubShortId: message.clubShortId,
+            status: 0
         });
         if (clubRequest) {
             return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.alreadyApplyClub);
