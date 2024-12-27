@@ -83,6 +83,8 @@ export const enum ClubAction {
     getClubPartner = 'club/getClubPartner',
     // 判断用户是否在黑名单
     checkPlayerIsBlack = 'club/checkPlayerIsBlack',
+    // 删除消息
+    deleteMessage = 'club/deleteMessage',
 }
 
 export async function getClubInfo(clubId, player?) {
@@ -1245,6 +1247,29 @@ export default {
         await requestToAllClubMember(player.channel, 'club/updateClubRoom', result.clubId.toString(), {})
 
         player.replySuccess(ClubAction.deleteRule, result);
+    },
+    [ClubAction.deleteMessage]: async (player, message) => {
+        let result = null;
+
+        if (message.type === 1) {
+            result = await ClubRequest.findById(message._id);
+        }
+        if (message.type === 1) {
+            result = await ClubMerge.findById(message._id);
+        }
+        if (!result) {
+            return  player.replyFail(ClubAction.deleteMessage, TianleErrorCode.systemError);
+        }
+
+        const isOk = await hasRulePermission(result.clubId, player.model._id);
+        if (!isOk) {
+            player.replyFail(ClubAction.deleteMessage, TianleErrorCode.noPermission);
+            return;
+        }
+
+        await result.remove();
+
+        player.replySuccess(ClubAction.deleteMessage, {});
     },
     [ClubAction.clubConfig]: async (player) => {
         const renameClubConfig = await GlobalConfig.findOne({name: "renameClubDiamond"}).lean();
