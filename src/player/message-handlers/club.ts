@@ -927,6 +927,13 @@ export default {
             await ClubMember.update({_id: member._id}, {$set: {role: null}}).exec();
         }
 
+        // 如果在黑名单，取消黑名单
+        const clubExtra = await getClubExtra(myClub._id);
+        let blacklist = clubExtra.blacklist;
+        blacklist = blacklist.filter(x => x !== transferee._id.toString());
+        clubExtra.blacklist = blacklist;
+        await clubExtra.save();
+
         player.replySuccess(ClubAction.transfer, {diamond: playerInfo.diamond - outDiamond});
         await player.updateResource2Client();
         // 通知被转移人
