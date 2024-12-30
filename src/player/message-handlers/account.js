@@ -189,8 +189,8 @@ export default {
   },
   'account/gameReplay': async (player, message) => {
     if (player.model) {
-      let replay = await GameRecord.findOne({room: message.room, juShu: message.juIndex}).lean().exec()
-      player.sendMessage('account/gameReplayReply', {ok: true, data: replay})
+      let replay = await GameRecord.findOne({roomId: message.room, juShu: message.juIndex}).lean().exec();
+      player.sendMessage('account/gameReplayReply', {ok: true, data: replay});
     }
   },
   'account/topPlayers': async (player) => {
