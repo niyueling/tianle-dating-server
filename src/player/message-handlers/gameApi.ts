@@ -107,7 +107,12 @@ export class GameApi extends BaseApi {
   async recordList(msg) {
     const startTime = moment().subtract(msg.day, 'days').startOf('day').toDate();
     const endTime = moment().subtract(msg.day, 'days').endOf('day').toDate();
-    const roomRecord = await CombatGain.find({playerId: this.player.model._id, time: {$gte: startTime, $lt: endTime}}).sort({time: -1})
+    const params = {playerId: this.player.model._id, time: {$gte: startTime, $lt: endTime}};
+    if (msg.gameType) {
+        params["category"] = msg.gameType;
+    }
+
+    const roomRecord = await CombatGain.find(params).sort({time: -1})
 
     return this.replySuccess(roomRecord);
   }
