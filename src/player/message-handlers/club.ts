@@ -1375,7 +1375,7 @@ async function refuseNewPlayerJoin(clubName, clubId, playerInfo) {
         to: playerInfo._id,
         type: MailType.MESSAGE,
         title: '拒绝加入通知',
-        content: `${playerInfo.nickname}(${playerInfo.shortId})申请加入战队${clubName}(${clubId}被管理员拒绝)`,
+        content: `${playerInfo.nickname}(${playerInfo.shortId})申请加入战队${clubName}(${clubId})被管理员拒绝`,
         state: MailState.UNREAD,
         createAt: new Date(),
         gift: {diamond: 0, tlGold: 0, gold: 0}
