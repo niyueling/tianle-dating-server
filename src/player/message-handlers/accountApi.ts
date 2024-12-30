@@ -278,7 +278,7 @@ export class AccountApi extends BaseApi {
     }
 
     async sendInviteClubMessages(userInfo) {
-        const clubRequestInfo = await ClubRequest.find({type: 3, playerId: userInfo._id}).lean();
+        const clubRequestInfo = await ClubRequest.find({type: 3, playerId: userInfo._id, status: 0}).lean();
 
         for (let i = 0; i < clubRequestInfo.length; i++) {
             clubRequestInfo[i].clubInfo = await Club.findOne({shortId: clubRequestInfo[i].clubShortId});
