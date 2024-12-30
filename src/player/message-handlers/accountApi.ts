@@ -479,7 +479,7 @@ export class AccountApi extends BaseApi {
             "rule.isPublic": false,
         };
         if (message.gameType) {
-            params["gameType"] = message.gameType;
+            params["category"] = message.gameType;
         }
 
         const records = await RoomRecord
