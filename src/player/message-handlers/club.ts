@@ -487,12 +487,6 @@ export default {
                         await clubMember.save();
                     }
 
-                    // 小战队并且不是战队主，设置战队主为上级
-                    if (clubMember.member !== fromClub.owner && !clubMember.leader.includes(fromClub.shortId)) {
-                        clubMember.leader.push(ownerInfo.shortId);
-                        await clubMember.save();
-                    }
-
                     continue;
                 }
 
@@ -512,7 +506,7 @@ export default {
                 };
 
                 if (member.member !== fromClub.owner) {
-                    params["leader"] = [ownerInfo.shortId];
+                    params["leader"] = ownerInfo.shortId;
                 }
 
                 await ClubMember.create(params);
@@ -565,7 +559,7 @@ export default {
         await ClubMember.create({
             club: clubInfo._id,
             member: player._id,
-            leader: [clubRequest.partner]
+            leader: clubRequest.partner
         })
 
         const adminList = await ClubMember.find({
@@ -741,7 +735,7 @@ export default {
         for (const clubMember of clubMembers) {
             const memberInfo = await PlayerModel.findOne({_id: clubMember.member})
             if (memberInfo) {
-                if ((isPartner && clubMember.leader.includes(player.model.shortId)) || !isPartner) {
+                if ((isPartner && clubMember.leader === player.model.shortId) || !isPartner) {
                     clubMembersInfo.push({
                         name: memberInfo.nickname,
                         id: memberInfo._id,
@@ -1039,7 +1033,7 @@ export default {
                 });
             }
 
-            if (!memberShip.leader.includes(player.model.shortId)) {
+            if (memberShip.leader !== player.model.shortId) {
                 return player.sendMessage('club/adminRemovePlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveLeader
@@ -1579,7 +1573,7 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf, isPar
                         rankData.push(pData);
                     }
                 } else if (isPartner) {
-                    if (clubMember.leader && clubMember.leader.includes(player.model.shortId)) {
+                    if (clubMember.leader && clubMember.leader === player.model.shortId) {
                         rankData.push(pData);
                     }
                 } else {
@@ -1635,7 +1629,7 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf, isPar
                 const joinPlayerInfo = await Player.findOne({shortId: d.shortId});
                 const clubMermber = await ClubMember.findOne({club: club._id, member: joinPlayerInfo._id});
                 // score 不为空
-                if (!d || (onlyShowMySelf && d.shortId !== player.model.shortId) || (isPartner && clubMermber.leader && !clubMermber.leader.includes(player.model.shortId))) {
+                if (!d || (onlyShowMySelf && d.shortId !== player.model.shortId) || (isPartner && clubMermber.leader && !clubMermber.leader === player.model.shortId)) {
                     continue;
                 }
                 let tempIndex = rankData.findIndex(x => x.shortId === d.shortId);
@@ -1755,7 +1749,7 @@ async function getRecordListZD(player, message: any) {
 
             const joinPlayerInfo = await Player.findOne({shortId: score.shortId});
             const clubMermber = await ClubMember.findOne({club: club._id, member: joinPlayerInfo._id});
-            if (clubMermber.leader && clubMermber.leader.includes(player.model.shortId) && isClubPartner) {
+            if (clubMermber.leader && clubMermber.leader === player.model.shortId && isClubPartner) {
                 isTeamRecord = true;
             }
 
