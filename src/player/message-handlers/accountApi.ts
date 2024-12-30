@@ -467,7 +467,7 @@ export class AccountApi extends BaseApi {
         apiName: 'recordList'
     })
     async getRecordList(message) {
-        const playerId = this.player.id
+        const playerId = this.player._id
         // 下发 3天的数据
         const start = moment().subtract(2, 'days').startOf('day').toDate()
         const records = await RoomRecord

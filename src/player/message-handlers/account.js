@@ -140,7 +140,6 @@ function addResource(playerId, {ruby = 0, gem = 0, gold = 0}) {
 
 export default {
   'account/weChatCode': async (p, message) => {
-    console.log(message.code);
     const appid = '';
     const appSecret = '';
     // https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code
