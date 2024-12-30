@@ -173,8 +173,7 @@ const handlers = {
     }
 
     const room = player.room;
-    const index = room.getPlayers().indexOf(player);
-    message.index = index;
+      message.index = room.getPlayers().indexOf(player);
     room.broadcast('room/sound-chat', message);
     return true;
   },
@@ -186,8 +185,7 @@ const handlers = {
     }
 
     const room = player.room;
-    const index = room.getPlayers().indexOf(player);
-    message.index = index;
+      message.index = room.getPlayers().indexOf(player);
     room.broadcast('room/buildInChat', message);
     return true;
   },

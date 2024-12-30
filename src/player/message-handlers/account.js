@@ -189,8 +189,7 @@ export default {
   },
   'account/gameReplay': async (player, message) => {
     if (player.model) {
-      let id = message._id
-      let replay = await GameRecord.findOne({_id: id}).lean().exec()
+      let replay = await GameRecord.findOne({room: message.room, juShu: message.juIndex}).lean().exec()
       player.sendMessage('account/gameReplayReply', {ok: true, data: replay})
     }
   },
