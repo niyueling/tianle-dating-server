@@ -266,6 +266,37 @@ export async function playerIsPartner(playerId, clubShortId) {
     return false
 }
 
+export async function createNewClub(playerInfo, leavePlayers) {
+    const ownerClub = await Club.findOne({owner: playerInfo._id});
+    if (ownerClub) {
+        return false;
+    }
+
+    const joinedClub = await ClubMember.count({member: playerInfo._id});
+    if (joinedClub >= 5) {
+        return false;
+    }
+
+    const clubGlobal = await Club.findOne().sort({shortId: -1}).limit(1);
+    let clubShortId = !clubGlobal ? 100001 : clubGlobal.shortId + 1;
+
+    const club = new Club({
+        owner: playerInfo._id,
+        shortId: clubShortId,
+        name: `${playerInfo.nickname}的战队`
+    })
+    await club.save();
+
+    for (let i = 0; i < leavePlayers.length; i++) {
+        await ClubMember.create({
+            club: club._id, member: leavePlayers.member,
+            joinAt: new Date()
+        })
+    }
+
+    return true;
+}
+
 export default {
     [ClubAction.request]: async (player, message) => {
         const alreadyJoinedClubs = await ClubMember.count({member: player.model._id}).lean()
@@ -358,6 +389,24 @@ export default {
         }
         if (clubMemberInfo.clubGold !== undefined && clubMemberInfo.clubGold < 0) {
             return player.replyFail(ClubAction.leave, TianleErrorCode.dataNotAbnormal);
+        }
+
+        if (clubMemberInfo.partner) {
+            // 记录被踢出的用户列表
+            const leavePlayers = [{member: leaveId, roleType: 1}];
+            const playerInfo = await service.playerService.getPlayerModel(leaveId);
+
+            // 获取合伙人
+            const clubTeamList = await ClubMember.find({club: club._id, leader: playerInfo.shortId});
+            for (let i = 0; i < clubTeamList.length; i++) {
+                leavePlayers.push({member: clubTeamList[i].member, roleType: 2});
+                await ClubMember.remove({member: clubTeamList[i].member, club: club._id});
+            }
+
+            // 给合伙人和用户创建新的战队
+            if (leavePlayers.length > 1) {
+                await createNewClub(playerInfo, leavePlayers);
+            }
         }
 
         await ClubMember.remove({member: leaveId, club: club._id});
