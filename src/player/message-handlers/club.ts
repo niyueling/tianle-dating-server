@@ -399,6 +399,9 @@ export default {
                 status: 0
             });
             requestInfo.status = (message.refuse ? 2 : 1);
+            if (message.refuseMessage) {
+                requestInfo.message = message.refuseMessage;
+            }
             await requestInfo.save();
 
             if (message.refuse) {

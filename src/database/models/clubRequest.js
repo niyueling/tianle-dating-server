@@ -11,6 +11,7 @@ const ClubRequestSchema = new mongoose.Schema({
   type: {type: Number, default: 1},
   partner: {type: Number},
   status: {type: Number, default: 0},
+  message: {type: String},
   createAt: {type: Date, required: true, default: Date.now},
 });
 
