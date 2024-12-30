@@ -175,7 +175,7 @@ export default {
       if (roomRecord) {
         allJuShu = roomRecord.rule.juShu;
       }
-      records = records.splice(0,allJuShu)
+      records = records.splice(0, allJuShu);
       records.forEach((record) => {
         record.record.sort((p1, p2) => {
           if (p1 && p2) {
@@ -189,7 +189,7 @@ export default {
   },
   'account/gameReplay': async (player, message) => {
     if (player.model) {
-      let replay = await GameRecord.findOne({roomId: message.room, juShu: message.juIndex}).lean().exec();
+      let replay = await GameRecord.findOne({roomId: message._id, juShu: message.juIndex}).lean().exec();
       player.sendMessage('account/gameReplayReply', {ok: true, data: replay});
     }
   },
