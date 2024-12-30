@@ -380,7 +380,7 @@ export default {
             return player.replyFail(ClubAction.leave, TianleErrorCode.clubNotExists);
         }
         const leaveId = player.model._id;
-        if (club.owner === leaveId) {
+        if (club.owner.toString() === leaveId.toString()) {
             return player.replyFail(ClubAction.leave, TianleErrorCode.ownerNotLeave);
         }
         const clubMemberInfo = await ClubMember.findOne({club: club._id, member: leaveId})
