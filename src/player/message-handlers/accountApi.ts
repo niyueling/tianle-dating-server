@@ -467,19 +467,23 @@ export class AccountApi extends BaseApi {
         apiName: 'recordList'
     })
     async getRecordList(message) {
-        const playerId = this.player._id
+        const playerId = this.player._id;
         // 下发 3天的数据
-        const start = moment().subtract(2, 'days').startOf('day').toDate()
+        const start = moment().subtract(2, 'days').startOf('day').toDate();
+        const params = {
+            "players": playerId,
+            "isPlayerDel": {$ne: playerId},
+            "createAt": {
+                $gte: start,
+            },
+            "rule.isPublic": false,
+        };
+        if (message.gameType) {
+            params["gameType"] = message.gameType;
+        }
+
         const records = await RoomRecord
-            .find({
-                "players": playerId,
-                "isPlayerDel": {$ne: playerId},
-                "createAt": {
-                    $gte: start,
-                },
-                // 过滤金豆房
-                "rule.isPublic": false,
-            })
+            .find(params)
             .sort({createAt: -1})
             .lean()
             .exec()
@@ -499,7 +503,7 @@ export class AccountApi extends BaseApi {
     // 删除公共房记录
     @addApi()
     async deleteRoomRecord(message) {
-        const playerId = this.player.id;
+        const playerId = this.player._id;
         const record = await RoomRecord.findOne({room: message.room, players: playerId});
         if (!record) {
             return this.replyFail('记录已删除');
