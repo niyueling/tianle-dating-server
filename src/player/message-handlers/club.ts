@@ -1036,6 +1036,8 @@ export default {
             }
         }
 
+        const memberShip = await ClubMember.findOne({club: myClub._id, member: message.playerId}).lean()
+
         if (!myClub) {
             return player.sendMessage('club/removePlayerReply', {ok: false, info: TianleErrorCode.noPermission});
         }
@@ -1049,8 +1051,6 @@ export default {
 
         // 做管理员的校验
         if (roleType === 2) {
-            const memberShip = await ClubMember.findOne({club: myClub._id, member: message.playerId}).lean()
-
             if (memberShip.role === 'admin') {
                 return player.sendMessage('club/adminRemovePlayerReply', {
                     ok: false,
@@ -1068,8 +1068,6 @@ export default {
 
         // 做合伙人的校验
         if (roleType === 3) {
-            const memberShip = await ClubMember.findOne({club: myClub._id, member: message.playerId}).lean()
-
             if (memberShip.role === 'admin') {
                 return player.sendMessage('club/adminRemovePlayerReply', {
                     ok: false,
@@ -1091,11 +1089,29 @@ export default {
                 });
             }
 
-            if (message.playerId === player._id) {
+            if (message.playerId.toString() === player._id.toString()) {
                 return player.sendMessage('club/adminRemovePlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveSelf
                 });
+            }
+        }
+
+        if (memberShip.partner) {
+            // 记录被踢出的用户列表
+            const leavePlayers = [{member: message.playerId, roleType: 1}];
+            const playerInfo = await service.playerService.getPlayerModel(message.playerId);
+
+            // 获取合伙人
+            const clubTeamList = await ClubMember.find({club: myClub._id, leader: playerInfo.shortId});
+            for (let i = 0; i < clubTeamList.length; i++) {
+                leavePlayers.push({member: clubTeamList[i].member, roleType: 2});
+                await ClubMember.remove({member: clubTeamList[i].member, club: myClub._id});
+            }
+
+            // 给合伙人和用户创建新的战队
+            if (leavePlayers.length > 1) {
+                await createNewClub(playerInfo, leavePlayers);
             }
         }
 
