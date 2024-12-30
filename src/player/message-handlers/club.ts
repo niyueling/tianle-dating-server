@@ -289,7 +289,7 @@ export async function createNewClub(playerInfo, leavePlayers) {
 
     for (let i = 0; i < leavePlayers.length; i++) {
         await ClubMember.create({
-            club: club._id, member: leavePlayers.member,
+            club: club._id, member: leavePlayers[i].member,
             joinAt: new Date()
         })
     }
