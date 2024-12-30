@@ -399,12 +399,11 @@ export default {
                 status: 0
             });
             requestInfo.status = (message.refuse ? 2 : 1);
-            if (message.refuseMessage) {
-                requestInfo.message = message.refuseMessage;
-            }
             await requestInfo.save();
 
             if (message.refuse) {
+                const playerInfo = await service.playerService.getPlayerModel(message.requestId);
+                await refuseNewPlayerJoin(myClub.name, myClub.shortId, playerInfo);
                 return player.replyFail(ClubAction.dealRequest, TianleErrorCode.refuseClubApply);
             }
 
@@ -1368,6 +1367,20 @@ export default {
 
         return player.replySuccess(ClubAction.inviteNormalPlayer, record);
     },
+}
+
+// 邮件通知新成员加入
+async function refuseNewPlayerJoin(clubName, clubId, playerInfo) {
+    const mail = new MailModel({
+        to: playerInfo._id,
+        type: MailType.MESSAGE,
+        title: '拒绝加入通知',
+        content: `${playerInfo.nickname}(${playerInfo.shortId})申请加入战队${clubName}(${clubId}被管理员拒绝)`,
+        state: MailState.UNREAD,
+        createAt: new Date(),
+        gift: {diamond: 0, tlGold: 0, gold: 0}
+    })
+    await mail.save();
 }
 
 // 邮件通知新成员加入
