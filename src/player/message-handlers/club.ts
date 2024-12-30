@@ -283,7 +283,8 @@ export async function createNewClub(playerInfo, leavePlayers) {
     const club = new Club({
         owner: playerInfo._id,
         shortId: clubShortId,
-        name: `${playerInfo.nickname}的战队`
+        name: `${playerInfo.nickname}的战队`,
+        freeRenameCount: 1
     })
     await club.save();
 
