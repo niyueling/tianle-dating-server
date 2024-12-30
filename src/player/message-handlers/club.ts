@@ -896,10 +896,6 @@ export default {
             player.replyFail(ClubAction.transfer, TianleErrorCode.playerNotExists);
             return
         }
-        // if (!transferee.phone || !playerInfo.phone) {
-        //   player.replyFail(ClubAction.transfer, TianleErrorCode.playerNotBindPhone);
-        //   return
-        // }
         if (transferee.diamond < inDiamond) {
             player.replyFail(ClubAction.transfer, TianleErrorCode.tranferInPlayerDiamondInsufficient);
             return
@@ -928,7 +924,10 @@ export default {
         }
 
         if (member && member.role === "admin") {
-            await ClubMember.update({_id: member._id}, {$set: {role: null}}).exec();
+            await ClubMember.update({club: myClub._id, member: member._id}, {$set: {role: null}}).exec();
+        }
+        if (member && member.partner) {
+            await ClubMember.update({club: myClub._id, member: member._id}, {$set: {partner: false}}).exec();
         }
 
         // 如果在黑名单，取消黑名单
