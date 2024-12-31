@@ -87,6 +87,8 @@ export const enum ClubAction {
     checkPlayerIsBlack = 'club/checkPlayerIsBlack',
     // 删除消息
     deleteMessage = 'club/deleteMessage',
+    // 已读消息
+    readMessage = 'club/readMessage',
 }
 
 export async function getClubInfo(clubId, player?) {
@@ -1535,6 +1537,17 @@ export default {
         await result.remove();
 
         player.replySuccess(ClubAction.deleteMessage, {});
+    },
+    [ClubAction.readMessage]: async (player, message) => {
+        const result = await ClubMessage.findById(message._id);
+        if (!result) {
+            return player.replyFail(ClubAction.readMessage, TianleErrorCode.systemError);
+        }
+
+        result.state = 2;
+        await result.save();
+
+        player.replySuccess(ClubAction.readMessage, {});
     },
     [ClubAction.clubConfig]: async (player) => {
         const renameClubConfig = await GlobalConfig.findOne({name: "renameClubDiamond"}).lean();
