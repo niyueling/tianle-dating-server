@@ -16,6 +16,8 @@ import GlobalConfig from "../../database/models/globalConfig";
 import {createClient} from "../../utils/redis";
 import * as config from '../../config'
 import ClubMerge from "../../database/models/clubMerge";
+import ClubMessage from "../../database/models/clubMessage";
+import clubMessage from "../../database/models/clubMessage";
 
 // 操作战队
 export const enum ClubAction {
@@ -441,9 +443,9 @@ export default {
         }
 
         const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId, type: 1});
-        const clubMergeFromInfo = await ClubMerge.find({fromClubId: message.clubShortId});
-        const clubMergeToInfo = await ClubMerge.find({toClubId: message.clubShortId});
-        return player.replySuccess(ClubAction.getRequestInfo, {requestList: [...clubRequestInfo, ...clubMergeFromInfo, ...clubMergeToInfo]});
+        const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId});
+        const clubMessageInfo = await ClubMessage.find({clubShortId: message.clubShortId, playerId: player.model._id});
+        return player.replySuccess(ClubAction.getRequestInfo, {requestList: [...clubRequestInfo, ...clubMergeInfo, ...clubMessageInfo]});
     },
     [ClubAction.dealRequest]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
@@ -584,6 +586,18 @@ export default {
                 }
 
                 await ClubMember.create(params);
+
+                const memberInfo = await service.playerService.getPlayerModel(member.member);
+
+                // 给用户生成战队消息通知加入战队
+                await clubMessage.create({
+                    playerId: member.member,
+                    clubShortId: toClub.shortId,
+                    playerName: memberInfo.nickname,
+                    avatar: memberInfo.avatar,
+                    playerShortId: memberInfo.shortId,
+                    message: `成功加入战队${toClub.name}(${toClub.shortId})`
+                });
             }
 
             await mergeFailClubMessage(toClub.name, toClub.shortId, fromClub.owner, alreadyJoinClubs);
@@ -593,6 +607,17 @@ export default {
             if (alreadyJoinClubs.length > 0) {
                 await requestToUserCenter(player.channel, 'club/sendMergeResult', fromClub.owner, {alreadyJoinClubs, clubInfo: toClub})
             }
+
+            // 给大战队主生成战队消息
+            const toClubOwnerInfo = await Player.findOne({_id: toClub.owner});
+            await clubMessage.create({
+                playerId: toClub.owner,
+                clubShortId: toClub.shortId,
+                playerName: toClubOwnerInfo.nickname,
+                avatar: toClubOwnerInfo.avatar,
+                playerShortId: toClubOwnerInfo.shortId,
+                message: `战队${fromClub.name}(${fromClub.shortId})合并成功`
+            });
 
             return player.replySuccess(ClubAction.dealClubRequest, {});
         }
@@ -1352,6 +1377,9 @@ export default {
         }
         if (message.type === 2) {
             result = await ClubMerge.findById(message._id);
+        }
+        if (message.type === 4) {
+            result = await ClubMessage.findById(message._id);
         }
         if (!result) {
             return  player.replyFail(ClubAction.deleteMessage, TianleErrorCode.systemError);
