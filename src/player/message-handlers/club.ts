@@ -1245,8 +1245,8 @@ export default {
         return player.sendMessage('club/promoteAdminReply', {ok: true, data: {}})
     },
     [ClubAction.promotePartner]: async (player, message) => {
-        let isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
-        if (!isAdmin) {
+        let isOwner = await getOwnerClub(player.model._id, message.clubShortId);
+        if (!isOwner) {
             return player.sendMessage('club/promotePartnerReply', {ok: false, info: TianleErrorCode.noPermission});
         }
 
