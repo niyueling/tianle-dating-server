@@ -950,19 +950,33 @@ export default {
     },
     [ClubAction.renameClubPlayer]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
-        if (!myClub && (await playerIsAdmin(player.model._id, message.clubShortId) || await playerIsPartner(player.model._id, message.clubShortId))) {
+        const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
+        const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
+        if (!myClub && (isAdmin || isPartner)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
         }
 
         if (!myClub) {
-            player.sendMessage('club/renameClubPlayerReply', {ok: false, info: TianleErrorCode.notClubAdmin});
-            return
+            return player.sendMessage('club/renameClubPlayerReply', {ok: false, info: TianleErrorCode.notClubAdmin});
         }
-        const clubExtra = await getClubExtra(myClub._id);
-        const renameList = clubExtra.renameList;
-        renameList[message.playerId] = message.rename;
 
-        await ClubExtra.update({clubId: myClub._id}, {$set: {renameList}})
+        const membership = await ClubMember.findOne({club: myClub._id, member: message.playerId});
+        if (!membership) {
+            return player.sendMessage('club/renameClubPlayerReply', {ok: false, info: TianleErrorCode.notClubPlayer});
+        }
+
+        const clubExtra = await getClubExtra(myClub._id);
+        // 如果是合伙人，设置合伙人备注
+        if (isPartner && membership.leader === player.model.shortId) {
+            const renameList = clubExtra.partnerRenameList;
+            renameList[message.playerId] = message.rename;
+            await ClubExtra.update({clubId: myClub._id}, {$set: {partnerRenameList: renameList}})
+        } else {
+            const renameList = clubExtra.renameList;
+            renameList[message.playerId] = message.rename;
+            await ClubExtra.update({clubId: myClub._id}, {$set: {renameList}})
+        }
+
         player.sendMessage('club/renameClubPlayerReply', {ok: true, data: {}});
     },
     [ClubAction.rename]: async (player, message) => {
