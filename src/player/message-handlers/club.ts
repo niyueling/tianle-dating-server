@@ -888,9 +888,6 @@ export default {
     },
     [ClubAction.getClubPartner]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
-        if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
-            myClub = await Club.findOne({shortId: message.clubShortId});
-        }
         if (!myClub) {
             return player.sendMessage('club/getClubPartnerReply', {ok: false, info: TianleErrorCode.notClubAdmin});
         }
@@ -965,6 +962,54 @@ export default {
         const membership = await ClubMember.findOne({club: myClub._id, member: message.playerId});
         if (!membership) {
             return player.sendMessage('club/renameClubPlayerReply', {ok: false, info: TianleErrorCode.notClubPlayer});
+        }
+
+        // 做管理员的校验
+        if (isAdmin) {
+            if (membership.role === 'admin') {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveAdmin
+                });
+            }
+
+            if (message.playerId === player._id.toString()) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveSelf
+                });
+            }
+        }
+
+        // 做合伙人的校验
+        if (isPartner) {
+            if (membership.role === 'admin') {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveAdmin
+                });
+            }
+
+            if (membership.partner) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemovePartner
+                });
+            }
+
+            if (membership.leader !== player.model.shortId) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveLeader
+                });
+            }
+
+            if (message.playerId.toString() === player._id.toString()) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveSelf
+                });
+            }
         }
 
         const clubExtra = await getClubExtra(myClub._id);
@@ -1099,13 +1144,61 @@ export default {
             return player.sendMessage('club/operateBlackListReply', {ok: false, info: TianleErrorCode.notOperateClubCreator});
         }
 
-        const membership = await ClubMember.findOne({club: myClub._id, member: message.playerId});
-        if (!membership) {
+        const memberShip = await ClubMember.findOne({club: myClub._id, member: message.playerId});
+        if (!memberShip) {
             return player.sendMessage('club/renameClubPlayerReply', {ok: false, info: TianleErrorCode.notClubPlayer});
         }
 
+        // 做管理员的校验
+        if (isAdmin) {
+            if (memberShip.role === 'admin') {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveAdmin
+                });
+            }
+
+            if (message.playerId === player._id.toString()) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveSelf
+                });
+            }
+        }
+
+        // 做合伙人的校验
+        if (isPartner) {
+            if (memberShip.role === 'admin') {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveAdmin
+                });
+            }
+
+            if (memberShip.partner) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemovePartner
+                });
+            }
+
+            if (memberShip.leader !== player.model.shortId) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveLeader
+                });
+            }
+
+            if (message.playerId.toString() === player._id.toString()) {
+                return player.sendMessage('club/adminRemovePlayerReply', {
+                    ok: false,
+                    info: TianleErrorCode.notRemoveSelf
+                });
+            }
+        }
+
         const clubExtra = await getClubExtra(myClub._id);
-        if (isPartner && membership.leader === player.model.shortId) {
+        if (isPartner && memberShip.leader === player.model.shortId) {
             if (message.operate === 'add') {
                 clubExtra.partnerBlacklist.push(message.playerId);
             } else {
@@ -1145,7 +1238,7 @@ export default {
             return player.sendMessage('club/removePlayerReply', {ok: false, info: TianleErrorCode.noPermission});
         }
 
-        if (myClub.owner === message.playerId) {
+        if (myClub.owner === message.playerId.toString()) {
             return player.sendMessage('club/removePlayerReply', {
                 ok: false,
                 info: TianleErrorCode.notOperateClubCreator
@@ -1161,7 +1254,7 @@ export default {
                 });
             }
 
-            if (message.playerId === player._id) {
+            if (message.playerId === player._id.toString()) {
                 return player.sendMessage('club/adminRemovePlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveSelf
@@ -1226,7 +1319,7 @@ export default {
         if (!myClub) {
             return player.sendMessage('club/promoteAdminReply', {ok: false, info: TianleErrorCode.noPermission});
         }
-        if (myClub.owner === player._id) {
+        if (myClub.owner.toString() === player._id.toString()) {
             return player.sendMessage('club/promoteAdminReply', {
                 ok: false,
                 info: TianleErrorCode.notOperateClubCreator
@@ -1465,9 +1558,6 @@ export default {
     },
     [ClubAction.mergeClub]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.mergeToClubId);
-        if (!myClub && await playerIsAdmin(player.model._id, message.mergeToClubId)) {
-            myClub = await Club.findOne({shortId: message.mergeToClubId});
-        }
         if (!myClub) {
             return player.replyFail(ClubAction.mergeClub, TianleErrorCode.noPermission);
         }
