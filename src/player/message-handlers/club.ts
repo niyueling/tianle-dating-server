@@ -1569,12 +1569,10 @@ async function getRoomCountByGame(club, member, minDate) {
         const record = records[i];
 
         const recordIndex = record.scores.findIndex(s => s && s.shortId === member.shortId);
-        console.warn("recordIndex-%s", recordIndex);
 
         if (recordIndex !== -1) {
-            if (gameCount[record.category]) {
-                gameCount[record.category]++;
-            }
+            console.warn("recordIndex-%s gameCount-%s", recordIndex, gameCount);
+            gameCount[record.category]++;
         }
     }
 
