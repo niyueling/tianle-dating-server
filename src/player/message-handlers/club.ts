@@ -236,6 +236,20 @@ export async function requestToAllClubMember(channel, name, clubId, info) {
         toBuffer({name, payload: info}))
 }
 
+export async function requestToAllMember(channel, name, playerId, info) {
+
+    const player = await Player.findOne({_id: playerId});
+
+    if (!player) {
+        return
+    }
+
+    channel.publish(
+        `exClubCenter`,
+        `user.${playerId}`,
+        toBuffer({name, payload: info}))
+}
+
 function toBuffer(messageJson) {
     return new Buffer(JSON.stringify(messageJson))
 }
@@ -427,8 +441,9 @@ export default {
         }
 
         const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId, type: 1});
-        const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId});
-        return player.replySuccess(ClubAction.getRequestInfo, {requestList: [...clubRequestInfo, ...clubMergeInfo]});
+        const clubMergeFromInfo = await ClubMerge.find({fromClubId: message.clubShortId});
+        const clubMergeToInfo = await ClubMerge.find({toClubId: message.clubShortId});
+        return player.replySuccess(ClubAction.getRequestInfo, {requestList: [...clubRequestInfo, ...clubMergeFromInfo, ...clubMergeToInfo]});
     },
     [ClubAction.dealRequest]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
@@ -574,6 +589,7 @@ export default {
             await mergeFailClubMessage(toClub.name, toClub.shortId, fromClub.owner, alreadyJoinClubs);
 
             await requestToAllClubMember(player.channel, 'club/updateClubRoom', toClub._id.toString(), {});
+            await requestToAllClubMember(player.channel, 'club/updateClubRoom', fromClub._id.toString(), {});
 
             return player.replySuccess(ClubAction.dealClubRequest, {});
         }
@@ -1434,7 +1450,7 @@ export default {
             return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.alreadyJoinClub);
         }
 
-        // await requestToAllClubMember(player.channel, 'clubRequest', haveThisClub._id, {})
+        await requestToAllMember(player.channel, 'club/inviteNormalPlayer', playerInfo._id, {playerId: playerInfo._id})
 
         const record = await ClubRequest.create({
             playerId: playerInfo._id,
@@ -1457,13 +1473,13 @@ async function mergeFailClubMessage(clubName, clubId, playerId, alreadyJoinClubs
         const detail = await service.playerService.getPlayerModel(alreadyJoinClubs[i]);
         msg += `${detail.shortId}(${detail.nickname})、`;
     }
-    msg.slice(0, msg.length - 1);
+    msg = msg.slice(0, msg.length - 1);
 
     const mail = new MailModel({
         to: playerId,
         type: MailType.MESSAGE,
-        title: '合并失败通知',
-        content: `${msg}已加入战队${clubName}(${clubId})`,
+        title: '战队通知',
+        content: `${msg}已在本战队${clubName}(${clubId})`,
         state: MailState.UNREAD,
         createAt: new Date(),
         gift: {diamond: 0, tlGold: 0, gold: 0}
