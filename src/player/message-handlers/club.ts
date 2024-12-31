@@ -1548,8 +1548,7 @@ async function getPartnerDate(type) {
 async function getRoomCountByGame(club, member, minDate) {
 
     const params = {
-        club: club._id, scores: {$ne: []},
-        players: {$ne: []}, createAt: {$gt: minDate}
+        club: club._id, scores: {$ne: []}, createAt: {$gt: minDate}
     }
 
     const records = await RoomRecord
