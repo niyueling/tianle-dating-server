@@ -850,7 +850,7 @@ export default {
         for (const clubMember of clubMembers) {
             const memberInfo = await PlayerModel.findOne({_id: clubMember.member})
             if (memberInfo) {
-                const gameJuCount = await getRoomCountByGame(myClub, clubMember, minDate);
+                const gameJuCount = await getRoomCountByGame(myClub, memberInfo, minDate);
                 const gameJuCountKeys = Object.keys(gameJuCount);
 
                 for (let i = 0; i < gameJuCountKeys.length; i++) {
@@ -1557,8 +1557,6 @@ async function getRoomCountByGame(club, member, minDate) {
         .lean()
         .exec();
 
-    console.warn(records);
-
     const gameCount =  {
         [GameType.zd]: 0,
         [GameType.ddz]: 0,
@@ -1570,7 +1568,10 @@ async function getRoomCountByGame(club, member, minDate) {
     for (let i = 0; i < records.length; i++) {
         const record = records[i];
 
-        if (record.players.includes(member.member)) {
+        const recordIndex = record.scores.findIndex(s => s && s.shortId === member.shortId);
+        console.warn("recordIndex-%s", recordIndex);
+
+        if (recordIndex !== -1) {
             if (gameCount[record.category]) {
                 gameCount[record.category]++;
             }
