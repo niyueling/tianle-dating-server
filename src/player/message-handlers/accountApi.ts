@@ -780,7 +780,7 @@ export class AccountApi extends BaseApi {
             discountGift: {open: payCount === 0, popOpen: payCount === 0, redDot: payCount === 0},
             rechargeParty: {open: rechargeParty.open, popOpen: rechargeParty.popOpen, redDot: rechargeParty.popOpen},
             task: {open: true, popOpen: taskInfo.canReceive, redDot: taskInfo.canReceive},
-            mail: {open: true, popOpen: false, redDot: mails.length > 0}
+            mail: {open: true, popOpen: false, redDot: mails.length > 0, mails}
         };
     }
 
