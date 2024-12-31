@@ -787,7 +787,7 @@ export default {
         for (const clubMember of clubMembers) {
             const memberInfo = await PlayerModel.findOne({_id: clubMember.member})
             if (memberInfo) {
-                if ((isPartner && clubMember.leader === player.model.shortId) || !isPartner) {
+                if ((isPartner && !isAdmin && clubMember.leader === player.model.shortId) || isAdmin) {
                     clubMembersInfo.push({
                         name: memberInfo.nickname,
                         id: memberInfo._id,
