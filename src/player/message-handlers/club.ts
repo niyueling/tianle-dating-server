@@ -1319,16 +1319,16 @@ export default {
         if (!myClub) {
             return player.sendMessage('club/promoteAdminReply', {ok: false, info: TianleErrorCode.noPermission});
         }
-        if (myClub.owner.toString() === player._id.toString()) {
+
+        const member = await PlayerModel.findOne({shortId: message.playerShortId});
+        const memberShip = await ClubMember.findOne({club: myClub._id, member: member._id});
+
+        if (myClub.owner.toString() === member._id.toString()) {
             return player.sendMessage('club/promoteAdminReply', {
                 ok: false,
                 info: TianleErrorCode.notOperateClubCreator
             });
         }
-
-        const member = await PlayerModel.findOne({shortId: message.playerShortId});
-        const memberShip = await ClubMember.findOne({club: myClub._id, member: member._id});
-
         if (!memberShip) {
             return player.sendMessage('club/promoteAdminReply', {ok: false, info: TianleErrorCode.notClubMember})
         }
