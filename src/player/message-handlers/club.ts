@@ -1658,7 +1658,7 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf, isPar
                         rankData.push(pData);
                     }
                 } else if (isPartner) {
-                    if (clubMember.leader && clubMember.leader === player.model.shortId) {
+                    if (clubMember && clubMember.leader === player.model.shortId) {
                         rankData.push(pData);
                     }
                 } else {
@@ -1714,7 +1714,7 @@ async function getRecordRankListByZD(player, message: any, onlyShowMySelf, isPar
                 const joinPlayerInfo = await Player.findOne({shortId: d.shortId});
                 const clubMermber = await ClubMember.findOne({club: club._id, member: joinPlayerInfo._id});
                 // score 不为空
-                if (!d || (onlyShowMySelf && d.shortId !== player.model.shortId) || (isPartner && clubMermber.leader && !clubMermber.leader === player.model.shortId)) {
+                if (!d || (onlyShowMySelf && d.shortId !== player.model.shortId) || (isPartner && clubMermber && clubMermber.leader === player.model.shortId)) {
                     continue;
                 }
                 let tempIndex = rankData.findIndex(x => x.shortId === d.shortId);
@@ -1834,8 +1834,7 @@ async function getRecordListZD(player, message: any) {
 
             const joinPlayerInfo = await Player.findOne({shortId: score.shortId});
             const clubMermber = await ClubMember.findOne({club: club._id, member: joinPlayerInfo._id});
-            console.warn("clubMermber-%s", JSON.stringify(clubMermber));
-            if (clubMermber.leader && clubMermber.leader === player.model.shortId && isClubPartner) {
+            if (clubMermber && clubMermber.leader === player.model.shortId && isClubPartner) {
                 isTeamRecord = true;
             }
 
