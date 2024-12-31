@@ -208,8 +208,6 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
             ip = this.getIpAddress();
         }
 
-// console.error("ip-%s", ip);
-
         try {
             const res = await service.base.curl(`https://ips.market.alicloudapi.com/iplocaltion?ip=${ip}`, {
                 method: "get",
@@ -217,8 +215,6 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
                     Authorization: "APPCODE " + config.ipConfig.appCode
                 }
             });
-
-            // console.warn("response-%s", JSON.stringify(res));
 
             if (res.status === 200) {
                 return JSON.parse(res.data);
@@ -432,6 +428,21 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
                         }
 
                       return;
+                    }
+
+                    // 通知战队主合并结果
+                    if (messageBody.name === 'club/sendMergeResult') {
+                        let msg = '';
+                        for (let i = 0; i < messageBody.payload.alreadyJoinClubs.length; i++) {
+                            const detail = await service.playerService.getPlayerModel(messageBody.payload.alreadyJoinClubs[i]);
+                            msg += `${detail.shortId}(${detail.nickname})、`;
+                        }
+                        msg = msg.slice(0, msg.length - 1);
+                        msg += `已在本战队${messageBody.payload.clubInfo.name}(${messageBody.payload.clubInfo.shortId})`;
+
+                        this.sendMessage("account/sendMergeResultReply", {ok: true, data: msg});
+
+                        return;
                     }
 
                     // 加入俱乐部房间通知用户

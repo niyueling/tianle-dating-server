@@ -236,7 +236,7 @@ export async function requestToAllClubMember(channel, name, clubId, info) {
         toBuffer({name, payload: info}))
 }
 
-export async function requestToAllMember(channel, name, playerId, info) {
+export async function requestToUserCenter(channel, name, playerId, info) {
 
     const player = await Player.findOne({_id: playerId});
 
@@ -589,7 +589,10 @@ export default {
             await mergeFailClubMessage(toClub.name, toClub.shortId, fromClub.owner, alreadyJoinClubs);
 
             await requestToAllClubMember(player.channel, 'club/updateClubRoom', toClub._id.toString(), {});
-            await requestToAllClubMember(player.channel, 'club/updateClubRoom', fromClub._id.toString(), {});
+
+            if (alreadyJoinClubs.length > 0) {
+                await requestToUserCenter(player.channel, 'club/sendMergeResult', fromClub.owner, {alreadyJoinClubs, clubInfo: toClub})
+            }
 
             return player.replySuccess(ClubAction.dealClubRequest, {});
         }
@@ -1450,7 +1453,7 @@ export default {
             return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.alreadyJoinClub);
         }
 
-        await requestToAllMember(player.channel, 'club/invitePlayerMessage', playerInfo._id, {playerId: playerInfo._id})
+        await requestToUserCenter(player.channel, 'club/invitePlayerMessage', playerInfo._id, {playerId: playerInfo._id})
 
         const record = await ClubRequest.create({
             playerId: playerInfo._id,
