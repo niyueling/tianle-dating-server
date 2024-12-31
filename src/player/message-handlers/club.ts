@@ -1086,27 +1086,40 @@ export default {
     },
     [ClubAction.operateBlackList]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
-        if (!myClub && (await playerIsAdmin(player.model._id, message.clubShortId) || await playerIsPartner(player.model._id, message.clubShortId))) {
+        const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
+        const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
+        if (!myClub && (isAdmin || isPartner)) {
             myClub = await Club.findOne({shortId: message.clubShortId});
         }
 
         if (!myClub) {
-            player.sendMessage('club/operateBlackListReply', {ok: false, info: TianleErrorCode.notClubAdmin});
-            return
+            return player.sendMessage('club/operateBlackListReply', {ok: false, info: TianleErrorCode.notClubAdmin});
         }
         if (myClub.owner === message.playerId) {
-            player.sendMessage('club/operateBlackListReply', {ok: false, info: TianleErrorCode.notOperateClubCreator});
-            return
+            return player.sendMessage('club/operateBlackListReply', {ok: false, info: TianleErrorCode.notOperateClubCreator});
         }
+
+        const membership = await ClubMember.findOne({club: myClub._id, member: message.playerId});
+        if (!membership) {
+            return player.sendMessage('club/renameClubPlayerReply', {ok: false, info: TianleErrorCode.notClubPlayer});
+        }
+
         const clubExtra = await getClubExtra(myClub._id);
-        let blacklist = clubExtra.blacklist;
-        if (message.operate === 'add') {
-            blacklist.push(message.playerId);
+        if (isPartner && membership.leader === player.model.shortId) {
+            if (message.operate === 'add') {
+                clubExtra.partnerBlacklist.push(message.playerId);
+            } else {
+                clubExtra.partnerBlacklist = clubExtra.partnerBlacklist.filter(x => x !== message.playerId);
+            }
         } else {
-            blacklist = blacklist.filter(x => x !== message.playerId);
+            if (message.operate === 'add') {
+                clubExtra.blacklist.push(message.playerId);
+            } else {
+                clubExtra.blacklist = clubExtra.blacklist.filter(x => x !== message.playerId);
+            }
         }
-        clubExtra.blacklist = blacklist;
         await clubExtra.save();
+
         player.sendMessage('club/operateBlackListReply', {ok: true, data: {}});
     },
     [ClubAction.removePlayer]: async (player, message) => {
