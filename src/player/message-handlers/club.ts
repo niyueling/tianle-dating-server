@@ -245,7 +245,7 @@ export async function requestToAllMember(channel, name, playerId, info) {
     }
 
     channel.publish(
-        `exClubCenter`,
+        `userCenter`,
         `user.${playerId}`,
         toBuffer({name, payload: info}))
 }
