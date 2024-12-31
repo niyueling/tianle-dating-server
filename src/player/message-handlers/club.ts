@@ -861,8 +861,10 @@ export default {
                     clubMembersInfo.push({
                         name: memberInfo.nickname,
                         id: memberInfo._id,
+                        isPartnerBlack: clubExtra.partnerBlacklist.includes(memberInfo._id.toString()),
                         isBlack: clubExtra.blacklist.includes(memberInfo._id.toString()),
                         rename: clubExtra.renameList[clubMember.member] || "",
+                        partnerRename: clubExtra.partnerRenameList[clubMember.member] || "",
                         headImage: memberInfo.avatar,
                         diamond: memberInfo.diamond,
                         clubGold: clubMember.clubGold,

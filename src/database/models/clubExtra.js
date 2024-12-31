@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const ClubExtraSchema = new mongoose.Schema({
     clubId: { type: String, required: true, ref: 'club' },
     blacklist: { type: Array, default: [] },
+    partnerBlacklist: { type: Array, default: [] },
     renameList: { type: Object, default: {} },
     partnerRenameList: { type: Object, default: {} },
     createAt: { type: Date, required: true, default: Date.now },
