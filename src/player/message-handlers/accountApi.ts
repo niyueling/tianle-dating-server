@@ -747,9 +747,9 @@ export class AccountApi extends BaseApi {
         const taskInfo = await service.playerService.getDailyTaskData(user);
 
         // 邮件
-        let publicMails = await PublicMailModel.find({state: MailState.UNREAD}).sort({createAt: -1}).lean().exec();
+        let publicMails = await PublicMailModel.find().sort({createAt: -1}).lean().exec();
 
-        const privateMails = await MailModel.find({to: user._id}).sort({createAt: -1}).lean().exec()
+        const privateMails = await MailModel.find({to: user._id, state: MailState.UNREAD}).sort({createAt: -1}).lean().exec()
 
         const publicMailRecords = await PublicMailRecordModel.find({
             player: user._id
