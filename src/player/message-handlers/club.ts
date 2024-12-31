@@ -1562,6 +1562,15 @@ export default {
             return player.replyFail(ClubAction.mergeClub, TianleErrorCode.noPermission);
         }
 
+        const clubMerge = await ClubMerge.findOne({
+            fromClubId: message.mergeFromClubId,
+            toClubId: message.mergeToClubId,
+            status: 0
+        });
+        if (clubMerge) {
+            return player.replyFail(ClubAction.request, TianleErrorCode.alreadyApplyMergeClub);
+        }
+
         // 查询想要合并的战队
         const mergeFromClub = await Club.findOne({shortId: message.mergeFromClubId});
         if (!mergeFromClub) {
