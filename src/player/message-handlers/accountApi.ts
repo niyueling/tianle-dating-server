@@ -12,7 +12,13 @@ import PlayerManager from "../player-manager";
 import {addApi, BaseApi} from "./baseApi";
 import WatchAdverRecord from "../../database/models/watchAdverRecord";
 import {pick} from "lodash/lodash";
-import Mail from "../../database/models/mail";
+import Mail, {
+    GiftState,
+    MailModel,
+    MailState,
+    PublicMailModel,
+    PublicMailRecordModel
+} from "../../database/models/mail";
 import TurntablePrizeRecord from "../../database/models/turntablePrizeRecord";
 import CardTable from "../../database/models/CardTable";
 import PlayerCardTable from "../../database/models/PlayerCardTable";
@@ -740,6 +746,32 @@ export class AccountApi extends BaseApi {
         // 成就
         const taskInfo = await service.playerService.getDailyTaskData(user);
 
+        // 邮件
+        let publicMails = await PublicMailModel.find({state: MailState.UNREAD}).sort({createAt: -1}).lean().exec();
+
+        const privateMails = await MailModel.find({to: user._id}).sort({createAt: -1}).lean().exec()
+
+        const publicMailRecords = await PublicMailRecordModel.find({
+            player: user._id
+        }).lean().exec()
+
+        publicMails.forEach(mail => {
+            const rec = publicMailRecords.find(r => r.mail === mail._id.toString())
+            if (!rec) {
+                mail.state = MailState.UNREAD
+                mail.giftState = GiftState.AVAILABLE
+            } else {
+                mail.state = rec.state
+                mail.giftState = rec.giftState || GiftState.AVAILABLE
+            }
+        })
+
+        const mails = publicMails.filter(m => m.state === MailState.UNREAD).concat(privateMails);
+
+        mails.sort(function (a, b) {
+            return b.createAt.getTime() - a.createAt.getTime()
+        })
+
         return {
             sevenLogin: {open: true, popOpen: sevenLoginCount === 0, redDot: sevenLoginCount === 0},
             turnTable: {popOpen: user.turntableTimes > 0, open: true, redDot: user.turntableTimes > 0},
@@ -747,7 +779,8 @@ export class AccountApi extends BaseApi {
             newGift: {open: newGift.open, popOpen: newGift.popOpen, redDot: newGift.popOpen},
             discountGift: {open: payCount === 0, popOpen: payCount === 0, redDot: payCount === 0},
             rechargeParty: {open: rechargeParty.open, popOpen: rechargeParty.popOpen, redDot: rechargeParty.popOpen},
-            task: {open: true, popOpen: taskInfo.canReceive, redDot: taskInfo.canReceive}
+            task: {open: true, popOpen: taskInfo.canReceive, redDot: taskInfo.canReceive},
+            mail: {open: true, popOpen: false, redDot: mails.length > 0}
         };
     }
 
