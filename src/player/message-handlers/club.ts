@@ -830,6 +830,8 @@ export default {
         minDate.setMilliseconds(0);
         minDate.setDate(minDate.getDate() - await getPartnerDate(message.type));
 
+        console.warn("day-%s, minDate-%s", await getPartnerDate(message.type), minDate);
+
         const params = {club: myClub._id, partner: true};
         if (message.playerShortId) {
             const searchInfo = await PlayerModel.findOne({shortId: message.playerShortId});
