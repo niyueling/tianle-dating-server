@@ -1450,7 +1450,7 @@ export default {
             return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.alreadyJoinClub);
         }
 
-        await requestToAllMember(player.channel, 'club/inviteNormalPlayer', playerInfo._id, {playerId: playerInfo._id})
+        await requestToAllMember(player.channel, 'club/invitePlayerMessage', playerInfo._id, {playerId: playerInfo._id})
 
         const record = await ClubRequest.create({
             playerId: playerInfo._id,

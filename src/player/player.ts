@@ -45,6 +45,9 @@ import {IPlayerModel, ISocketPlayer} from "./ISocketPlayer";
 import {GameTypes} from "../match/gameTypes";
 import * as uuid from 'uuid'
 import createClient from "../utils/redis"
+import ClubRequest from "../database/models/clubRequest";
+import Club from "../database/models/club";
+import Player from "../database/models/player";
 
 const isTokenValid = async (apiName, token, player) => {
     if (!config.jwt.needNotToken.includes(apiName)) {
@@ -413,8 +416,21 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
                     }
 
                     // 通知用户有人邀请加入战队
-                    if (messageBody.name === 'club/inviteNormalPlayer') {
-                      this.sendMessage('club/inviteNormalPlayerReply', {ok: true, data: {_id: this._id, payload: messageBody.payload}});
+                    if (messageBody.name === 'club/invitePlayerMessage') {
+                        const clubRequestInfo = await ClubRequest.find({type: 3, playerId: this._id, status: 0}).lean();
+
+                        for (let i = 0; i < clubRequestInfo.length; i++) {
+                            clubRequestInfo[i].clubInfo = await Club.findOne({shortId: clubRequestInfo[i].clubShortId});
+
+                            if (clubRequestInfo[i].partner) {
+                                clubRequestInfo[i].partnerInfo = await Player.findOne({shortId: clubRequestInfo[i].partner});
+                            }
+                        }
+
+                        if (clubRequestInfo.length > 0) {
+                            this.sendMessage("account/sendInviteClubMessagesReply", {ok: true, data: clubRequestInfo});
+                        }
+
                       return;
                     }
 
