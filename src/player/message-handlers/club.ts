@@ -1551,12 +1551,14 @@ async function getRoomCountByGame(club, member, minDate) {
         club: club._id, scores: {$ne: []},
         players: {$ne: []}, createAt: {$gt: minDate}
     }
-    console.warn(params);
+
     const records = await RoomRecord
         .find(params)
         .sort({createAt: -1})
         .lean()
         .exec();
+
+    console.warn(records);
 
     const gameCount =  {
         [GameType.zd]: 0,
