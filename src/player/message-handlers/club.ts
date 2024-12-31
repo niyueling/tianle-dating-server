@@ -898,14 +898,13 @@ export default {
     [ClubAction.rename]: async (player, message) => {
         const myClub = await getOwnerClub(player.model._id, message.clubShortId);
         if (!myClub) {
-            player.replyFail(ClubAction.rename, TianleErrorCode.noPermission);
-            return
+            return player.replyFail(ClubAction.rename, TianleErrorCode.noPermission);
         }
         const playerInfo = await PlayerModel.findOne({_id: player.model._id})
         // 检查房卡
         const renameConfig = await GlobalConfig.findOne({name: "renameClubDiamond"}).lean();
         const requiredDiamond = renameConfig ? Number(renameConfig.value) : 200;
-        if (playerInfo.diamond < requiredDiamond) {
+        if (playerInfo.diamond < requiredDiamond && myClub.freeRenameCount === 0) {
             return player.replyFail(ClubAction.rename, TianleErrorCode.diamondInsufficient);
         }
 
@@ -917,9 +916,14 @@ export default {
         const oldName = myClub.name;
         myClub.name = message.newClubName;
         await myClub.save();
-        const remainDiamond = playerInfo.diamond - requiredDiamond;
-        await PlayerModel.update({_id: player.model._id}, {$set: {diamond: remainDiamond}}).exec();
-        player.replySuccess(ClubAction.rename, {diamond: remainDiamond, clubName: myClub.name});
+
+        if (playerInfo.freeRenameCount > 0) {
+            await PlayerModel.update({_id: player.model._id}, {$inc: {freeRenameCount: -1}}).exec();
+        } else {
+            await PlayerModel.update({_id: player.model._id}, {$inc: {diamond: -requiredDiamond}}).exec();
+        }
+
+        player.replySuccess(ClubAction.rename, {diamond: playerInfo.diamond - requiredDiamond, clubName: myClub.name});
         await player.updateResource2Client();
         // 添加日志
         await logRename(myClub._id, oldName, myClub.name, playerInfo._id);
