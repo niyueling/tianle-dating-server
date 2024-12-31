@@ -524,6 +524,8 @@ export default {
             // 删除小战队战队信息
             await Club.remove({_id: fromClub._id});
 
+            const alreadyJoinClubs = [];
+
             // 将小战队的成员并入大战队
             for (let i = 0; i < fromClubMembers.length; i++) {
                 const member = fromClubMembers[i];
@@ -537,6 +539,11 @@ export default {
                     if (clubMember.member === fromClub.owner && !clubMember.partner) {
                         clubMember.partner = true;
                         await clubMember.save();
+                    }
+
+                    // 如果小战队成员已经加入战队
+                    if (clubMember.member !== fromClub.owner) {
+                        alreadyJoinClubs.push(clubMember.member);
                     }
 
                     continue;
@@ -563,6 +570,8 @@ export default {
 
                 await ClubMember.create(params);
             }
+
+            await mergeFailClubMessage(toClub.name, toClub.shortId, fromClub.owner, alreadyJoinClubs);
 
             await requestToAllClubMember(player.channel, 'club/updateClubRoom', toClub._id.toString(), {});
 
@@ -1441,7 +1450,28 @@ export default {
     },
 }
 
-// 邮件通知新成员加入
+// 邮件通知成员合并失败
+async function mergeFailClubMessage(clubName, clubId, playerId, alreadyJoinClubs) {
+    let msg = '';
+    for (let i = 0; i < alreadyJoinClubs.length; i++) {
+        const detail = await service.playerService.getPlayerModel(alreadyJoinClubs[i]);
+        msg += `${detail.shortId}(${detail.nickname})、`;
+    }
+    msg.slice(0, msg.length - 1);
+
+    const mail = new MailModel({
+        to: playerId,
+        type: MailType.MESSAGE,
+        title: '合并失败通知',
+        content: `${msg}已加入战队${clubName}(${clubId})`,
+        state: MailState.UNREAD,
+        createAt: new Date(),
+        gift: {diamond: 0, tlGold: 0, gold: 0}
+    })
+    await mail.save();
+}
+
+// 邮件通知拒绝成员加入
 async function refuseNewPlayerJoin(clubName, clubId, playerInfo) {
     const mail = new MailModel({
         to: playerInfo._id,
@@ -1571,7 +1601,6 @@ async function getRoomCountByGame(club, member, minDate) {
         const recordIndex = record.scores.findIndex(s => s && s.shortId === member.shortId);
 
         if (recordIndex !== -1) {
-            console.warn("recordIndex-%s gameCount-%s", recordIndex, gameCount);
             gameCount[record.category]++;
         }
     }
