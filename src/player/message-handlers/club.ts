@@ -431,17 +431,11 @@ export default {
         return player.replySuccess(ClubAction.leave, {});
     },
     [ClubAction.getRequestInfo]: async (player, message) => {
-        let myClub = await getOwnerClub(player.model._id, message.clubShortId);
-        if (!myClub && await playerIsAdmin(player.model._id, message.clubShortId)) {
-            myClub = await Club.findOne({shortId: message.clubShortId});
-        }
-        if (!myClub) {
-            return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.notClubAdmin);
-        }
-        if (myClub.shortId !== message.clubShortId) {
-            return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.noPermission);
-        }
+        let myClub = await Club.findOne({shortId: message.clubShortId});
 
+        if (!myClub) {
+            return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.clubNotExists);
+        }
         const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId, type: 1});
         const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId});
         const clubMessageInfo = await ClubMessage.find({clubShortId: message.clubShortId, playerId: player.model._id});
@@ -701,10 +695,33 @@ export default {
             player.model.joinClubShortIds = playerShortIds;
         }
 
+        const totalClubdIds = [...new Set([...player.model.joinClubShortIds, ...player.model.myClub])];
+        // 获取是否有未读消息
+        const unReadMessageIds = [];
+        for (let i = 0; i < totalClubdIds.length; i++) {
+            const clubShortId = totalClubdIds[i];
+            const isAdmin = await playerIsAdmin(player.model._id, clubShortId);
+            let messageLists = [];
+            const clubMessageInfo = await ClubMessage.find({clubShortId, playerId: player.model._id, state: 1});
+            messageLists = [...messageLists, ...clubMessageInfo];
+
+            if (isAdmin) {
+                const clubRequestInfo = await ClubRequest.find({clubShortId, type: 1, status: 0});
+                const clubMergeInfo = await ClubMerge.find({fromClubId: clubShortId, status: 0});
+                messageLists = [...messageLists, ...clubRequestInfo, ...clubMergeInfo];
+            }
+
+            if (messageLists.length > 0) {
+                unReadMessageIds.push(clubShortId);
+            }
+        }
+
+
         player.sendMessage('club/updatePlayerInfoReply', {
             ok: true, data: {
                 joinClubShortId: player.model.joinClubShortIds,
-                myClub: player.model.myClub
+                myClub: player.model.myClub,
+                unReadMessageIds
             }
         });
     },
