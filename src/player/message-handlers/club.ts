@@ -1834,6 +1834,7 @@ async function getRecordListZD(player, message: any) {
 
             const joinPlayerInfo = await Player.findOne({shortId: score.shortId});
             const clubMermber = await ClubMember.findOne({club: club._id, member: joinPlayerInfo._id});
+            console.warn("clubMermber-%s", JSON.stringify(clubMermber));
             if (clubMermber.leader && clubMermber.leader === player.model.shortId && isClubPartner) {
                 isTeamRecord = true;
             }
