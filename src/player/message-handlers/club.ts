@@ -1158,9 +1158,9 @@ export default {
         if (!memberShip) {
             return player.sendMessage('club/promotePartnerReply', {ok: false, info: TianleErrorCode.notClubMember})
         }
-        // if (club.owner.toString() === member._id.toString()) {
-        //     return player.sendMessage('club/promotePartnerReply', {ok: false, info: TianleErrorCode.notOperateClubCreator})
-        // }
+        if (club.owner.toString() === member._id.toString()) {
+            return player.sendMessage('club/promotePartnerReply', {ok: false, info: TianleErrorCode.notOperateClubCreator})
+        }
 
         memberShip.partner = message.type === "add";
         await memberShip.save();
