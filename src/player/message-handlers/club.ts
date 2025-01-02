@@ -1093,7 +1093,7 @@ export default {
             console.warn("playerId-%s, rename-%s, partnerRenameList-%s", message.playerId, message.rename, JSON.stringify(renameList));
             await ClubExtra.update({clubId: myClub._id}, {$set: {partnerRenameList: renameList}})
         } else {
-            const renameList = clubExtra.renameList;
+            const renameList = clubExtra.renameList.slice();
             renameList[message.playerId] = message.rename;
             console.warn("playerId-%s, rename-%s, renameList-%s", message.playerId, message.rename, JSON.stringify(renameList));
             await ClubExtra.update({clubId: myClub._id}, {$set: {renameList}})
