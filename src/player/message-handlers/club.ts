@@ -165,7 +165,7 @@ async function getOwnerClub(playerId, clubShortId) {
 }
 
 export async function getClubExtra(clubId) {
-    let clubExtra = await ClubExtra.findOne({clubId});
+    let clubExtra = await ClubExtra.findOne({clubId}).lean();
     if (!clubExtra) {
         clubExtra = await ClubExtra.create({
             clubId
@@ -1196,8 +1196,7 @@ export default {
         const clubExtra = await getClubExtra(myClub._id);
         let blacklist = clubExtra.blacklist;
         blacklist = blacklist.filter(x => x !== transferee._id.toString());
-        clubExtra.blacklist = blacklist;
-        await clubExtra.save();
+        await ClubExtra.update({clubId: myClub._id}, {$set: {blacklist}})
 
         player.replySuccess(ClubAction.transfer, {diamond: playerInfo.diamond - outDiamond});
         await player.updateResource2Client();
@@ -1283,14 +1282,15 @@ export default {
             } else {
                 clubExtra.partnerBlacklist = clubExtra.partnerBlacklist.filter(x => x !== message.playerId);
             }
+            await ClubExtra.update({clubId: myClub._id}, {$set: {partnerBlacklist: clubExtra.partnerBlacklist}})
         } else {
             if (message.operate === 'add') {
                 clubExtra.blacklist.push(message.playerId);
             } else {
                 clubExtra.blacklist = clubExtra.blacklist.filter(x => x !== message.playerId);
             }
+            await ClubExtra.update({clubId: myClub._id}, {$set: {blacklist: clubExtra.blacklist}})
         }
-        await clubExtra.save();
 
         player.sendMessage('club/operateBlackListReply', {ok: true, data: {}});
     },
