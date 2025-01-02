@@ -306,7 +306,6 @@ export class AccountApi extends BaseApi {
         model.disconnectedRoom = false
         const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
         if (disconnectedRoom) {
-            console.warn("disconnectedRoom-%s", JSON.stringify(disconnectedRoom));
             model.disconnectedRoom = true;
         }
 
@@ -397,10 +396,9 @@ export class AccountApi extends BaseApi {
             }
         }
 
-        const ObjectId = mongoose.Types.ObjectId
         const playerInClub = await ClubMember.findOne({member: model._id});
         if (playerInClub) {
-            const club = await Club.findOne({_id: ObjectId(playerInClub.club)});
+            const club = await Club.findOne({_id: playerInClub.club});
             model.clubShortId = club.shortId;
         }
 

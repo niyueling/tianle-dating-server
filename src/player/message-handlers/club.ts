@@ -1673,17 +1673,6 @@ async function mergeFailClubMessage(clubName, clubId, playerId, alreadyJoinClubs
         playerShortId: clubOwnerInfo.shortId,
         message: `${msg}已在本战队${clubName}(${clubId})`
     });
-
-    // const mail = new MailModel({
-    //     to: playerId,
-    //     type: MailType.MESSAGE,
-    //     title: '战队通知',
-    //     content: `${msg}已在本战队${clubName}(${clubId})`,
-    //     state: MailState.UNREAD,
-    //     createAt: new Date(),
-    //     gift: {diamond: 0, tlGold: 0, gold: 0}
-    // })
-    // await mail.save();
 }
 
 // 邮件通知拒绝成员加入
