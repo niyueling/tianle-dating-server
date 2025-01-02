@@ -294,7 +294,6 @@ export default class PlayerService extends BaseService {
         data["province"] = result.data.result.prov;
         data["city"] = result.data.result.city;
       }
-      console.warn("getLocation-%s", JSON.stringify(result));
       user = await Player.create(data);
       const playerManager = PlayerManager.getInstance();
       // 检查重复登录

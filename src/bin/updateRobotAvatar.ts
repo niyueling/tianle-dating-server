@@ -19,8 +19,6 @@ async function updateRobotAvatar() {
 
     await players[i].save();
   }
-
-  console.warn(datas);
 }
 
 

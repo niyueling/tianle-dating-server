@@ -173,7 +173,6 @@ export async function getClubExtra(clubId) {
 }
 
 async function getClubRooms(clubId, gameType = null) {
-    console.warn("clubId-%s, gameType-%s", clubId, gameType);
     let clubRooms = [];
     const redis = createClient();
     const roomNumbers = await redis.smembersAsync('clubRoom:' + clubId);
@@ -897,7 +896,8 @@ export default {
                         clubGold: clubMember.clubGold,
                         shortId: memberInfo.shortId,
                         isAdmin: clubMember.role === 'admin',
-                        isPartner: clubMember.partner
+                        isPartner: clubMember.partner,
+                        isClubOwner: clubMember.member.toString() === myClub.owner.toString()
                     })
                 }
             }
@@ -1802,7 +1802,6 @@ async function hasRulePermission(clubId, playerId) {
         // 俱乐部不存在
         return false;
     }
-    console.warn("owner-%s playerId-%s status-%s", myClub.owner, playerId, myClub.owner === playerId.toString());
     if (myClub.owner === playerId.toString()) {
         // 创建者
         return true;

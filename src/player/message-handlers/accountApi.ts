@@ -273,7 +273,6 @@ export class AccountApi extends BaseApi {
         }
 
         const userInfo = await service.playerService.checkUserRegist(player, data);
-        console.warn("userInfo-%s", JSON.stringify(userInfo));
 
         const sendFunc = async () => {
             await this.sendInviteClubMessages(userInfo);

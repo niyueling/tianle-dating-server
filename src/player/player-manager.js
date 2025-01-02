@@ -22,7 +22,6 @@ class PlayerManager {
 
   static injectRmqConnection(rmqConnection) {
     connection = rmqConnection;
-    console.warn(connection);
   }
 
   // for test
