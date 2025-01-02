@@ -1121,8 +1121,9 @@ export default {
         myClub.name = message.newClubName;
         await myClub.save();
 
-        if (playerInfo.freeRenameCount > 0) {
-            await PlayerModel.update({_id: player.model._id}, {$inc: {freeRenameCount: -1}}).exec();
+        if (myClub.freeRenameCount > 0) {
+            myClub.freeRenameCount--;
+            await myClub.save();
         } else {
             await PlayerModel.update({_id: player.model._id}, {$inc: {diamond: -requiredDiamond}}).exec();
         }
