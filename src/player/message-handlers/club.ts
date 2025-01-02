@@ -89,6 +89,8 @@ export const enum ClubAction {
     deleteMessage = 'club/deleteMessage',
     // 已读消息
     readMessage = 'club/readMessage',
+    // 解散战队
+    disband = 'club/disband',
 }
 
 export async function getClubInfo(clubId, player?) {
@@ -629,6 +631,18 @@ export default {
         }
 
         return player.replyFail(ClubAction.dealClubRequest, TianleErrorCode.requestError);
+    },
+    [ClubAction.disband]: async (player, message) => {
+        const club = await getOwnerClub(player.model._id, message.clubShortId);
+        if (!club) {
+            return player.replyFail(ClubAction.disband, TianleErrorCode.noPermission);
+        }
+
+        await ClubMember.remove({club: club._id});
+        await Club.remove({_id: club._id});
+        await clubDisbandMessage(club.name, club.shortId, club.owner);
+
+        return player.replySuccess(ClubAction.disband, {});
     },
     [ClubAction.dealClubInviteRequest]: async (player, message) => {
         const clubInfo = await Club.findOne({shortId: message.clubShortId});
@@ -1663,6 +1677,19 @@ export default {
 
         return player.replySuccess(ClubAction.inviteNormalPlayer, record);
     },
+}
+
+// 邮件通知战队解散
+async function clubDisbandMessage(clubName, clubId, playerId) {
+    const clubOwnerInfo = await Player.findOne({_id: playerId});
+    await clubMessage.create({
+        playerId: playerId,
+        clubShortId: clubId,
+        playerName: clubOwnerInfo.nickname,
+        avatar: clubOwnerInfo.avatar,
+        playerShortId: clubOwnerInfo.shortId,
+        message: `您的战队${clubName}(${clubId})已解散!`
+    });
 }
 
 // 邮件通知成员合并失败
