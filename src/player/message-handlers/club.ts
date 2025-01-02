@@ -112,6 +112,7 @@ export async function getClubInfo(clubId, player?) {
     const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
     const clubRule = await getClubRule(playerClub);
     const currentClubPlayerGold = currentClubMemberShip && currentClubMemberShip.clubGold || 0;
+    const unReadMessage = await getUnReadMessage(player);
     const clubInfo = {
         diamond: clubOwner.diamond,
         name: clubOwner.nickname,
@@ -122,7 +123,7 @@ export async function getClubInfo(clubId, player?) {
         publicRule: clubRule.publicRule
     }
 
-    return {ok: true, data: {roomInfo: room, clubInfo, clubs, isAdmin: !!isAdmin, isPartner: !!isPartner, isClubOwner}};
+    return {ok: true, data: {roomInfo: room, clubInfo, unReadMessage, clubs, isAdmin: !!isAdmin, isPartner: !!isPartner, isClubOwner}};
 }
 
 export async function getPlayerClub(playerId, clubId?: string) {
@@ -319,6 +320,48 @@ export async function createNewClub(playerInfo, leavePlayers) {
     return true;
 }
 
+export async function getUnReadMessage(player) {
+    const ownerClub = await Club.find({owner: player.model._id});
+    const tempClub = [];
+    if (ownerClub && ownerClub.length > 0) {
+        // 存在俱乐部
+        ownerClub.forEach(c => {
+            tempClub.push(c.shortId);
+        })
+    }
+
+    const myClub = tempClub;
+    let joinClubShortIds = [];
+
+    const playerShortIds = await getPlayerJoinClub(player.model._id);
+    if (playerShortIds) {
+        joinClubShortIds = playerShortIds;
+    }
+
+    const totalClubdIds = [...new Set([...joinClubShortIds, ...myClub])];
+    // 获取是否有未读消息
+    const unReadMessageIds = [];
+    for (let i = 0; i < totalClubdIds.length; i++) {
+        const clubShortId = totalClubdIds[i];
+        const isAdmin = await playerIsAdmin(player.model._id, clubShortId);
+        let messageLists = [];
+        const clubMessageInfo = await ClubMessage.find({clubShortId, playerId: player.model._id, state: 1});
+        messageLists = [...messageLists, ...clubMessageInfo];
+
+        if (isAdmin) {
+            const clubRequestInfo = await ClubRequest.find({clubShortId, type: 1, status: 0});
+            const clubMergeInfo = await ClubMerge.find({fromClubId: clubShortId, status: 0});
+            messageLists = [...messageLists, ...clubRequestInfo, ...clubMergeInfo];
+        }
+
+        if (messageLists.length > 0) {
+            unReadMessageIds.push(clubShortId);
+        }
+    }
+
+    return unReadMessageIds;
+}
+
 export default {
     [ClubAction.request]: async (player, message) => {
         const alreadyJoinedClubs = await ClubMember.count({member: player.model._id}).lean()
@@ -383,6 +426,7 @@ export default {
         const clubOwner = await PlayerModel.findOne({_id: clubOwnerId}).sort({nickname: 1});
         const clubRule = await getClubRule(playerClub, message.gameType);
         const currentClubPlayerGold = currentClubMemberShip && currentClubMemberShip.clubGold || 0;
+        const unReadMessage = await getUnReadMessage(player);
         const clubInfo = {
             diamond: clubOwner.diamond,
             name: clubOwner.nickname,
@@ -395,7 +439,7 @@ export default {
 
         await player.listenClub(playerClub._id);
 
-        return player.replySuccess(ClubAction.getInfo, {roomInfo: room, clubInfo, clubs, isAdmin: !!isAdmin, isPartner: !!isPartner, isClubOwner});
+        return player.replySuccess(ClubAction.getInfo, {roomInfo: room, clubInfo, unReadMessage, clubs, isAdmin: !!isAdmin, isPartner: !!isPartner, isClubOwner});
     },
     [ClubAction.leave]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
