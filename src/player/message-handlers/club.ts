@@ -894,6 +894,7 @@ export default {
                         headImage: memberInfo.avatar,
                         diamond: memberInfo.diamond,
                         clubGold: clubMember.clubGold,
+                        leader: clubMember.leader,
                         shortId: memberInfo.shortId,
                         isAdmin: clubMember.role === 'admin',
                         isPartner: clubMember.partner,
