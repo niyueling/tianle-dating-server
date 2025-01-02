@@ -165,7 +165,7 @@ async function getOwnerClub(playerId, clubShortId) {
 }
 
 export async function getClubExtra(clubId) {
-    let clubExtra = await ClubExtra.findOne({clubId}).lean();
+    let clubExtra = await ClubExtra.findOne({clubId});
     if (!clubExtra) {
         clubExtra = await ClubExtra.create({
             clubId
@@ -1094,7 +1094,7 @@ export default {
         } else {
             const renameList = clubExtra.renameList;
             renameList[message.playerId] = message.rename;
-            console.warn("renameList-%s playerId-%s", JSON.stringify(renameList), message.playerId);
+            console.warn("playerId-%s, rename-%s, renameList-%s", message.playerId, message.rename, JSON.stringify(renameList));
             await ClubExtra.update({clubId: myClub._id}, {$set: {renameList}})
         }
 
