@@ -438,10 +438,20 @@ export default {
         if (!myClub) {
             return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.clubNotExists);
         }
-        const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId, type: 1});
-        const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId});
+
+        const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
+
+        let messageLists = [];
         const clubMessageInfo = await ClubMessage.find({clubShortId: message.clubShortId, playerId: player.model._id});
-        return player.replySuccess(ClubAction.getRequestInfo, {requestList: [...clubRequestInfo, ...clubMergeInfo, ...clubMessageInfo]});
+        messageLists = [...messageLists, ...clubMessageInfo];
+
+        if (isAdmin) {
+            const clubRequestInfo = await ClubRequest.find({clubShortId: message.clubShortId, type: 1});
+            const clubMergeInfo = await ClubMerge.find({fromClubId: message.clubShortId});
+            messageLists = [...messageLists, ...clubRequestInfo, ...clubMergeInfo];
+        }
+
+        return player.replySuccess(ClubAction.getRequestInfo, {requestList: messageLists});
     },
     [ClubAction.dealRequest]: async (player, message) => {
         const club = await Club.findOne({shortId: message.clubShortId})
