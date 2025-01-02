@@ -117,6 +117,7 @@ export async function getClubInfo(clubId, player?) {
         name: clubOwner.nickname,
         clubGold: currentClubPlayerGold,
         clubName: playerClub.name,
+        freeRenameCount: playerClub.freeRenameCount,
         clubShortId: playerClub.shortId,
         publicRule: clubRule.publicRule
     }
@@ -387,6 +388,7 @@ export default {
             name: clubOwner.nickname,
             clubGold: currentClubPlayerGold,
             clubName: playerClub.name,
+            freeRenameCount: playerClub.freeRenameCount,
             clubShortId: playerClub.shortId,
             publicRule: clubRule.publicRule
         }
