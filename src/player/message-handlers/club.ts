@@ -1094,7 +1094,7 @@ export default {
         } else {
             const renameList = clubExtra.renameList;
             renameList[message.playerId] = message.rename;
-            console.warn("renameList-%s", JSON.stringify(renameList));
+            console.warn("renameList-%s playerId-%s", JSON.stringify(renameList), message.playerId);
             await ClubExtra.update({clubId: myClub._id}, {$set: {renameList}})
         }
 
