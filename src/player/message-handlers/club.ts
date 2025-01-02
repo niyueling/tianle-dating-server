@@ -1022,6 +1022,7 @@ export default {
     },
     [ClubAction.renameClubPlayer]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
+        const isOwner = !!myClub;
         const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
         const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
         if (!myClub && (isAdmin || isPartner)) {
@@ -1038,7 +1039,7 @@ export default {
         }
 
         // 做管理员的校验
-        if (isAdmin) {
+        if (!isOwner && isAdmin) {
             if (membership.role === 'admin') {
                 return player.sendMessage('club/adminRemovePlayerReply', {
                     ok: false,
@@ -1090,13 +1091,10 @@ export default {
         if (isPartner && membership.leader === player.model.shortId) {
             const renameList = clubExtra.partnerRenameList;
             renameList[message.playerId] = message.rename;
-            console.warn("playerId-%s, rename-%s, partnerRenameList-%s", message.playerId, message.rename, JSON.stringify(renameList));
             await ClubExtra.update({clubId: myClub._id}, {$set: {partnerRenameList: renameList}})
         } else {
-            console.log(clubExtra)
             const renameList = clubExtra.renameList;
             renameList[message.playerId] = message.rename;
-            console.warn("playerId-%s, rename-%s, renameList-%s", message.playerId, message.rename, JSON.stringify(renameList));
             await ClubExtra.update({clubId: myClub._id}, {$set: {renameList}})
         }
 
@@ -1211,6 +1209,7 @@ export default {
     },
     [ClubAction.operateBlackList]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
+        const isOwner = !!myClub;
         const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
         const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
         if (!myClub && (isAdmin || isPartner)) {
@@ -1230,7 +1229,7 @@ export default {
         }
 
         // 做管理员的校验
-        if (isAdmin) {
+        if (!isOwner && isAdmin) {
             if (memberShip.role === 'admin') {
                 return player.sendMessage('club/adminRemovePlayerReply', {
                     ok: false,
@@ -1299,10 +1298,11 @@ export default {
     [ClubAction.removePlayer]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
         let roleType = myClub ? 1 : -1;
+        const isOwner = !!myClub;
         const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
         const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
         if (!myClub) {
-            if (isAdmin) {
+            if (!isOwner && isAdmin) {
                 roleType = 2;
                 myClub = await Club.findOne({shortId: message.clubShortId});
             }
