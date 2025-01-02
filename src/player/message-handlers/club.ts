@@ -788,7 +788,6 @@ export default {
             }
         }
 
-
         player.sendMessage('club/updatePlayerInfoReply', {
             ok: true, data: {
                 joinClubShortId: player.model.joinClubShortIds,
@@ -1132,6 +1131,8 @@ export default {
         await player.updateResource2Client();
         // 添加日志
         await logRename(myClub._id, oldName, myClub.name, playerInfo._id);
+
+        await requestToAllClubMember(player.channel, 'club/updateClubRoom', myClub._id.toString(), {})
     },
     [ClubAction.transfer]: async (player, message) => {
         const myClub = await getOwnerClub(player.model._id, message.clubShortId);
@@ -1202,6 +1203,8 @@ export default {
         await notifyTransfer(playerInfo, transferee, myClub.name, myClub.shortId);
         // 添加日志
         await logTransfer(myClub._id, playerInfo._id, transferee._id);
+
+        await requestToAllClubMember(player.channel, 'club/updateClubRoom', myClub._id.toString(), {})
     },
     [ClubAction.operateBlackList]: async (player, message) => {
         let myClub = await getOwnerClub(player.model._id, message.clubShortId);
