@@ -18,6 +18,7 @@ import * as config from '../../config'
 import ClubMerge from "../../database/models/clubMerge";
 import ClubMessage from "../../database/models/clubMessage";
 import clubMessage from "../../database/models/clubMessage";
+import globalConfig from "../../database/models/globalConfig";
 
 // 操作战队
 export const enum ClubAction {
@@ -1416,13 +1417,24 @@ export default {
             player.sendMessage('club/createNewClubReply', {ok: false, info: TianleErrorCode.clubNameIsRepeat})
             return
         }
-        const clubGlobal = await Club.findOne().sort({shortId: -1}).limit(1);
-        let clubShortId = !clubGlobal ? 100001 : clubGlobal.shortId + 1;
+
+        let clubGlobal = await globalConfig.findOne({name: "clubShortId"});
+        const clubShortIdInfo = await Club.findOne().sort({shortId: -1}).limit(1);
+        if (!clubGlobal) {
+            clubGlobal = await globalConfig.create({
+                name: "clubShortId",
+                type: "number",
+                value: clubShortIdInfo.shortId,
+            });
+        }
+
+        clubGlobal.value = Number(clubGlobal.value) + 1;
+        await clubGlobal.save();
 
         try {
             const club = new Club({
                 owner: player.model._id,
-                shortId: clubShortId,
+                shortId: clubGlobal.value,
                 name: message.clubName
             })
             await club.save()
@@ -1443,7 +1455,7 @@ export default {
 
             player.sendMessage('club/createNewClubReply', {
                 ok: true,
-                data: {shortId: clubShortId, clubName: message.clubName}
+                data: {shortId: clubGlobal.value, clubName: message.clubName}
             });
         } catch (e) {
             console.error(e);
