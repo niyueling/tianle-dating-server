@@ -12,6 +12,9 @@ module.exports = {
   debug: {
     "message": false
   },
+    rabbitmq: {
+        url: "amqp://user:password@localhost:5693"
+    },
   redis: {
     port: 8399,
     host: "172.19.148.251",
