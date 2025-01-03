@@ -423,7 +423,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
                             }
                         }
 
-                        console.warn("messageBody -%s clubRequestInfo-%s", JSON.stringify(messageBody), clubRequestInfo)
+                        console.warn("_id-%s messageBody-%s clubRequestInfo-%s", this._id, JSON.stringify(messageBody), clubRequestInfo)
 
                         if (clubRequestInfo.length > 0) {
                             this.sendMessage("account/sendInviteClubMessagesReply", {ok: true, data: clubRequestInfo});
