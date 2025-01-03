@@ -451,6 +451,8 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
                     if (messageBody.name === 'club/updateClubRoom') {
                         const clubInfo = await getClubInfo(this.clubId, this);
 
+                        console.warn("clubInfo-%s", JSON.stringify(clubInfo));
+
                         if (clubInfo.ok) {
                             this.sendMessage('club/getClubInfoReply', clubInfo);
                         }
