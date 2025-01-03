@@ -1753,10 +1753,8 @@ export default {
             return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.alreadyJoinClub);
         }
 
-        await requestToUserCenter(player.channel, 'club/invitePlayerMessage', playerInfo._id, {playerId: playerInfo._id})
-
         const record = await ClubRequest.create({
-            playerId: playerInfo._id,
+            playerId: playerInfo._id.toString(),
             clubShortId: message.clubShortId,
             avatar: playerInfo.avatar,
             playerShortId: playerInfo.shortId,
@@ -1764,6 +1762,8 @@ export default {
             type: 3,
             partner: player.model.shortId
         });
+
+        await requestToUserCenter(player.channel, 'club/invitePlayerMessage', playerInfo._id, {playerId: playerInfo._id})
 
         return player.replySuccess(ClubAction.inviteNormalPlayer, record);
     },
