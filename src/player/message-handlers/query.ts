@@ -32,7 +32,8 @@ export class QueryApi extends BaseApi {
 
             const clubExtra = await getClubExtra(roomInfo.clubId);
             const isBlack = clubExtra.blacklist.includes(this.player._id.toString());
-            if (isBlack) {
+            const isPartnerBlack = clubExtra.partnerBlacklist.includes(this.player._id.toString());
+            if (isBlack || isPartnerBlack) {
                 return this.replyFail(TianleErrorCode.notJoinClubGame);
             }
         }

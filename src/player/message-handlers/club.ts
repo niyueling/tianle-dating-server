@@ -244,6 +244,23 @@ export async function requestToAllClubMember(channel, name, clubId, info) {
         toBuffer({name, payload: info}))
 }
 
+export async function requestToAllClubMemberUserCenter(channel, name, clubId, info) {
+    const club = await Club.findOne({_id: clubId});
+
+    if (!club) {
+        return;
+    }
+
+    const members = await ClubMember.find({club: clubId});
+
+    for (const member of members) {
+        channel.publish(
+            `userCenter`,
+            `user.${member.member}`,
+            toBuffer({name, payload: info}))
+    }
+}
+
 export async function requestToUserCenter(channel, name, playerId, info) {
 
     const player = await Player.findOne({_id: playerId});
