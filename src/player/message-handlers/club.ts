@@ -1694,9 +1694,16 @@ export default {
         return player.replySuccess(ClubAction.mergeClub, result);
     },
     [ClubAction.inviteNormalPlayer]: async (player, message) => {
+        let myClub = await getOwnerClub(player.model._id, message.clubShortId);
+        const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
         const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
-        if (!isPartner) {
-            return player.replyFail(ClubAction.inviteNormalPlayer, TianleErrorCode.noPermission);
+
+        if (!myClub && (isAdmin || isPartner)) {
+            myClub = await Club.findOne({shortId: message.clubShortId});
+        }
+        if (!myClub) {
+            player.sendMessage('club/getClubMembersReply', {ok: false, info: TianleErrorCode.notClubAdmin});
+            return
         }
 
         const playerInfo = await Player.findOne({shortId: message.playerShortId});
