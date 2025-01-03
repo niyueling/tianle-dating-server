@@ -767,6 +767,16 @@ export default {
         return player.replySuccess(ClubAction.dealClubInviteRequest, {});
     },
     [ClubAction.updatePlayerInfo]: async (player, message) => {
+        if (!player.model) {
+            return player.sendMessage('club/updatePlayerInfoReply', {
+                ok: true, data: {
+                    joinClubShortId: [],
+                    myClub: [],
+                    unReadMessageIds: []
+                }
+            });
+        }
+
         const ownerClub = await Club.find({owner: player.model._id});
         const tempClub = [];
         if (ownerClub && ownerClub.length > 0) {
