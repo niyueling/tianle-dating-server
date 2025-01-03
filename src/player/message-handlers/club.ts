@@ -971,8 +971,11 @@ export default {
     [ClubAction.checkPlayerIsBlack]: async (player, message) => {
         let myClub = await Club.findOne({shortId: message.clubShortId});
         const clubExtra = await getClubExtra(myClub._id);
-        const isBlack = clubExtra.blacklist.includes(player._id.toString())
+        let isBlack = clubExtra.blacklist.includes(player._id.toString())
 
+        if (!isBlack) {
+            isBlack = clubExtra.partnerBlacklist.includes(player._id.toString())
+        }
 
         player.sendMessage('club/checkPlayerIsBlackReply', {ok: true, data: {black: isBlack}});
     },
