@@ -397,7 +397,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
                 try {
                     const messageBody = JSON.parse(message.content.toString())
 
-                    console.log(`from dating [${this._id}`, messageBody.name || messageBody.cmd)
+                    console.warn(`from dating [${this._id}]`, messageBody.name || messageBody.cmd, JSON.stringify(messageBody.payload))
 
                     if (messageBody.type === 'cmd' && messageBody.cmd === 'leave' && this.socketId !== messageBody.sid) {
                         this.socket.close()
@@ -451,8 +451,6 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
                     if (messageBody.name === 'club/updateClubRoom') {
                         const clubInfo = await getClubInfo(this.clubId, this);
 
-                        console.warn("clubInfo-%s", JSON.stringify(clubInfo));
-
                         if (clubInfo.ok) {
                             this.sendMessage('club/getClubInfoReply', clubInfo);
                         }
@@ -461,8 +459,8 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
                     }
 
                     if (messageBody.name === 'clubRequest') {
-                        // console.warn("clubId-%s messageBody-%s", this.clubId, JSON.stringify(messageBody));
-                        this.sendMessage('club/haveRequest', {ok: true, data: {}});
+                        const clubInfo = await Club.findOne({_id: this.clubId});
+                        this.sendMessage('club/haveRequest', {ok: true, data: {clubId: clubInfo.shortId}});
                         return;
                     }
 
