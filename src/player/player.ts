@@ -423,6 +423,8 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
                             }
                         }
 
+                        console.warn("clubRequestInfo-%s", clubRequestInfo)
+
                         if (clubRequestInfo.length > 0) {
                             this.sendMessage("account/sendInviteClubMessagesReply", {ok: true, data: clubRequestInfo});
                         }
