@@ -1344,6 +1344,7 @@ export default {
         }
 
         const memberShip = await ClubMember.findOne({club: myClub._id, member: message.playerId}).lean()
+        const playerInfo = await service.playerService.getPlayerModel(message.playerId);
 
         if (!myClub) {
             return player.sendMessage('club/removePlayerReply', {ok: false, info: TianleErrorCode.noPermission});
@@ -1407,13 +1408,14 @@ export default {
         if (memberShip.partner) {
             // 记录被踢出的用户列表
             const leavePlayers = [{member: message.playerId, roleType: 1}];
-            const playerInfo = await service.playerService.getPlayerModel(message.playerId);
 
             // 获取合伙人
             const clubTeamList = await ClubMember.find({club: myClub._id, leader: playerInfo.shortId});
             for (let i = 0; i < clubTeamList.length; i++) {
+                const leavePlayerInfo = await service.playerService.getPlayerModel(clubTeamList[i].member);
                 leavePlayers.push({member: clubTeamList[i].member, roleType: 2});
                 await ClubMember.remove({member: clubTeamList[i].member, club: myClub._id});
+                await disbandPlayerSendEmail(myClub.name, myClub.shortId, leavePlayerInfo);
             }
 
             // 给合伙人和用户创建新的战队
@@ -1423,6 +1425,7 @@ export default {
         }
 
         await ClubMember.remove({member: message.playerId, club: myClub._id})
+        await disbandPlayerSendEmail(myClub.name, myClub.shortId, playerInfo);
         player.sendMessage('club/removePlayerReply', {ok: true, data: {}});
     },
     [ClubAction.promoteAdmin]: async (player, message) => {
@@ -1813,6 +1816,34 @@ async function mergeFailClubMessage(clubName, clubId, playerId, alreadyJoinClubs
         playerShortId: clubOwnerInfo.shortId,
         message: `${msg}已在本战队${clubName}(${clubId})`
     });
+}
+
+// 用户被合伙人踢出战队给战队主，管理员发送邮件
+async function disbandPlayerSendAdminEmail(clubName, clubId, playerInfo, partnerInfo, adminInfo) {
+    const mail = new MailModel({
+        to: adminInfo._id,
+        type: MailType.MESSAGE,
+        title: '踢出战队通知',
+        content: `${playerInfo.nickname}(${playerInfo.shortId})被合伙人${partnerInfo.nickname}(${partnerInfo.shortId})踢出战队${clubName}(${clubId})`,
+        state: MailState.UNREAD,
+        createAt: new Date(),
+        gift: {diamond: 0, tlGold: 0, gold: 0}
+    })
+    await mail.save();
+}
+
+// 用户被踢出战队给用户发送邮件
+async function disbandPlayerSendEmail(clubName, clubId, playerInfo) {
+    const mail = new MailModel({
+        to: playerInfo._id,
+        type: MailType.MESSAGE,
+        title: '踢出战队通知',
+        content: `${playerInfo.nickname}(${playerInfo.shortId})被踢出战队${clubName}(${clubId})`,
+        state: MailState.UNREAD,
+        createAt: new Date(),
+        gift: {diamond: 0, tlGold: 0, gold: 0}
+    })
+    await mail.save();
 }
 
 // 邮件通知拒绝成员加入
