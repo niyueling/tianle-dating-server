@@ -13,7 +13,7 @@ import * as moment from "moment";
 import PlayerLoginRecord from "../database/models/playerLoginRecord";
 import PlayerManager from "../player/player-manager";
 import UserRechargeOrder from "../database/models/userRechargeOrder";
-import {ConsumeLogType, RedisKey, TaskType} from "@fm/common/constants";
+import {ConsumeLogType, RedisKey, TaskType, TianleErrorCode} from "@fm/common/constants";
 import GoldRecord from "../database/models/goldRecord";
 import HeadBorder from "../database/models/HeadBorder";
 import PlayerHeadBorder from "../database/models/PlayerHeadBorder";
@@ -40,6 +40,8 @@ import TurntablePrize from "../database/models/turntablePrize";
 import TurntablePrizeRecord from "../database/models/turntablePrizeRecord";
 import PlayerPayDailySupplementRecord from "../database/models/PlayerPayDailySupplementRecord";
 import RegressionRechargeRecord from "../database/models/RegressionRechargeRecord";
+import RegressionSignPrize from "../database/models/RegressionSignPrize";
+import RegressionSignPrizeRecord from "../database/models/RegressionSignPrizeRecord";
 
 // 玩家信息
 export default class PlayerService extends BaseService {

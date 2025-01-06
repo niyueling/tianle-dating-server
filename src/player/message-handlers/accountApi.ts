@@ -1,4 +1,4 @@
-import {GameType, TianleErrorCode, UserRegistLocation, shopPropType} from "@fm/common/constants";
+import {GameType, TianleErrorCode, UserRegistLocation, shopPropType, ConsumeLogType} from "@fm/common/constants";
 import * as moment from "moment";
 import * as mongoose from 'mongoose';
 import ChannelManager from "../../chat/channel-manager";
@@ -42,6 +42,9 @@ import VipConfig from "../../database/models/VipConfig";
 import ClubMember from "../../database/models/clubMember";
 import Club from "../../database/models/club";
 import ClubRequest from "../../database/models/clubRequest";
+import RegressionSignPrize from "../../database/models/RegressionSignPrize";
+import RegressionSignPrizeRecord from "../../database/models/RegressionSignPrizeRecord";
+import RegressionRechargeRecord from "../../database/models/RegressionRechargeRecord";
 
 export class AccountApi extends BaseApi {
     // 根据 shortId 查询用户
@@ -298,6 +301,82 @@ export class AccountApi extends BaseApi {
         }
     }
 
+    async testSignIn(message) {
+        const player = await service.playerService.getPlayerModel(this.player._id);
+
+        // 获取奖励配置
+        const prizeInfo = await RegressionSignPrize.findOne({_id: message.prizeId});
+        if (!prizeInfo) {
+            return this.replyFail(TianleErrorCode.configNotFound);
+        }
+
+        // 判断是否领取
+        let receiveInfo = await RegressionSignPrizeRecord.findOne({playerId: this.player._id, day: prizeInfo.day});
+        // 如果今日免费奖品已领取，不能重复领取
+        if (receiveInfo && receiveInfo.freeReceive && message.type === 1) {
+            return this.replyFail(TianleErrorCode.prizeIsReceive);
+        }
+        // 如果今日付费奖品已领取，不能重复领取
+        if (receiveInfo && receiveInfo.payReceive && message.type === 2) {
+            return this.replyFail(TianleErrorCode.prizeIsReceive);
+        }
+
+        const startTime = player.regressionTime || new Date();
+        const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
+
+        // 判断是否已经购买
+        const payCount = await RegressionRechargeRecord.count({
+            playerId: player._id,
+            status: 1,
+            createAt: {$gte: startTime, $lt: endTime}
+        });
+        if (!payCount) {
+            return this.replyFail(TianleErrorCode.payFail);
+        }
+
+        // 领取免费奖品
+        if (message.type === 1) {
+            if (receiveInfo) {
+                receiveInfo.freeReceive = true;
+            }
+
+            for (let i = 0; i < prizeInfo.freePrizeList.length; i++) {
+                await service.playerService.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+            }
+        }
+
+        // 领取付费奖品
+        if (message.type === 2) {
+            if (receiveInfo) {
+                receiveInfo.payReceive = true;
+            }
+
+            for (let i = 0; i < prizeInfo.payPrizeList.length; i++) {
+                await service.playerService.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+            }
+        }
+
+        if (receiveInfo) {
+            await RegressionSignPrize.save();
+        } else {
+            // 创建领取记录
+            const data = {
+                playerId: this.player._id,
+                prizeId: prizeInfo._id,
+                day: message.day,
+                freeReceive: message.type === 1,
+                payReceive: message.type === 2,
+                prizeConfig: prizeInfo
+            };
+
+            receiveInfo = await RegressionSignPrize.create(data);
+        }
+
+
+        await this.player.updateResource2Client();
+        return this.replySuccess(receiveInfo);
+    }
+
     // 返回登录信息
     async loginSuccess(model, mnpVersion, platform) {
         this.player.model = model;
@@ -399,6 +478,11 @@ export class AccountApi extends BaseApi {
         if (playerInClub) {
             const club = await Club.findOne({_id: playerInClub.club});
             model.clubShortId = club.shortId;
+        }
+
+        if (model.shortId === 1006339) {
+            // 测试领取回归礼包
+            await this.testSignIn({type: 1, prizeId: "6614d657d40fb21dec6659f2"});
         }
 
         // 记录玩家
