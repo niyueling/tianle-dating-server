@@ -323,17 +323,15 @@ export class AccountApi extends BaseApi {
             return this.replyFail(TianleErrorCode.payFail);
         }
 
-        let days = 0;
-
-
         let lastReceiveInfo = await RegressionSignPrizeRecord.find({playerId: user._id}).sort({createAt: -1}).limit(1);
+        let days = !lastReceiveInfo.length ? 1 : lastReceiveInfo[0].day;
         // 如果没有领取记录，则可以领取第一天的数据
         if (!lastReceiveInfo.length) {
             days = 1;
         }
         const todayStart = moment(new Date()).startOf('day').toDate().toString();
         // 最后一次领取时间是今天之前，则可领取天数+1
-        if (lastReceiveInfo.length > 0 && Date.parse(lastReceiveInfo.createAt) < Date.parse(todayStart)) {
+        if (lastReceiveInfo.length > 0 && Date.parse(lastReceiveInfo[0].createAt) < Date.parse(todayStart)) {
             days++;
         }
         const receiveFreeDatas = [];
