@@ -1403,6 +1403,19 @@ export default {
                     info: TianleErrorCode.notRemoveSelf
                 });
             }
+
+            // 发送邮件给战队主/管理员
+            const adminList = await ClubMember.find({
+                club: myClub._id,
+                role: "admin"
+            })
+            const ownerInfo = await service.playerService.getPlayerModel(myClub.owner);
+            const partnerInfo = await service.playerService.getPlayerModelByShortId(memberShip.leader);
+            await disbandPlayerSendAdminEmail(myClub.name, myClub.shortId, playerInfo, partnerInfo, ownerInfo);
+            for (let i = 0; i < adminList.length; i++) {
+                const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
+                await disbandPlayerSendAdminEmail(myClub.name, myClub.shortId, playerInfo, partnerInfo, adminInfo);
+            }
         }
 
         if (memberShip.partner) {
