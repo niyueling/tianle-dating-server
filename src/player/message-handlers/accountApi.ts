@@ -301,116 +301,6 @@ export class AccountApi extends BaseApi {
         }
     }
 
-    async oneTouchSignIn() {
-        const user = await this.service.playerService.getPlayerModel(this.player.model._id);
-
-        if (!user) {
-            return this.replyFail(TianleErrorCode.userNotFound);
-        }
-
-        const player = await service.playerService.getPlayerModel(this.player._id);
-
-        const startTime = player.regressionTime;
-        const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
-
-        // 判断是否已经购买
-        const payCount = await RegressionRechargeRecord.count({
-            playerId: player._id,
-            status: 1,
-            createAt: {$gte: startTime, $lt: endTime}
-        });
-        if (!payCount) {
-            return this.replyFail(TianleErrorCode.payFail);
-        }
-
-        let lastReceiveInfo = await RegressionSignPrizeRecord.find({playerId: user._id}).sort({createAt: -1}).limit(1);
-        let days = !lastReceiveInfo.length ? 1 : lastReceiveInfo[0].day;
-        // 如果没有领取记录，则可以领取第一天的数据
-        if (!lastReceiveInfo.length) {
-            days = 1;
-        }
-        const todayStart = moment(new Date()).startOf('day').toDate().toString();
-        // 最后一次领取时间是今天之前，则可领取天数+1
-        if (lastReceiveInfo.length > 0 && Date.parse(lastReceiveInfo[0].createAt) < Date.parse(todayStart)) {
-            days++;
-        }
-        const receiveFreeDatas = [];
-        const receivePayDatas = [];
-
-        console.warn("days-%s", days);
-
-        for (let i = 1; i <= days; i++) {
-            const receiveResult = await this.onceReceive(i);
-            if (receiveResult) {
-                receiveFreeDatas.push(receiveResult.freePrizeList);
-                receivePayDatas.push(receiveResult.payPrizeList);
-            }
-        }
-
-        return this.replySuccess({receiveFreeDatas, receivePayDatas});
-    }
-
-    async onceReceive(day) {
-        // 获取奖励配置
-        const prizeInfo = await RegressionSignPrize.findOne({day});
-        if (!prizeInfo) {
-            return false;
-        }
-
-        let freePrizeList = [];
-        let payPrizeList = [];
-
-        // 判断是否领取
-        let receiveInfo = await RegressionSignPrizeRecord.findOne({playerId: this.player._id, day: prizeInfo.day});
-        if (receiveInfo && receiveInfo.freeReceive && receiveInfo.payReceive) {
-            return false;
-        }
-
-        // 领取免费奖品
-        if (!receiveInfo || (receiveInfo && !receiveInfo.freeReceive)) {
-            if (receiveInfo) {
-                receiveInfo.freeReceive = true;
-            }
-
-            freePrizeList = [...freePrizeList, ...prizeInfo.freePrizeList];
-
-            for (let i = 0; i < prizeInfo.freePrizeList.length; i++) {
-                await service.playerService.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
-            }
-        }
-
-        // 领取付费奖品
-        if (!receiveInfo || (receiveInfo && !receiveInfo.payReceive)) {
-            if (receiveInfo) {
-                receiveInfo.payReceive = true;
-            }
-
-            payPrizeList = [...payPrizeList, ...prizeInfo.payPrizeList];
-
-            for (let i = 0; i < prizeInfo.payPrizeList.length; i++) {
-                await service.playerService.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
-            }
-        }
-
-        if (receiveInfo) {
-            await receiveInfo.save();
-        } else {
-            // 创建领取记录
-            const data = {
-                playerId: this.player._id,
-                prizeId: prizeInfo._id,
-                day: prizeInfo.day,
-                freeReceive: true,
-                payReceive: true,
-                prizeConfig: prizeInfo
-            };
-
-            await RegressionSignPrizeRecord.create(data);
-        }
-
-        return {payPrizeList, freePrizeList};
-    }
-
     // 返回登录信息
     async loginSuccess(model, mnpVersion, platform) {
         this.player.model = model;
@@ -512,11 +402,6 @@ export class AccountApi extends BaseApi {
         if (playerInClub) {
             const club = await Club.findOne({_id: playerInClub.club});
             model.clubShortId = club.shortId;
-        }
-
-        if (model.shortId === 1006339) {
-            // 测试领取回归礼包
-            await this.oneTouchSignIn();
         }
 
         // 记录玩家
