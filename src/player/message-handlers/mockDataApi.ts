@@ -18,6 +18,8 @@ import GoodsProp from "../../database/models/GoodsProp";
 import DailySupplementGift from "../../database/models/DailySupplementGift";
 import GoodsReviveTlGold from "../../database/models/goodsReviveTlGold";
 import GoodsDailySupplement from "../../database/models/goodsDailySupplement";
+import RegressionTask from "../../database/models/regressionTask";
+import regressionTaskTotalPrize from "../../database/models/regressionTaskTotalPrize";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -521,6 +523,54 @@ export class MockDataApi extends BaseApi {
 
     return this.replySuccess({datas, datas1});
   }
+
+    // 录入任务数据
+    @addApi()
+    async saveRegressionTaskData() {
+        const result = await RegressionTask.find();
+
+        if (result.length) {
+            await RegressionTask.remove({_id: {$ne: null}}).exec();
+        }
+
+        const datas = [
+            // 完成对局
+            {taskName: "完成任意?场对局", taskId: 1001, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 20},
+            {taskName: "完成任意?场对局", taskId: 1002, taskTimes: 5, taskPrizes: {number: 200000, type: 2}, liveness: 20},
+            {taskName: "完成任意?场对局", taskId: 1003, taskTimes: 10, taskPrizes: {number: 500000, type: 2}, liveness: 30},
+
+            // 领取开运福利奖励
+            {taskName: "领取开运福利奖励?次", taskId: 1004, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 10},
+
+            // 幸运抽奖
+            {taskName: "进行?次幸运抽奖", taskId: 1005, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 10},
+
+            // 看广告
+            {taskName: "观看?次广告", taskId: 1006, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 10},
+        ];
+
+        await RegressionTask.insertMany(datas);
+
+        const result1 = await regressionTaskTotalPrize.find();
+
+        if (result1.length) {
+            await regressionTaskTotalPrize.remove({_id: {$ne: null}}).exec();
+        }
+
+        const datas1 = [
+            {type: 1, taskPrizes: [{number: 100000, type: 2},{number: 1000000, type: 7}], liveness: 10},
+            {type: 1, taskPrizes: [{number: 200000, type: 2},{number: 1500000, type: 7}], liveness: 20},
+            {type: 1, taskPrizes: [{number: 200000, type: 2},{number: 2000000, type: 7}], liveness: 30},
+            {type: 1, taskPrizes: [{number: 300000, type: 2},{number: 3000000, type: 7}], liveness: 50},
+            {type: 1, taskPrizes: [{number: 600000, type: 2},{number: 10, type: 1}], liveness: 100},
+            {type: 2, taskPrizes: [{number: 200, type: 1},{number: 1, type: 8, propId: 1301}], liveness: 200},
+            {type: 2, taskPrizes: [{number: 200, type: 1},{number: 1, type: 8, propId: 1302}], liveness: 500},
+        ];
+
+        await regressionTaskTotalPrize.insertMany(datas1);
+
+        return this.replySuccess({datas, datas1});
+    }
 
   // 录入vip特权数据
   @addApi()
