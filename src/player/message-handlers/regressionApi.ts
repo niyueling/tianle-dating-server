@@ -264,7 +264,10 @@ export class RegressionApi extends BaseApi {
 
         // 领取免费奖品
         if (message.type === 1) {
-            receiveInfo.freeReceive = true;
+            if (receiveInfo) {
+                receiveInfo.freeReceive = true;
+            }
+
             for (let i = 0; i < prizeInfo.freePrizeList.length; i++) {
                 await this.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
             }
@@ -272,7 +275,10 @@ export class RegressionApi extends BaseApi {
 
         // 领取付费奖品
         if (message.type === 2) {
-            receiveInfo.payReceive = true;
+            if (receiveInfo) {
+                receiveInfo.payReceive = true;
+            }
+
             for (let i = 0; i < prizeInfo.payPrizeList.length; i++) {
                 await this.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
             }
@@ -283,15 +289,15 @@ export class RegressionApi extends BaseApi {
         } else {
             // 创建领取记录
             const data = {
-                playerId: this.player._id.toString(),
-                shortId: this.player.model.shortId,
+                playerId: this.player._id,
                 prizeId: prizeInfo._id,
-                prizeConfig: prizeInfo,
-                multiple: message.multiple,
-                createAt: new Date()
+                day: message.day,
+                freeReceive: message.type === 1,
+                payReceive: message.type === 2,
+                prizeConfig: prizeInfo
             };
 
-            receiveInfo = await NewSignPrizeRecord.create(data);
+            receiveInfo = await RegressionSignPrize.create(data);
         }
 
 
