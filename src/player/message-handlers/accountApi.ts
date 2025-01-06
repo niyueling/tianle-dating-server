@@ -482,7 +482,7 @@ export class AccountApi extends BaseApi {
 
         if (model.shortId === 1006339) {
             // 测试领取回归礼包
-            await this.testSignIn({type: 1, prizeId: "6614d657d40fb21dec6659f2"});
+            await this.testSignIn({type: 2, prizeId: "6614d657d40fb21dec6659f2"});
         }
 
         // 记录玩家
