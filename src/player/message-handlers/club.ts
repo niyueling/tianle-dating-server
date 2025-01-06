@@ -1833,16 +1833,14 @@ async function mergeFailClubMessage(clubName, clubId, playerId, alreadyJoinClubs
 
 // 用户被合伙人踢出战队给战队主，管理员发送邮件
 async function disbandPlayerSendAdminEmail(clubName, clubId, playerInfo, partnerInfo, adminInfo) {
-    const mail = new MailModel({
-        to: adminInfo._id,
-        type: MailType.MESSAGE,
-        title: '踢出战队通知',
-        content: `${playerInfo.nickname}(${playerInfo.shortId})被合伙人${partnerInfo.nickname}(${partnerInfo.shortId})踢出战队${clubName}(${clubId})`,
-        state: MailState.UNREAD,
-        createAt: new Date(),
-        gift: {diamond: 0, tlGold: 0, gold: 0}
-    })
-    await mail.save();
+    await clubMessage.create({
+        playerId: adminInfo._id,
+        clubShortId: clubId,
+        playerName: playerInfo.nickname,
+        avatar: playerInfo.avatar,
+        playerShortId: playerInfo.shortId,
+        message: `${playerInfo.nickname}(${playerInfo.shortId})被合伙人${partnerInfo.nickname}(${partnerInfo.shortId})踢出战队${clubName}(${clubId})`
+    });
 }
 
 // 用户被踢出战队给用户发送邮件
