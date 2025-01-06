@@ -456,6 +456,8 @@ export default {
 
         await player.listenClub(playerClub._id);
 
+        console.warn("roomInfo-%s, redis-%s", JSON.stringify(room), JSON.stringify(config.redis));
+
         return player.replySuccess(ClubAction.getInfo, {roomInfo: room, clubInfo, unReadMessage, clubs, isAdmin: !!isAdmin, isPartner: !!isPartner, isClubOwner});
     },
     [ClubAction.leave]: async (player, message) => {
