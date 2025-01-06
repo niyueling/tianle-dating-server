@@ -285,7 +285,7 @@ export class RegressionApi extends BaseApi {
         }
 
         if (receiveInfo) {
-            await RegressionSignPrize.save();
+            await receiveInfo.save();
         } else {
             // 创建领取记录
             const data = {
