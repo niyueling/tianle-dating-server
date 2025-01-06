@@ -240,9 +240,6 @@ export class RegressionApi extends BaseApi {
             status: 1,
             createAt: {$gte: startTime, $lt: endTime}
         });
-        if (!payCount) {
-            return this.replyFail(TianleErrorCode.payFail);
-        }
 
         // 获取奖励配置
         const prizeInfo = await RegressionSignPrize.findOne({_id: message.prizeId});
@@ -274,6 +271,10 @@ export class RegressionApi extends BaseApi {
 
         // 领取付费奖品
         if (message.type === 2) {
+            if (payCount === 0) {
+                return this.replyFail(TianleErrorCode.payFail);
+            }
+
             if (receiveInfo) {
                 receiveInfo.payReceive = true;
             }
@@ -324,9 +325,6 @@ export class RegressionApi extends BaseApi {
             status: 1,
             createAt: {$gte: startTime, $lt: endTime}
         });
-        if (!payCount) {
-            return this.replyFail(TianleErrorCode.payFail);
-        }
 
         let lastReceiveInfo = await RegressionSignPrizeRecord.find({playerId: user._id}).sort({createAt: -1}).limit(1);
         let days = !lastReceiveInfo.length ? 1 : lastReceiveInfo[0].day;
@@ -343,7 +341,7 @@ export class RegressionApi extends BaseApi {
         const receivePayDatas = [];
 
         for (let i = 1; i <= days; i++) {
-            const receiveResult = await this.onceReceive(i);
+            const receiveResult = await this.onceReceive(i, payCount > 0);
             if (receiveResult) {
                 receiveFreeDatas.push(receiveResult.freePrizeList);
                 receivePayDatas.push(receiveResult.payPrizeList);
@@ -353,7 +351,7 @@ export class RegressionApi extends BaseApi {
         return this.replySuccess({receiveFreeDatas, receivePayDatas});
     }
 
-    async onceReceive(day) {
+    async onceReceive(day, isPay) {
         // 获取奖励配置
         const prizeInfo = await RegressionSignPrize.findOne({day});
         if (!prizeInfo) {
@@ -383,7 +381,7 @@ export class RegressionApi extends BaseApi {
         }
 
         // 领取付费奖品
-        if (!receiveInfo || (receiveInfo && !receiveInfo.payReceive)) {
+        if (!receiveInfo || (receiveInfo && !receiveInfo.payReceive) && isPay) {
             if (receiveInfo) {
                 receiveInfo.payReceive = true;
             }
