@@ -758,10 +758,20 @@ export default {
         // 发送邮件给战队主
         const ownerInfo = await service.playerService.getPlayerModel(clubInfo.owner);
         const playerInfo = await service.playerService.getPlayerModel(player._id);
-        await notifyNewPlayerJoin(ownerInfo, clubInfo.name, clubInfo.shortId, partnerInfo, playerInfo);
+        await notifyNewPlayerJoin(ownerInfo, clubInfo.shortId, playerInfo);
+
+        const clubPartnerMember = await ClubMember.findOne({
+            club: clubInfo._id,
+            member: partnerInfo._id,
+            partner: true
+        });
+        if (clubPartnerMember) {
+            await notifyNewPlayerJoin(partnerInfo, clubInfo.shortId, playerInfo);
+        }
+
         for (let i = 0; i < adminList.length; i++) {
             const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
-            await notifyNewPlayerJoin(adminInfo, clubInfo.name, clubInfo.shortId, partnerInfo, playerInfo);
+            await notifyNewPlayerJoin(adminInfo, clubInfo.shortId, playerInfo);
         }
 
         return player.replySuccess(ClubAction.dealClubInviteRequest, {});
@@ -1410,11 +1420,10 @@ export default {
                 role: "admin"
             })
             const ownerInfo = await service.playerService.getPlayerModel(myClub.owner);
-            const partnerInfo = await service.playerService.getPlayerModelByShortId(memberShip.leader);
-            await disbandPlayerSendAdminEmail(myClub.name, myClub.shortId, playerInfo, partnerInfo, ownerInfo);
+            await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, ownerInfo);
             for (let i = 0; i < adminList.length; i++) {
                 const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
-                await disbandPlayerSendAdminEmail(myClub.name, myClub.shortId, playerInfo, partnerInfo, adminInfo);
+                await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, adminInfo);
             }
         }
 
@@ -1832,7 +1841,7 @@ async function mergeFailClubMessage(clubName, clubId, playerId, alreadyJoinClubs
 }
 
 // 用户被合伙人踢出战队给战队主，管理员发送邮件
-async function disbandPlayerSendAdminEmail(clubName, clubId, playerInfo, partnerInfo, adminInfo) {
+async function disbandPlayerSendAdminEmail(clubId, playerInfo, adminInfo) {
     await clubMessage.create({
         playerId: adminInfo._id,
         clubShortId: clubId,
@@ -1872,17 +1881,15 @@ async function refuseNewPlayerJoin(clubName, clubId, playerInfo) {
 }
 
 // 邮件通知新成员加入
-async function notifyNewPlayerJoin(ownerInfo, clubName, clubId, partnerInfo, playerInfo) {
-    const mail = new MailModel({
-        to: ownerInfo._id,
-        type: MailType.MESSAGE,
-        title: '成员加入通知',
-        content: `${playerInfo.nickname}(${playerInfo.shortId})接受合伙人${partnerInfo.nickname}(${partnerInfo.shortId})邀请成功加入战队${clubName}(${clubId})`,
-        state: MailState.UNREAD,
-        createAt: new Date(),
-        gift: {diamond: 0, tlGold: 0, gold: 0}
-    })
-    await mail.save();
+async function notifyNewPlayerJoin(ownerInfo, clubId, playerInfo) {
+    await clubMessage.create({
+        playerId: ownerInfo._id,
+        clubShortId: clubId,
+        playerName: playerInfo.nickname,
+        avatar: playerInfo.avatar,
+        playerShortId: playerInfo.shortId,
+        message: `${playerInfo.nickname}(${playerInfo.shortId})成功加入战队`
+    });
 }
 
 // 邮件通知战队转移
