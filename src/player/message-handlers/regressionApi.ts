@@ -230,6 +230,8 @@ export class RegressionApi extends BaseApi {
         }
     })
     async signIn(message) {
+        const player = await service.playerService.getPlayerModel(this.player._id);
+
         // 获取奖励配置
         const prizeInfo = await RegressionSignPrize.findOne({_id: message.prizeId});
         if (!prizeInfo) {
@@ -237,29 +239,64 @@ export class RegressionApi extends BaseApi {
         }
 
         // 判断是否领取
-        const receive = await RegressionSignPrizeRecord.findOne({playerId: this.player._id, day: prizeInfo.day});
-        if (receive) {
+        let receiveInfo = await RegressionSignPrizeRecord.findOne({playerId: this.player._id, day: prizeInfo.day});
+        // 如果今日免费奖品已领取，不能重复领取
+        if (receiveInfo && receiveInfo.freeReceive && message.type === 1) {
+            return this.replyFail(TianleErrorCode.prizeIsReceive);
+        }
+        // 如果今日付费奖品已领取，不能重复领取
+        if (receiveInfo && receiveInfo.payReceive && message.type === 2) {
             return this.replyFail(TianleErrorCode.prizeIsReceive);
         }
 
-        // 按照奖励类型领取奖励
-        for (let i = 0; i < prizeInfo.prizeList.length; i++) {
-            await this.receivePrize(prizeInfo.prizeList[i], this.player._id, message.multiple, ConsumeLogType.receiveNewSign);
+        const startTime = player.regressionTime || new Date();
+        const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
+
+        // 判断是否已经购买
+        const payCount = await RegressionRechargeRecord.count({
+            playerId: player._id,
+            status: 1,
+            createAt: {$gte: startTime, $lt: endTime}
+        });
+        if (!payCount) {
+            return this.replyFail(TianleErrorCode.payFail);
         }
 
-        // 创建领取记录
-        const data = {
-            playerId: this.player._id.toString(),
-            shortId: this.player.model.shortId,
-            prizeId: prizeInfo._id,
-            prizeConfig: prizeInfo,
-            multiple: message.multiple,
-            createAt: new Date()
-        };
+        // 领取免费奖品
+        if (message.type === 1) {
+            receiveInfo.freeReceive = true;
+            for (let i = 0; i < prizeInfo.freePrizeList.length; i++) {
+                await this.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+            }
+        }
 
-        await NewSignPrizeRecord.create(data);
+        // 领取付费奖品
+        if (message.type === 2) {
+            receiveInfo.payReceive = true;
+            for (let i = 0; i < prizeInfo.payPrizeList.length; i++) {
+                await this.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+            }
+        }
+
+        if (receiveInfo) {
+            await RegressionSignPrize.save();
+        } else {
+            // 创建领取记录
+            const data = {
+                playerId: this.player._id.toString(),
+                shortId: this.player.model.shortId,
+                prizeId: prizeInfo._id,
+                prizeConfig: prizeInfo,
+                multiple: message.multiple,
+                createAt: new Date()
+            };
+
+            receiveInfo = await NewSignPrizeRecord.create(data);
+        }
+
+
         await this.player.updateResource2Client();
-        return this.replySuccess(data);
+        return this.replySuccess(receiveInfo);
     }
 
     // 新人指引列表
