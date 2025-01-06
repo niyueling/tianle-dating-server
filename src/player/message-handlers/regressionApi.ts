@@ -1,7 +1,6 @@
 import {TianleErrorCode, ConsumeLogType} from "@fm/common/constants";
 import {addApi, BaseApi} from "./baseApi";
 import * as moment from "moment";
-import {service} from "../../service/importService";
 import RegressionSignPrize from "../../database/models/RegressionSignPrize";
 import RegressionSignPrizeRecord from "../../database/models/RegressionSignPrizeRecord";
 import RegressionRechargeRecord from "../../database/models/RegressionRechargeRecord";
@@ -19,7 +18,7 @@ export class RegressionApi extends BaseApi {
             return this.replyFail(TianleErrorCode.userNotFound);
         }
 
-        const data = await service.regression.getRegressionSignLists(user);
+        const data = await this.service.regression.getRegressionSignLists(user);
 
         return this.replySuccess(data);
     }
@@ -29,7 +28,7 @@ export class RegressionApi extends BaseApi {
     async payRechargeGift(message) {
         const env = message.env || 0;
         // 获取奖励配置
-        const player = await service.playerService.getPlayerModel(this.player._id);
+        const player = await this.service.playerService.getPlayerModel(this.player._id);
         if (!player) {
             return this.replyFail(TianleErrorCode.userNotFound);
         }
@@ -146,7 +145,7 @@ export class RegressionApi extends BaseApi {
             return this.replyFail(TianleErrorCode.orderNotExistOrPay);
         }
 
-        const player = await service.playerService.getPlayerModel(order.playerId);
+        const player = await this.service.playerService.getPlayerModel(order.playerId);
         if (!player || !player.openid || !player.sessionKey) {
             return this.replyFail(TianleErrorCode.userNotFound);
         }
@@ -215,7 +214,7 @@ export class RegressionApi extends BaseApi {
         }
     })
     async signIn(message) {
-        const player = await service.playerService.getPlayerModel(this.player._id);
+        const player = await this.service.playerService.getPlayerModel(this.player._id);
 
         const startTime = player.regressionTime;
         const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
@@ -251,7 +250,7 @@ export class RegressionApi extends BaseApi {
             }
 
             for (let i = 0; i < prizeInfo.freePrizeList.length; i++) {
-                await service.playerService.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+                await this.service.playerService.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
             }
         }
 
@@ -266,7 +265,7 @@ export class RegressionApi extends BaseApi {
             }
 
             for (let i = 0; i < prizeInfo.payPrizeList.length; i++) {
-                await service.playerService.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+                await this.service.playerService.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
             }
         }
 
@@ -300,7 +299,7 @@ export class RegressionApi extends BaseApi {
             return this.replyFail(TianleErrorCode.userNotFound);
         }
 
-        const player = await service.playerService.getPlayerModel(this.player._id);
+        const player = await this.service.playerService.getPlayerModel(this.player._id);
 
         const startTime = player.regressionTime;
         const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
@@ -327,7 +326,7 @@ export class RegressionApi extends BaseApi {
         const receivePayDatas = [];
 
         for (let i = 1; i <= days; i++) {
-            const receiveResult = await service.regression.onceReceive(this.player, i, payCount > 0);
+            const receiveResult = await this.service.regression.onceReceive(this.player, i, payCount > 0);
             if (receiveResult) {
                 receiveFreeDatas.push(receiveResult.freePrizeList);
                 receivePayDatas.push(receiveResult.payPrizeList);
@@ -346,7 +345,7 @@ export class RegressionApi extends BaseApi {
             return this.replyFail(TianleErrorCode.userNotFound);
         }
 
-        const taskData = await service.regression.getDailyTaskData(message, user);
+        const taskData = await this.service.regression.getDailyTaskData(message, user);
 
         return this.replySuccess(taskData);
     }
