@@ -337,6 +337,8 @@ export class AccountApi extends BaseApi {
         const receiveFreeDatas = [];
         const receivePayDatas = [];
 
+        console.warn("days-%s", days);
+
         for (let i = 1; i <= days; i++) {
             const receiveResult = await this.onceReceive(days[i]);
             if (receiveResult) {
