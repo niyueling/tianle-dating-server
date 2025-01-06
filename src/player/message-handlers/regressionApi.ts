@@ -3,7 +3,6 @@ import {addApi, BaseApi} from "./baseApi";
 import * as moment from "moment";
 import {service} from "../../service/importService";
 import Player from "../../database/models/player";
-import NewSignPrizeRecord from "../../database/models/NewSignPrizeRecord";
 import HeadBorder from "../../database/models/HeadBorder";
 import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
 import Medal from "../../database/models/Medal";
@@ -232,6 +231,19 @@ export class RegressionApi extends BaseApi {
     async signIn(message) {
         const player = await service.playerService.getPlayerModel(this.player._id);
 
+        const startTime = player.regressionTime;
+        const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
+
+        // 判断是否已经购买
+        const payCount = await RegressionRechargeRecord.count({
+            playerId: player._id,
+            status: 1,
+            createAt: {$gte: startTime, $lt: endTime}
+        });
+        if (!payCount) {
+            return this.replyFail(TianleErrorCode.payFail);
+        }
+
         // 获取奖励配置
         const prizeInfo = await RegressionSignPrize.findOne({_id: message.prizeId});
         if (!prizeInfo) {
@@ -247,19 +259,6 @@ export class RegressionApi extends BaseApi {
         // 如果今日付费奖品已领取，不能重复领取
         if (receiveInfo && receiveInfo.payReceive && message.type === 2) {
             return this.replyFail(TianleErrorCode.prizeIsReceive);
-        }
-
-        const startTime = player.regressionTime;
-        const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
-
-        // 判断是否已经购买
-        const payCount = await RegressionRechargeRecord.count({
-            playerId: player._id,
-            status: 1,
-            createAt: {$gte: startTime, $lt: endTime}
-        });
-        if (!payCount) {
-            return this.replyFail(TianleErrorCode.payFail);
         }
 
         // 领取免费奖品
@@ -305,302 +304,116 @@ export class RegressionApi extends BaseApi {
         return this.replySuccess(receiveInfo);
     }
 
-    // 新人指引列表
+    // 一键领取新手签到
     @addApi()
-    async guideLists() {
+    async oneTouchSignIn() {
         const user = await this.service.playerService.getPlayerModel(this.player.model._id);
 
         if (!user) {
             return this.replyFail(TianleErrorCode.userNotFound);
         }
 
-        const data = await this.getGuideLists(user);
+        const player = await service.playerService.getPlayerModel(this.player._id);
 
-        return this.replySuccess(data);
-    }
+        const startTime = player.regressionTime;
+        const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
 
-    // 领取新手指引奖励
-    @addApi({
-        rule: {
-            taskId: 'number',
-            multiple: "number?"
-        }
-    })
-    async finishGuide(message) {
-        // 兼容旧版本
-        if (!message.multiple) {
-            message.multiple = 1;
-        }
-
-        // 获取奖励配置
-        const taskInfo = await NewTask.findOne({taskId: message.taskId});
-        if (!taskInfo) {
-            return this.replyFail(TianleErrorCode.configNotFound);
-        }
-
-        // 判断是否领取
-        const receive = await NewTaskRecord.count({playerId: this.player._id, taskId: taskInfo.taskId});
-
-        if (receive) {
-            return this.replyFail(TianleErrorCode.prizeIsReceive);
-        }
-
-        // 按照奖励类型领取奖励
-        for (let i = 0; i < taskInfo.taskPrizes.length; i++) {
-            await this.receivePrize(taskInfo.taskPrizes[i], this.player._id, message.multiple, ConsumeLogType.receiveNewGuide);
-        }
-
-        // 创建领取记录
-        const data = {
-            playerId: this.player._id.toString(),
-            shortId: this.player.model.shortId,
-            taskId: taskInfo.taskId,
-            taskConfig: taskInfo,
-            multiple: message.multiple,
-            createAt: new Date()
-        };
-
-        await NewTaskRecord.create(data);
-
-        // 判断是否完成所有任务，是的话奖励88钻石
-        const receiveCount = await NewTaskRecord.count({playerId: this.player._id});
-        if (receiveCount === 5) {
-            const model = await service.playerService.getPlayerModel(this.player._id);
-            model.diamond += 88;
-            await model.save();
-            await service.playerService.logGemConsume(model._id, ConsumeLogType.receiveNewGuide, 88,
-                model.diamond, `新手指引获得88钻石`);
-
-            data.taskConfig.taskPrizes.push({type: 1, number: 88});
-        }
-
-        await this.player.updateResource2Client();
-        return this.replySuccess(data);
-    }
-
-    // 新人首充列表
-    @addApi()
-    async firstRechargeList() {
-        const user = await this.service.playerService.getPlayerModel(this.player.model._id);
-
-        if (!user) {
-            return this.replyFail(TianleErrorCode.userNotFound);
-        }
-
-        const data = await this.getFirstRechargeList(user);
-
-        return this.replySuccess(data);
-    }
-
-    // 领取新人首充奖励
-    @addApi({
-        rule: {
-            prizeId: 'string',
-            multiple: "number?"
-        }
-    })
-    async receiveFirstRecharge(message) {
-        // 兼容旧版本
-        if (!message.multiple) {
-            message.multiple = 1;
-        }
-
-        // 获取奖励配置
-        const prizeInfo = await NewFirstRecharge.findOne({_id: message.prizeId});
-        if (!prizeInfo) {
-            return this.replyFail(TianleErrorCode.configNotFound);
-        }
-
-        // 判断是否领取
-        const receive = await NewFirstRechargeRecord.findOne({
-            playerId: this.player._id,
-            "prizeConfig.day": prizeInfo.day
+        // 判断是否已经购买
+        const payCount = await RegressionRechargeRecord.count({
+            playerId: player._id,
+            status: 1,
+            createAt: {$gte: startTime, $lt: endTime}
         });
-
-        if (receive) {
-            return this.replyFail(TianleErrorCode.prizeIsReceive);
+        if (!payCount) {
+            return this.replyFail(TianleErrorCode.payFail);
         }
 
-        // 按照奖励类型领取奖励
-        for (let i = 0; i < prizeInfo.prizeList.length; i++) {
-            await this.receivePrize(prizeInfo.prizeList[i], this.player._id, message.multiple, ConsumeLogType.receiveNewSign);
+        let days = 0;
+
+
+        let lastReceiveInfo = await RegressionSignPrizeRecord.find({playerId: user._id}).sort({createAt: -1}).limit(1);
+        // 如果没有领取记录，则可以领取第一天的数据
+        if (!lastReceiveInfo.length) {
+            days = 1;
         }
-
-        // 创建领取记录
-        const data = {
-            playerId: this.player._id.toString(),
-            shortId: this.player.model.shortId,
-            prizeId: prizeInfo._id,
-            prizeConfig: prizeInfo,
-            multiple: message.multiple,
-            createAt: new Date()
-        };
-
-        await NewFirstRechargeRecord.create(data);
-        await this.player.updateResource2Client();
-        return this.replySuccess(data);
-    }
-
-    // 充值派对列表
-    @addApi()
-    async rechargePartyList() {
-        const user = await this.service.playerService.getPlayerModel(this.player.model._id);
-
-        if (!user) {
-            return this.replyFail(TianleErrorCode.userNotFound);
+        const todayStart = moment(new Date()).startOf('day').toDate().toString();
+        // 最后一次领取时间是今天之前，则可领取天数+1
+        if (lastReceiveInfo.length > 0 && Date.parse(lastReceiveInfo.createAt) < Date.parse(todayStart)) {
+            days++;
         }
+        const receiveFreeDatas = [];
+        const receivePayDatas = [];
 
-        const data = await this.getRechargePartyList(user);
-
-        return this.replySuccess(data);
-    }
-
-    // 获取充值派对奖励
-    @addApi()
-    async receiveRechargePartyPrize(message) {
-        // 兼容旧版本
-        if (!message.multiple) {
-            message.multiple = 1;
-        }
-
-        // 获取奖励配置
-        const prizeInfo = await RechargeParty.findOne({_id: message.prizeId});
-        if (!prizeInfo) {
-            return this.replyFail(TianleErrorCode.configNotFound);
-        }
-
-        // 判断是否领取
-        const start = moment(new Date()).startOf('day').toDate()
-        const end = moment(new Date()).endOf('day').toDate()
-        const receive = await PlayerRechargePartyRecord.findOne({
-            playerId: this.player._id,
-            prizeId: prizeInfo._id,
-            createAt: {$gte: start, $lt: end}
-        });
-
-        if (receive) {
-            return this.replyFail(TianleErrorCode.prizeIsReceive);
-        }
-
-        // 按照奖励类型领取奖励
-        for (let i = 0; i < prizeInfo.prizeList.length; i++) {
-            await this.receivePrize(prizeInfo.prizeList[i], this.player._id, message.multiple, ConsumeLogType.receiveRechargeParty);
-        }
-
-        // 创建领取记录
-        const data = {
-            playerId: this.player._id.toString(),
-            shortId: this.player.model.shortId,
-            prizeId: prizeInfo._id,
-            price: prizeInfo.price,
-            prizeConfig: prizeInfo,
-            multiple: message.multiple,
-            createAt: new Date()
-        };
-
-        await PlayerRechargePartyRecord.create(data);
-        await this.player.updateResource2Client();
-        return this.replySuccess(data);
-    }
-
-    async getGuideLists(user) {
-        const taskList = await NewTask.find().lean();
-        let tasks = [];
-
-        for (let i = 0; i < taskList.length; i++) {
-            const task = await this.checkTaskState(taskList[i]);
-            tasks.push(task);
-        }
-
-        const startTime = user.createAt;
-        const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10);
-
-        return {tasks, activityTimes: {startTime, endTime}};
-    }
-
-    async getFirstRechargeList(user) {
-        const summary = await UserRechargeOrder.aggregate([
-            {$match: {playerId: user._id.toString(), status: 1}},
-            {$group: {_id: null, sum: {$sum: "$price"}}}
-        ]).exec();
-        let rechargeAmount = 0;
-        if (summary.length > 0) {
-            rechargeAmount = summary[0].sum;
-        }
-
-        // 计算完成任务时间
-        let finishTime = null;
-        if (rechargeAmount >= 6) {
-            const rechargeList = await UserRechargeOrder.find({playerId: user._id.toString(), status: 1});
-            let sumaryAmount = 0;
-
-            for (let i = 0; i < rechargeList.length; i++) {
-                sumaryAmount += rechargeList[i].price;
-
-                if (sumaryAmount >= 6) {
-                    finishTime = rechargeList[i].created;
-                    break;
-                }
+        for (let i = 1; i <= days; i++) {
+            const receiveResult = await this.onceReceive(days[i]);
+            if (receiveResult) {
+                receiveFreeDatas.push(receiveResult.freePrizeList);
+                receivePayDatas.push(receiveResult.payPrizeList);
             }
         }
 
-        const taskList = await NewFirstRecharge.find().lean();
-        let tasks = [];
-
-        for (let i = 0; i < taskList.length; i++) {
-            const receive = await NewFirstRechargeRecord.count({
-                playerId: user._id,
-                "prizeConfig.day": taskList[i].day
-            });
-            taskList[i].receive = !!receive;
-        }
-
-        const startTime = user.createAt;
-        const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10);
-
-        return {taskList, activityTimes: {startTime, endTime}, isPay: rechargeAmount >= 6, finishTime};
+        return this.replySuccess({receiveFreeDatas, receivePayDatas});
     }
 
-    // 判断任务是否完成
-    async checkTaskState(task) {
-        const receiveCount = await NewTaskRecord.count({playerId: this.player._id, taskId: task.taskId});
-        task.receive = !!receiveCount;
-        const model = await service.playerService.getPlayerModel(this.player._id);
-        // 完成10场游戏对局
-        if (task.taskId === 1001) {
-            task.finish = model.juCount >= task.taskTimes;
-            task.finishCount = model.juCount;
+    async onceReceive(day) {
+        // 获取奖励配置
+        const prizeInfo = await RegressionSignPrize.findOne({day});
+        if (!prizeInfo) {
+            return false;
         }
 
-        // 完成3场游戏对局胜利
-        if (task.taskId === 1002) {
-            task.finish = model.juWinCount >= task.taskTimes;
-            task.finishCount = model.juWinCount;
+        let freePrizeList = [];
+        let payPrizeList = [];
+
+        // 判断是否领取
+        let receiveInfo = await RegressionSignPrizeRecord.findOne({playerId: this.player._id, day: prizeInfo.day});
+        if (receiveInfo && receiveInfo.freeReceive && receiveInfo.payReceive) {
+            return false;
         }
 
-        // 完成10次杠牌
-        if (task.taskId === 1003) {
-            task.finish = model.gangCount >= task.taskTimes;
-            task.finishCount = model.gangCount;
+        // 领取免费奖品
+        if (!receiveInfo || (receiveInfo && !receiveInfo.freeReceive)) {
+            if (receiveInfo) {
+                receiveInfo.freeReceive = true;
+            }
+
+            freePrizeList = [...freePrizeList, ...prizeInfo.freePrizeList];
+
+            for (let i = 0; i < prizeInfo.freePrizeList.length; i++) {
+                await this.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+            }
         }
 
-        // 商城购买钻石1次(任意金额)
-        if (task.taskId === 1004) {
-            const orderCount = await DiamondRecord.count({
-                player: this.player._id,
-                type: ConsumeLogType.voucherForDiamond
-            });
-            task.finish = orderCount >= task.taskTimes;
-            task.finishCount = orderCount;
+        // 领取付费奖品
+        if (!receiveInfo || (receiveInfo && !receiveInfo.payReceive)) {
+            if (receiveInfo) {
+                receiveInfo.payReceive = true;
+            }
+
+            payPrizeList = [...payPrizeList, ...prizeInfo.payPrizeList];
+
+            for (let i = 0; i < prizeInfo.payPrizeList.length; i++) {
+                await this.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+            }
         }
 
-        // 观看1次广告
-        if (task.taskId === 1005) {
-            task.finish = task.receive;
-            task.finishCount = task.finish ? 1 : 0;
+        if (receiveInfo) {
+            await receiveInfo.save();
+        } else {
+            // 创建领取记录
+            const data = {
+                playerId: this.player._id,
+                prizeId: prizeInfo._id,
+                day: prizeInfo.day,
+                freeReceive: true,
+                payReceive: true,
+                prizeConfig: prizeInfo
+            };
+
+            await RegressionSignPrizeRecord.create(data);
         }
 
-        return task;
+        return {payPrizeList, freePrizeList};
     }
 
     async getRegressionSignLists(user) {
