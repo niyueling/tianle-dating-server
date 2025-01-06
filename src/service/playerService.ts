@@ -289,6 +289,7 @@ export default class PlayerService extends BaseService {
                 user.sessionKey = data.sessionKey;
             }
 
+            user.loginTime = new Date();
 
             await user.save();
 
