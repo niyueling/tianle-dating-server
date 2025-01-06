@@ -2,21 +2,6 @@ import {TianleErrorCode, ConsumeLogType} from "@fm/common/constants";
 import {addApi, BaseApi} from "./baseApi";
 import * as moment from "moment";
 import {service} from "../../service/importService";
-import Player from "../../database/models/player";
-import HeadBorder from "../../database/models/HeadBorder";
-import PlayerHeadBorder from "../../database/models/PlayerHeadBorder";
-import Medal from "../../database/models/Medal";
-import PlayerMedal from "../../database/models/PlayerMedal";
-import NewTask from "../../database/models/newTask";
-import NewTaskRecord from "../../database/models/NewTaskRecord";
-import DiamondRecord from "../../database/models/diamondRecord";
-import UserRechargeOrder from "../../database/models/userRechargeOrder";
-import NewFirstRecharge from "../../database/models/NewFirstRecharge";
-import NewFirstRechargeRecord from "../../database/models/NewFirstRechargeRecord";
-import CardTable from "../../database/models/CardTable";
-import PlayerCardTable from "../../database/models/PlayerCardTable";
-import RechargeParty from "../../database/models/RechargeParty";
-import PlayerRechargePartyRecord from "../../database/models/PlayerRechargePartyRecord";
 import RegressionSignPrize from "../../database/models/RegressionSignPrize";
 import RegressionSignPrizeRecord from "../../database/models/RegressionSignPrizeRecord";
 import RegressionRechargeRecord from "../../database/models/RegressionRechargeRecord";
@@ -265,7 +250,7 @@ export class RegressionApi extends BaseApi {
             }
 
             for (let i = 0; i < prizeInfo.freePrizeList.length; i++) {
-                await this.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+                await service.playerService.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
             }
         }
 
@@ -280,7 +265,7 @@ export class RegressionApi extends BaseApi {
             }
 
             for (let i = 0; i < prizeInfo.payPrizeList.length; i++) {
-                await this.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+                await service.playerService.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
             }
         }
 
@@ -376,7 +361,7 @@ export class RegressionApi extends BaseApi {
             freePrizeList = [...freePrizeList, ...prizeInfo.freePrizeList];
 
             for (let i = 0; i < prizeInfo.freePrizeList.length; i++) {
-                await this.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+                await service.playerService.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
             }
         }
 
@@ -389,7 +374,7 @@ export class RegressionApi extends BaseApi {
             payPrizeList = [...payPrizeList, ...prizeInfo.payPrizeList];
 
             for (let i = 0; i < prizeInfo.payPrizeList.length; i++) {
-                await this.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
+                await service.playerService.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
             }
         }
 
@@ -440,244 +425,5 @@ export class RegressionApi extends BaseApi {
         }
 
         return {isPay: !!isPay, isTodaySign: !!isTodaySign, days, prizeList, activityTimes: {startTime, endTime}};
-    }
-
-    async receivePrize(prize, playerId, multiple = 1, type) {
-        const user = await Player.findOne({_id: playerId});
-        if (prize.type === 1) {
-            user.diamond += prize.number * multiple;
-            await service.playerService.logGemConsume(user._id, type, prize.number * multiple,
-                user.diamond, `新手签到获得${prize.number * multiple}钻石`);
-        }
-
-        if (prize.type === 2) {
-            user.gold += prize.number * multiple;
-            await service.playerService.logGoldConsume(user._id, type, prize.number * multiple,
-                user.gold, `新手签到获得${prize.number * multiple}金豆`);
-        }
-
-        if (prize.type === 3) {
-            const config = await HeadBorder.findOne({propId: prize.propId}).lean();
-            let playerHeadBorder = await PlayerHeadBorder.findOne({propId: prize.propId, playerId}).lean();
-
-            // 如果头像框已过期，删除头像框
-            if (playerHeadBorder && playerHeadBorder.times !== -1 && playerHeadBorder.times <= new Date().getTime()) {
-                await PlayerHeadBorder.remove({_id: playerHeadBorder._id});
-                playerHeadBorder = null;
-            }
-
-            if (config && !playerHeadBorder) {
-                const data = {
-                    propId: prize.propId,
-                    playerId: user._id,
-                    shortId: user.shortId,
-                    times: -1,
-                    isUse: false
-                }
-
-                await PlayerHeadBorder.create(data);
-            }
-        }
-
-        if (prize.type === 4) {
-            const config = await Medal.findOne({propId: prize.propId}).lean();
-            let playerMedal = await PlayerMedal.findOne({propId: prize.propId, playerId}).lean();
-
-            // 如果称号已过期，删除称号
-            if (playerMedal && playerMedal.times !== -1 && playerMedal.times <= new Date().getTime()) {
-                await PlayerMedal.remove({_id: playerMedal._id});
-                playerMedal = null;
-            }
-
-            if (config && !playerMedal) {
-                const data = {
-                    propId: prize.propId,
-                    playerId: user._id,
-                    shortId: user.shortId,
-                    times: -1,
-                    isUse: false
-                }
-
-                await PlayerMedal.create(data);
-            }
-        }
-
-        if (prize.type === 5) {
-            const config = await CardTable.findOne({propId: prize.propId}).lean();
-            let playerCardTable = await PlayerCardTable.findOne({propId: prize.propId, playerId}).lean();
-
-            // 如果称号已过期，删除称号
-            if (playerCardTable && playerCardTable.times !== -1 && playerCardTable.times <= new Date().getTime()) {
-                await playerCardTable.remove({_id: playerCardTable._id});
-                playerCardTable = null;
-            }
-
-            if (config && !playerCardTable) {
-                const data = {
-                    propId: prize.propId,
-                    playerId: user._id,
-                    shortId: user.shortId,
-                    times: -1,
-                    isUse: false
-                }
-
-                await PlayerCardTable.create(data);
-            }
-        }
-
-        await user.save();
-    }
-
-    async getRechargePartyList(user) {
-        const records = await RechargeParty.find().lean();
-        const start = moment(new Date()).startOf('day').toDate()
-        const end = moment(new Date()).endOf('day').toDate()
-        let freeGift = {};
-        const rechargeDay1 = [];
-        const rechargeDay6 = [];
-        const rechargeDay30 = [];
-        const partyList1 = [];
-        const partyList6 = [];
-        const partyList30 = [];
-
-        for (let i = 0; i < records.length; i++) {
-            if (records[i].price === 0) {
-                freeGift = records[i];
-            }
-
-            if (records[i].price === 1) {
-                partyList1.push(records[i]);
-            }
-
-            if (records[i].price === 6) {
-                partyList6.push(records[i]);
-            }
-
-            if (records[i].price === 30) {
-                partyList30.push(records[i]);
-            }
-        }
-
-        // 计算每日福利今日是否已领取
-        const freeGiftReceiveCount = await PlayerRechargePartyRecord.count({
-            playerId: user._id,
-            prizeId: freeGift["_id"],
-            createAt: {$gte: start, $lt: end}
-        });
-        freeGift["receive"] = freeGiftReceiveCount > 0;
-
-        // 计算1元档
-        // 计算今日是否已领取
-        const party1TodayReceiveCount = await PlayerRechargePartyRecord.count({
-            playerId: user._id,
-            price: 1,
-            createAt: {$gte: start, $lt: end}
-        });
-        for (let i = 0; i < partyList1.length; i++) {
-            // 计算是否已领取
-            const receiveCount = await PlayerRechargePartyRecord.count({
-                playerId: user._id,
-                prizeId: partyList1[i]._id
-            });
-            partyList1[i].receive = !!receiveCount;
-        }
-
-        // 计算6元档
-        // 计算今日是否已领取
-        const party6TodayReceiveCount = await PlayerRechargePartyRecord.count({
-            playerId: user._id,
-            price: 6,
-            createAt: {$gte: start, $lt: end}
-        });
-        for (let i = 0; i < partyList6.length; i++) {
-            // 计算是否已领取
-            const receiveCount = await PlayerRechargePartyRecord.count({
-                playerId: user._id,
-                prizeId: partyList6[i]._id
-            });
-            partyList6[i].receive = !!receiveCount;
-        }
-
-        // 计算30元档
-        // 计算今日是否已领取
-        const party30TodayReceiveCount = await PlayerRechargePartyRecord.count({
-            playerId: user._id,
-            price: 30,
-            createAt: {$gte: start, $lt: end}
-        });
-        for (let i = 0; i < partyList30.length; i++) {
-            // 计算是否已领取
-            const receiveCount = await PlayerRechargePartyRecord.count({
-                playerId: user._id,
-                prizeId: partyList30[i]._id
-            });
-            partyList30[i].receive = !!receiveCount;
-        }
-
-        // 用户今日充值金额
-        const summary = await UserRechargeOrder.aggregate([
-            {$match: {playerId: user._id.toString(), status: 1, created: {$gte: start, $lt: end}}},
-            {$group: {_id: null, sum: {$sum: "$price"}}}
-        ]).exec();
-        let rechargeAmount = 0;
-        if (summary.length > 0) {
-            rechargeAmount = summary[0].sum;
-        }
-
-        // 计算连续充值天数
-        for (let i = 0; i < 10; i++) {
-            const todayTime = Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * i;
-            const currentStart = moment(new Date(todayTime)).startOf('day').toDate();
-            const currentEnd = moment(new Date(todayTime)).endOf('day').toDate();
-
-            // 用户今日充值金额
-            const summary = await UserRechargeOrder.aggregate([
-                {$match: {playerId: user._id.toString(), status: 1, created: {$gte: currentStart, $lt: currentEnd}}},
-                {$group: {_id: null, sum: {$sum: "$price"}}}
-            ]).exec();
-            let todayRechargeAmount = 0;
-            if (summary.length > 0) {
-                todayRechargeAmount = summary[0].sum;
-
-                if (todayRechargeAmount >= 1) {
-                    rechargeDay1.push(todayRechargeAmount);
-                }
-
-                if (todayRechargeAmount >= 6) {
-                    rechargeDay6.push(todayRechargeAmount);
-                }
-
-                if (todayRechargeAmount >= 30) {
-                    rechargeDay30.push(todayRechargeAmount);
-                }
-            }
-        }
-
-        // 获取活动时间
-        const startTime = user.createAt;
-        const endTime = new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 10);
-
-        return {
-            freeGift,
-            partyOne: {
-                todayFinish: rechargeAmount >= 1,
-                todayReceive: party1TodayReceiveCount > 0,
-                lists: partyList1,
-                rechargeDay: rechargeDay1
-            },
-            partySix: {
-                todayFinish: rechargeAmount >= 6,
-                todayReceive: party6TodayReceiveCount > 0,
-                lists: partyList6,
-                rechargeDay: rechargeDay6
-            },
-            partyThirty: {
-                todayFinish: rechargeAmount >= 30,
-                todayReceive: party30TodayReceiveCount > 0,
-                lists: partyList30,
-                rechargeDay: rechargeDay30
-            },
-            activityTime: {startTime, endTime}
-        };
     }
 }
