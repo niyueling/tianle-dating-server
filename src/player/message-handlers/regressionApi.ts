@@ -21,8 +21,8 @@ import PlayerRechargePartyRecord from "../../database/models/PlayerRechargeParty
 import RegressionSignPrize from "../../database/models/RegressionSignPrize";
 import RegressionSignPrizeRecord from "../../database/models/RegressionSignPrizeRecord";
 import RegressionRechargeRecord from "../../database/models/RegressionRechargeRecord";
-
-const config = require("../..//config");
+import crypto = require('crypto');
+import * as config from '../../config'
 
 export class RegressionApi extends BaseApi {
     // 回归签到
@@ -39,13 +39,20 @@ export class RegressionApi extends BaseApi {
         return this.replySuccess(data);
     }
 
-    // 购买至尊回归礼包
+    // 购买回归签到礼包
     @addApi()
     async payRechargeGift(message) {
+        const env = message.env || 0;
         // 获取奖励配置
         const player = await service.playerService.getPlayerModel(this.player._id);
         if (!player) {
             return this.replyFail(TianleErrorCode.userNotFound);
+        }
+        if (!player.openid) {
+            return this.replyFail(TianleErrorCode.openidNotFound);
+        }
+        if (!player.sessionKey) {
+            return this.replyFail(TianleErrorCode.sessionKeyNotFound);
         }
 
         const startTime = player.regressionTime || new Date();
@@ -63,26 +70,86 @@ export class RegressionApi extends BaseApi {
             return this.replyFail(TianleErrorCode.orderNotExistOrPay);
         }
 
-        // 判断代金券是否充足
-        if (player.voucher < config.game.regressionAmount) {
-            return this.replyFail(TianleErrorCode.voucherInsufficient);
-        }
-
-        // 扣除代金券
-        player.voucher -= config.game.regressionAmount;
-        await player.save();
-
         // 创建购买记录
         const data = {
             playerId: this.player._id.toString(),
             amount: config.game.regressionAmount,
-            status: 1,
-            createAt: new Date()
+            status: 0,
+            sn: await this.service.utils.generateOrderNumber()
         };
 
-        await RegressionRechargeRecord.create(data);
-        await this.player.updateResource2Client();
-        return this.replySuccess(data);
+        const record = await RegressionRechargeRecord.create(data);
+        const accessToken = await this.service.utils.getGlobalConfigByName("MnpAccessToken");
+        const appKey = await this.service.utils.getGlobalConfigByName("appkey");
+        const userPostBody = {
+            openid: player.openid,
+            offer_id: await this.service.utils.getGlobalConfigByName("offerid"),
+            ts: Math.floor(Date.now() / 1000),
+            zone_id: await this.service.utils.getGlobalConfigByName("zoneid"),
+            env: env,
+            user_ip: this.player.getIpAddress()
+        }
+
+        const userPostBodyString = JSON.stringify(userPostBody);
+
+        // 生成登录态签名和支付请求签名
+        const signature = crypto.createHmac('sha256', player.sessionKey).update(userPostBodyString).digest('hex');
+        const needSignMsg = `/wxa/game/getbalance&${userPostBodyString}`;
+        const paySign = crypto.createHmac('sha256', appKey).update(needSignMsg).digest('hex');
+
+        // 查询用户游戏币余额
+        const balanceUrl = `https://api.weixin.qq.com/wxa/game/getbalance?access_token=${accessToken}&signature=${signature}&sig_method=hmac_sha256&pay_sig=${paySign}`;
+        const response = await this.service.base.postByJson(balanceUrl, userPostBody);
+        if (response.data.errcode !== 0) {
+            return this.replyFail(TianleErrorCode.payFail);
+        }
+
+        // 如果用户游戏币小于充值数量，通知客户端充值，operate=1
+        if (response.data.balance < config.game.regressionAmount * 10) {
+            return this.replySuccess({
+                "orderId": record["_id"],
+                'orderSn': record["sn"],
+                "env": env,
+                "offerId": userPostBody.offer_id,
+                'zoneId': userPostBody.zone_id,
+                "currencyType": "CNY",
+                "buyQuantity": config.game.regressionAmount * 10,
+                "operate": 1
+            })
+        }
+
+        // 如果用户游戏币大于充值数量，扣除游戏币
+        const payBody = {
+            openid: player.openid,
+            offer_id: userPostBody.offer_id,
+            ts: userPostBody.ts,
+            zone_id: userPostBody.zone_id,
+            env: userPostBody.env,
+            user_ip: userPostBody.user_ip,
+            amount: config.game.regressionAmount * 10,
+            bill_no: record.sn
+        }
+
+        // 生成登录态签名和支付请求签名
+        const sign = crypto.createHmac('sha256', player.sessionKey).update(JSON.stringify(payBody)).digest('hex');
+        const needSign = "/wxa/game/pay&" + JSON.stringify(payBody);
+        const paySig = crypto.createHmac('sha256', appKey).update(needSign).digest('hex');
+        const payUrl = `https://api.weixin.qq.com/wxa/game/pay?access_token=${accessToken}&signature=${sign}&sig_method=hmac_sha256&pay_sig=${paySig}`;
+        const pay_res = await this.service.base.curl(payUrl, { method: "post", data: payBody});
+        const pay_response = JSON.parse(pay_res.data);
+        if (pay_response.errcode !== 0) {
+            return this.replyFail(TianleErrorCode.payFail);
+        }
+
+        // 虚拟币支付成功，直接购买完成
+        const result = this.service.playerService.playerPayRegressionSignGift(record._id, pay_response.bill_no);
+        if(!result) {
+            return this.replyFail(TianleErrorCode.payFail);
+        }
+
+        pay_response.operate = 2;
+
+        return this.replySuccess(pay_response);
     }
 
     // 领取回归签到奖励

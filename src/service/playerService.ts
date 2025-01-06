@@ -39,6 +39,7 @@ import PlayerAttr from "../database/models/playerAttr";
 import TurntablePrize from "../database/models/turntablePrize";
 import TurntablePrizeRecord from "../database/models/turntablePrizeRecord";
 import PlayerPayDailySupplementRecord from "../database/models/PlayerPayDailySupplementRecord";
+import RegressionRechargeRecord from "../database/models/RegressionRechargeRecord";
 
 // 玩家信息
 export default class PlayerService extends BaseService {
@@ -1224,4 +1225,22 @@ export default class PlayerService extends BaseService {
 
     return true;
   }
+
+    async playerPayRegressionSignGift(orderId, thirdOrderNo) {
+        const order = await RegressionRechargeRecord.findOne({_id: orderId});
+        if (!order) {
+            return false;
+        }
+
+        const user = await Player.findOne({_id: order.playerId});
+        if (!user) {
+            return false;
+        }
+
+        order.status = 1;
+        order.transactionId = thirdOrderNo;
+        await order.save();
+
+        return true;
+    }
 }
