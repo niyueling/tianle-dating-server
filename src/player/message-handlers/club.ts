@@ -1839,7 +1839,7 @@ async function disbandPlayerSendAdminEmail(clubName, clubId, playerInfo, partner
         playerName: playerInfo.nickname,
         avatar: playerInfo.avatar,
         playerShortId: playerInfo.shortId,
-        message: `${playerInfo.nickname}(${playerInfo.shortId})被合伙人${partnerInfo.nickname}(${partnerInfo.shortId})踢出战队${clubName}(${clubId})`
+        message: `${playerInfo.nickname}(${playerInfo.shortId})被合伙人踢出战队`
     });
 }
 
@@ -1849,7 +1849,7 @@ async function disbandPlayerSendEmail(clubName, clubId, playerInfo) {
         to: playerInfo._id,
         type: MailType.MESSAGE,
         title: '踢出战队通知',
-        content: `${playerInfo.nickname}(${playerInfo.shortId})被踢出战队${clubName}(${clubId})`,
+        content: `你已被踢出战队${clubName}(${clubId})`,
         state: MailState.UNREAD,
         createAt: new Date(),
         gift: {diamond: 0, tlGold: 0, gold: 0}
