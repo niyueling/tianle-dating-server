@@ -18,7 +18,6 @@ import mailHandlers from './message-handlers/mail';
 import errorHandlers from './message-handlers/error';
 import PlayerModel from '../database/models/player';
 import {QueryApi} from "./message-handlers/query";
-import {NewClub} from "./message-handlers/newClub";
 import * as Parameter from 'parameter';
 import {Errors, GameError} from "@fm/common/errors";
 import {Region} from "./message-handlers/region";
@@ -450,7 +449,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
                     // 加入俱乐部房间通知用户
                     if (messageBody.name === 'club/updateClubRoom') {
                         const clubInfo = await getClubInfo(this.clubId, this);
-                        console.warn("clubInfo-%s", JSON.stringify(clubInfo));
+                        console.warn("clubInfo-%s, redis-%s", JSON.stringify(clubInfo), config.redis);
 
                         if (clubInfo.ok) {
                             this.sendMessage('club/getClubInfoReply', clubInfo);
