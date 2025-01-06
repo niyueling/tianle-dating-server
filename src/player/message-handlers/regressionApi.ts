@@ -249,7 +249,7 @@ export class RegressionApi extends BaseApi {
             return this.replyFail(TianleErrorCode.prizeIsReceive);
         }
 
-        const startTime = player.regressionTime || new Date();
+        const startTime = player.regressionTime;
         const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
 
         // 判断是否已经购买
@@ -291,13 +291,13 @@ export class RegressionApi extends BaseApi {
             const data = {
                 playerId: this.player._id,
                 prizeId: prizeInfo._id,
-                day: message.day,
+                day: prizeInfo.day,
                 freeReceive: message.type === 1,
                 payReceive: message.type === 2,
                 prizeConfig: prizeInfo
             };
 
-            receiveInfo = await RegressionSignPrize.create(data);
+            receiveInfo = await RegressionSignPrizeRecord.create(data);
         }
 
 

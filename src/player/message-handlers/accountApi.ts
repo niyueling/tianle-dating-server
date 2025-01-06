@@ -363,13 +363,13 @@ export class AccountApi extends BaseApi {
             const data = {
                 playerId: this.player._id,
                 prizeId: prizeInfo._id,
-                day: message.day,
+                day: prizeInfo.day,
                 freeReceive: message.type === 1,
                 payReceive: message.type === 2,
                 prizeConfig: prizeInfo
             };
 
-            receiveInfo = await RegressionSignPrize.create(data);
+            receiveInfo = await RegressionSignPrizeRecord.create(data);
         }
 
 
