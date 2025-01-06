@@ -11,6 +11,6 @@ const schema = new Schema({
 
 schema.index({type: 1});
 
-const RegressionTaskTotalPrize = mongoose.model('RegressionTaskTotalPrize', RegressionTaskTotalPrize);
+const RegressionTaskTotalPrize = mongoose.model('RegressionTaskTotalPrize', schema);
 
 export default RegressionTaskTotalPrize
