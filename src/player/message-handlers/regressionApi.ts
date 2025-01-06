@@ -48,6 +48,7 @@ export class RegressionApi extends BaseApi {
         if (!player) {
             return this.replyFail(TianleErrorCode.userNotFound);
         }
+        console.warn(player);
         if (!player.openid) {
             return this.replyFail(TianleErrorCode.openidNotFound);
         }
