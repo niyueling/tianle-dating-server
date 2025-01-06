@@ -7,6 +7,7 @@ import RegressionSignPrizeRecord from "../../database/models/RegressionSignPrize
 import RegressionRechargeRecord from "../../database/models/RegressionRechargeRecord";
 import crypto = require('crypto');
 import * as config from '../../config'
+import Player from "../../database/models/player";
 
 export class RegressionApi extends BaseApi {
     // 回归签到
@@ -18,7 +19,7 @@ export class RegressionApi extends BaseApi {
             return this.replyFail(TianleErrorCode.userNotFound);
         }
 
-        const data = await this.getRegressionSignLists(user);
+        const data = await service.regression.getRegressionSignLists(user);
 
         return this.replySuccess(data);
     }
@@ -326,7 +327,7 @@ export class RegressionApi extends BaseApi {
         const receivePayDatas = [];
 
         for (let i = 1; i <= days; i++) {
-            const receiveResult = await this.onceReceive(i, payCount > 0);
+            const receiveResult = await service.regression.onceReceive(this.player, i, payCount > 0);
             if (receiveResult) {
                 receiveFreeDatas.push(receiveResult.freePrizeList);
                 receivePayDatas.push(receiveResult.payPrizeList);
@@ -336,94 +337,17 @@ export class RegressionApi extends BaseApi {
         return this.replySuccess({receiveFreeDatas, receivePayDatas});
     }
 
-    async onceReceive(day, isPay) {
-        // 获取奖励配置
-        const prizeInfo = await RegressionSignPrize.findOne({day});
-        if (!prizeInfo) {
-            return false;
+    // 回归任务列表
+    @addApi()
+    async taskLists(message) {
+        const user = await Player.findOne({_id: this.player._id});
+
+        if (!user) {
+            return this.replyFail(TianleErrorCode.userNotFound);
         }
 
-        let freePrizeList = [];
-        let payPrizeList = [];
+        const taskData = await service.regression.getDailyTaskData(message, user);
 
-        // 判断是否领取
-        let receiveInfo = await RegressionSignPrizeRecord.findOne({playerId: this.player._id, day: prizeInfo.day});
-        if (receiveInfo && receiveInfo.freeReceive && receiveInfo.payReceive) {
-            return false;
-        }
-
-        // 领取免费奖品
-        if (!receiveInfo || (receiveInfo && !receiveInfo.freeReceive)) {
-            if (receiveInfo) {
-                receiveInfo.freeReceive = true;
-            }
-
-            freePrizeList = [...freePrizeList, ...prizeInfo.freePrizeList];
-
-            for (let i = 0; i < prizeInfo.freePrizeList.length; i++) {
-                await service.playerService.receivePrize(prizeInfo.freePrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
-            }
-        }
-
-        // 领取付费奖品
-        if (!receiveInfo || (receiveInfo && !receiveInfo.payReceive) && isPay) {
-            if (receiveInfo) {
-                receiveInfo.payReceive = true;
-            }
-
-            payPrizeList = [...payPrizeList, ...prizeInfo.payPrizeList];
-
-            for (let i = 0; i < prizeInfo.payPrizeList.length; i++) {
-                await service.playerService.receivePrize(prizeInfo.payPrizeList[i], this.player._id, 1, ConsumeLogType.payRegressionSignGift);
-            }
-        }
-
-        if (receiveInfo) {
-            await receiveInfo.save();
-        } else {
-            // 创建领取记录
-            const data = {
-                playerId: this.player._id,
-                prizeId: prizeInfo._id,
-                day: prizeInfo.day,
-                freeReceive: true,
-                payReceive: true,
-                prizeConfig: prizeInfo
-            };
-
-            await RegressionSignPrizeRecord.create(data);
-        }
-
-        return {payPrizeList, freePrizeList};
-    }
-
-    async getRegressionSignLists(user) {
-        const prizeList = await RegressionSignPrize.find().sort({day: 1}).lean();
-        const start = moment(new Date()).startOf('day').toDate()
-        const end = moment(new Date()).endOf('day').toDate()
-        const isTodaySign = await RegressionSignPrizeRecord.count({
-            playerId: user._id,
-            createAt: {$gte: start, $lt: end}
-        });
-        const startTime = user.regressionTime || new Date();
-        const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
-        let days = await RegressionSignPrizeRecord.count({playerId: user._id});
-        if (!isTodaySign) {
-            days++;
-        }
-
-        // 判断是否已经购买
-        const isPay = await RegressionRechargeRecord.findOne({
-            playerId: user._id,
-            status: 1,
-            createAt: {$gte: startTime, $lt: endTime}
-        });
-
-        for (let i = 0; i < prizeList.length; i++) {
-            const receive = await RegressionSignPrizeRecord.count({playerId: user._id, day: prizeList[i].day});
-            prizeList[i].receive = !!receive;
-        }
-
-        return {isPay: !!isPay, isTodaySign: !!isTodaySign, days, prizeList, activityTimes: {startTime, endTime}};
+        return this.replySuccess(taskData);
     }
 }

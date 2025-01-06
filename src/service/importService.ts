@@ -16,6 +16,7 @@ import ItemService from "./item";
 import UtilsService from "./utils";
 import Wechat from "./wechat";
 import WechatPay from "./wechatPay";
+import RegressionService from "./regressionService";
 
 export interface ServiceType {
   // 文件名：函数名
@@ -35,6 +36,7 @@ export interface ServiceType {
   times: TimesService,
   qian: QianService,
   item: ItemService,
+  regression: RegressionService
 }
 
 // 导出 service 目录下的所有 service
