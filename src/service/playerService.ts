@@ -289,6 +289,11 @@ export default class PlayerService extends BaseService {
                 user.sessionKey = data.sessionKey;
             }
 
+            // 判断回归时间
+            if (user.loginTime && new Date().getTime() - Date.parse(user.loginTime) > 1000 * 60 * 60 * 24 * 30) {
+                user.regressionTime = new Date();
+            }
+
             user.loginTime = new Date();
 
             await user.save();
