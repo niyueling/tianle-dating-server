@@ -11,6 +11,8 @@ import TurntablePrize from "../../database/models/turntablePrize";
 import TurntablePrizeRecord from "../../database/models/turntablePrizeRecord";
 import Player from "../../database/models/player";
 import {pick} from "lodash/lodash";
+import * as config from "../../config";
+import MonthGiftRecord from "../../database/models/MonthGiftRecord";
 
 export class TurnTableApi extends BaseApi {
   // 获取转盘列表
@@ -60,6 +62,18 @@ export class TurnTableApi extends BaseApi {
       return this.replyFail(TianleErrorCode.drawFail);
     }
 
+    let drawNum = result.record.prizeConfig && result.record.prizeConfig.num;
+    const regressionStartTime = user.regressionTime;
+    if (regressionStartTime) {
+      const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
+      const currentTime = new Date().getTime();
+      const payCount = await MonthGiftRecord.count({playerId: user._id, day: 30, isRegression: true, createAt: {$gte: regressionStartTime, $lt: regressionEndTime}});
+
+      if (payCount === 0 && currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
+        drawNum *= 1.2;
+      }
+    }
+
     this.replySuccess({
       // 中奖记录 id
       recordId: result.record._id,
@@ -67,7 +81,7 @@ export class TurnTableApi extends BaseApi {
       prizeId: result.record.prizeId,
       // 是否中奖
       isHit: result.record.isHit,
-      num: result.record.prizeConfig && result.record.prizeConfig.num,
+      num: drawNum,
       type: result.record.prizeConfig && result.record.prizeConfig.type,
       turntableTimes: result.times
     })
