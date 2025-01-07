@@ -85,6 +85,7 @@ export default class RegressionService extends BaseService {
       playerId: user._id,
       createAt: {$gte: start, $lt: end}
     });
+
     const startTime = user.regressionTime || new Date();
     const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
     let days = await RegressionSignPrizeRecord.count({playerId: user._id});
