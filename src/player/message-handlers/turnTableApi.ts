@@ -62,6 +62,7 @@ export class TurnTableApi extends BaseApi {
       return this.replyFail(TianleErrorCode.drawFail);
     }
 
+    let baseNum = result.record.prizeConfig && result.record.prizeConfig.num;
     let drawNum = 0;
     const regressionStartTime = user.regressionTime;
     if (regressionStartTime) {
@@ -69,7 +70,7 @@ export class TurnTableApi extends BaseApi {
       const currentTime = new Date().getTime();
 
       if (currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
-        drawNum = drawNum * 0.2;
+        drawNum = baseNum * 0.2;
       }
     }
 
@@ -80,7 +81,7 @@ export class TurnTableApi extends BaseApi {
       prizeId: result.record.prizeId,
       // 是否中奖
       isHit: result.record.isHit,
-      num: result.record.prizeConfig && result.record.prizeConfig.num,
+      num: baseNum,
       drawNum: Math.ceil(drawNum),
       type: result.record.prizeConfig && result.record.prizeConfig.type,
       turntableTimes: result.times
