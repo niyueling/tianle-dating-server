@@ -67,9 +67,8 @@ export class TurnTableApi extends BaseApi {
     if (regressionStartTime) {
       const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
       const currentTime = new Date().getTime();
-      const payCount = await MonthGiftRecord.count({playerId: user._id, day: 30, isRegression: true, createAt: {$gte: regressionStartTime, $lt: regressionEndTime}});
 
-      if (payCount === 0 && currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
+      if (currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
         drawNum *= 1.2;
       }
     }
@@ -81,7 +80,7 @@ export class TurnTableApi extends BaseApi {
       prizeId: result.record.prizeId,
       // 是否中奖
       isHit: result.record.isHit,
-      num: drawNum,
+      num: Math.ceil(drawNum),
       type: result.record.prizeConfig && result.record.prizeConfig.type,
       turntableTimes: result.times
     })
