@@ -115,15 +115,27 @@ export default class RegressionService extends BaseService {
     const taskLists = await this.getDailyTaskDataByType(user);
     const sortTasks = this.sortTasks(taskLists);
     const canReceive = this.checkDailyTaskReceive(taskLists);
+    const start = moment(new Date()).startOf('day').toDate()
+    const end = moment(new Date()).endOf('day').toDate()
 
-    // 计算活跃度
-    const liveness = await RegressionTaskRecord.aggregate([
+    // 计算累计活跃度
+    const totalLiveness = await RegressionTaskRecord.aggregate([
       { $match: { playerId: user._id.toString() } },
       { $group: { _id: null, sum: { $sum: "$liveness" } } }
     ]).exec();
-    let livenessCount = 0;
-    if (liveness.length > 0) {
-      livenessCount = liveness[0].sum;
+    let totalLivenessCount = 0;
+    if (totalLiveness.length > 0) {
+      totalLivenessCount = totalLiveness[0].sum;
+    }
+
+    // 计算今日活跃度
+    const todayLiveness = await RegressionTaskRecord.aggregate([
+      { $match: { playerId: user._id.toString(), createAt: {$gte: start, $lt: end} } },
+      { $group: { _id: null, sum: { $sum: "$liveness" } } }
+    ]).exec();
+    let todayLivenessCount = 0;
+    if (todayLiveness.length > 0) {
+      todayLivenessCount = todayLiveness[0].sum;
     }
 
     // 获取今日活跃奖励列表
@@ -131,7 +143,7 @@ export default class RegressionService extends BaseService {
     const todayLists = [];
 
     for (let i = 0; i < todayPrizeList.length; i++) {
-      const isReceive = await RegressionTaskTotalPrizeRecord.count({playerId: user._id, prizeId: todayPrizeList[i]._id});
+      const isReceive = await RegressionTaskTotalPrizeRecord.count({playerId: user._id, prizeId: todayPrizeList[i]._id, createAt: {$gte: start, $lt: end}});
       const data = {
         type: todayPrizeList[i].type,
         taskPrizes: todayPrizeList[i].taskPrizes,
@@ -160,7 +172,7 @@ export default class RegressionService extends BaseService {
       totalLists.push(data);
     }
 
-    return {canReceive, taskLists: sortTasks, todayLists, totalLists, liveness: livenessCount};
+    return {canReceive, taskLists: sortTasks, todayLists, totalLists, totalLivenessCount, todayLivenessCount};
   }
 
   async getDailyTaskDataByType(user) {
