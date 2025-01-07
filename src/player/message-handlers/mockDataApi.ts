@@ -20,6 +20,7 @@ import GoodsReviveTlGold from "../../database/models/goodsReviveTlGold";
 import GoodsDailySupplement from "../../database/models/goodsDailySupplement";
 import RegressionTask from "../../database/models/regressionTask";
 import regressionTaskTotalPrize from "../../database/models/regressionTaskTotalPrize";
+import RegressionDiscountGift from "../../database/models/regressionDiscountGift";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -1051,6 +1052,26 @@ export class MockDataApi extends BaseApi {
     await DebrisTotalPrize.insertMany(datas1);
 
     return this.replySuccess({datas, datas1});
+  }
+
+  // 录入回归礼包专属商店
+  @addApi()
+  async saveRegressionDiscountGift() {
+    const result = await RegressionDiscountGift.find();
+
+    if (result.length) {
+      await RegressionDiscountGift.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      {name: "回归超值礼包", price: 6, limitCount: 3, prizeList: [{type: 1, number: 120}, {type: 7, number: 60000000}]},
+      {name: "回归助力礼包", price: 30, limitCount: 2, prizeList: [{type: 1, number: 600}, {type: 7, number: 300000000}]},
+      {name: "回归畅玩礼包", price: 128, limitCount: 1, prizeList: [{type: 1, number: 2560}, {type: 7, number: 1280000000}]},
+    ];
+
+    await RegressionDiscountGift.insertMany(datas);
+
+    return this.replySuccess(datas);
   }
 
   // 录入头像框
