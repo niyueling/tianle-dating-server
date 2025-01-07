@@ -638,7 +638,7 @@ export default class PlayerService extends BaseService {
     if (prize.type === 10) {
       let playerProp = await PlayerProp.findOne({propId: prize.propId, playerId}).lean();
 
-      // 如果称号已过期，删除称号
+      // 如果表情已过期，删除表情
       if (playerProp && playerProp.times !== -1 && playerProp.times <= new Date().getTime()) {
         await PlayerProp.remove({_id: playerProp._id});
         playerProp = null;
@@ -658,7 +658,7 @@ export default class PlayerService extends BaseService {
         await PlayerProp.create(data);
       }
 
-      // 如果用户已经拥有牌桌，则在过期时间加上有效时间
+      // 如果用户已经拥有表情，则在过期时间加上有效时间
       if (playerProp && playerProp.times !== -1) {
         await PlayerProp.update({
           playerId: user._id,

@@ -13,6 +13,7 @@ import RegressionTaskTotalPrize from "../../database/models/regressionTaskTotalP
 import RegressionTaskTotalPrizeRecord from "../../database/models/regressionTaskTotalPrizeRecord";
 import RegressionDiscountGift from "../../database/models/regressionDiscountGift";
 import RegressionDiscountGiftRecord from "../../database/models/regressionDiscountGiftRecord";
+import MonthGiftRecord from "../../database/models/MonthGiftRecord";
 
 export class RegressionApi extends BaseApi {
   // 回归签到
@@ -678,5 +679,26 @@ export class RegressionApi extends BaseApi {
     await this.player.updateResource2Client();
 
     this.replySuccess(order);
+  }
+
+  // 月卡是否购买过折扣价
+  @addApi()
+  async checkMonthGiftPay() {
+    const user = await this.service.playerService.getPlayerModel(this.player._id);
+    const regressionStartTime = user.regressionTime;
+
+    if (!regressionStartTime) {
+      return this.replyFail(TianleErrorCode.notRegressionPlayer);
+    }
+
+    const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
+    const currentTime = new Date().getTime();
+    if (currentTime < Date.parse(regressionStartTime) || currentTime > regressionEndTime.getTime()) {
+      return this.replyFail(TianleErrorCode.activityIsClose);
+    }
+
+    const payCount = await MonthGiftRecord.count({playerId: user._id, day: 30, isRegression: true, createAt: {$gte: regressionStartTime, $lt: regressionEndTime}});
+
+    return this.replySuccess({payCount});
   }
 }
