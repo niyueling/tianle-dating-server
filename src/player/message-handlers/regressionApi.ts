@@ -44,7 +44,7 @@ export class RegressionApi extends BaseApi {
     }
 
     const startTime = player.regressionTime;
-    const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
+    const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
     const start = moment(startTime).startOf('day').toDate()
     const end = moment(endTime).endOf('day').toDate()
 
@@ -221,7 +221,7 @@ export class RegressionApi extends BaseApi {
     const player = await this.service.playerService.getPlayerModel(this.player._id);
 
     const startTime = player.regressionTime;
-    const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
+    const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
 
     // 判断是否已经购买
     const payCount = await RegressionRechargeRecord.count({
@@ -306,7 +306,7 @@ export class RegressionApi extends BaseApi {
     const player = await this.service.playerService.getPlayerModel(this.player._id);
 
     const startTime = player.regressionTime;
-    const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
+    const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
 
     // 判断是否已经购买
     const payCount = await RegressionRechargeRecord.count({

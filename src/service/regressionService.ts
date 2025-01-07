@@ -12,6 +12,7 @@ import TurntablePrizeRecord from "../database/models/turntablePrizeRecord";
 import RegressionTaskRecord from "../database/models/regressionTaskRecord";
 import RegressionTaskTotalPrize from "../database/models/regressionTaskTotalPrize";
 import RegressionTaskTotalPrizeRecord from "../database/models/regressionTaskTotalPrizeRecord";
+import * as config from '../config'
 // 玩家信息
 export default class RegressionService extends BaseService {
   async onceReceive(player, day, isPay) {
@@ -86,7 +87,7 @@ export default class RegressionService extends BaseService {
 
     const startTime = user.regressionTime;
 
-    const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
+    const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
     let days = await RegressionSignPrizeRecord.count({playerId: user._id});
     if (!isTodaySign) {
       days++;
