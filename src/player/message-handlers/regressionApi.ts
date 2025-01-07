@@ -11,6 +11,8 @@ import {service} from "../../service/importService";
 import RegressionTaskRecord from "../../database/models/regressionTaskRecord";
 import RegressionTaskTotalPrize from "../../database/models/regressionTaskTotalPrize";
 import RegressionTaskTotalPrizeRecord from "../../database/models/regressionTaskTotalPrizeRecord";
+import RegressionDiscountGift from "../../database/models/regressionDiscountGift";
+import RegressionDiscountGiftRecord from "../../database/models/regressionDiscountGiftRecord";
 
 export class RegressionApi extends BaseApi {
   // 回归签到
@@ -475,5 +477,16 @@ export class RegressionApi extends BaseApi {
     await this.player.updateResource2Client();
 
     return this.replySuccess(record);
+  }
+
+  // 回归专属商店
+  @addApi()
+  async getRegressionDisCountGift() {
+    const giftList = await RegressionDiscountGift.find().lean();
+    for (let i = 0; i < giftList.length; i++) {
+      giftList[i].payCount = await RegressionDiscountGiftRecord.count({playerId: this.player._id, prizeId: giftList[i]._id});
+    }
+
+    this.replySuccess(giftList);
   }
 }
