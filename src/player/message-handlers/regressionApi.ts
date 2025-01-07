@@ -7,6 +7,13 @@ import RegressionRechargeRecord from "../../database/models/RegressionRechargeRe
 import crypto = require('crypto');
 import * as config from '../../config'
 import Player from "../../database/models/player";
+import TaskRecord from "../../database/models/TaskRecord";
+import TaskTotalPrize from "../../database/models/TaskTotalPrize";
+import TaskTotalPrizeRecord from "../../database/models/TaskTotalPrizeRecord";
+import {service} from "../../service/importService";
+import RegressionTaskRecord from "../../database/models/regressionTaskRecord";
+import RegressionTaskTotalPrize from "../../database/models/regressionTaskTotalPrize";
+import RegressionTaskTotalPrizeRecord from "../../database/models/regressionTaskTotalPrizeRecord";
 
 export class RegressionApi extends BaseApi {
   // 回归签到
@@ -360,7 +367,67 @@ export class RegressionApi extends BaseApi {
     }
 
     const result = await this.service.regressionService.finishDailyTaskOnce(message, user);
+    if (!result.code) {
+      return this.replyFail(result.info);
+    }
+
     await this.player.updateResource2Client();
-    return this.replySuccess(result);
+    return this.replySuccess(result.result);
+  }
+
+  // 领取每日活跃礼包
+  @addApi()
+  async receiveTaskTodayActivity(message) {
+    const user = await Player.findOne({_id:this.player._id});
+
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    // 计算活跃度
+    const start = moment(new Date()).startOf('day').toDate()
+    const end = moment(new Date()).endOf('day').toDate()
+    const liveness = await RegressionTaskRecord.aggregate([
+      { $match: { playerId: user._id.toString(), createAt: {$gte: start, $lt: end} } },
+      { $group: { _id: null, sum: { $sum: "$liveness" } } }
+    ]).exec();
+    let livenessCount = 0;
+    if (liveness.length > 0) {
+      livenessCount = liveness[0].sum;
+    }
+
+    // 获取奖励配置
+    const prizeInfo = await RegressionTaskTotalPrize.findOne({_id: message.prizeId});
+    if (!prizeInfo) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    if (livenessCount < prizeInfo.liveness) {
+      return this.replyFail(TianleErrorCode.taskNotFinish);
+    }
+
+    // 判断是否领取
+    const receive = await RegressionTaskTotalPrizeRecord.findOne({playerId: user._id, prizeId: prizeInfo._id, createAt: {$gte: start, $lt: end}});
+
+    if (receive) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
+    }
+
+    // 按照奖励类型领取奖励
+    for (let i = 0; i < prizeInfo.taskPrizes.length; i++) {
+      await service.playerService.receivePrize(prizeInfo.taskPrizes[i], user._id, 1, ConsumeLogType.receiveRegressionTask);
+    }
+
+    // 创建领取记录
+    const data = {
+      playerId: user._id.toString(),
+      prizeId: prizeInfo._id,
+      prizeConfig: prizeInfo
+    };
+
+    const record = await RegressionTaskTotalPrizeRecord.create(data);
+    await this.player.updateResource2Client();
+
+    return this.replySuccess(record);
   }
 }

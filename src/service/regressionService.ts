@@ -313,6 +313,7 @@ export default class RegressionService extends BaseService {
       taskConfig: taskInfo
     };
 
-    return await RegressionTaskRecord.create(data);
+    const result = await RegressionTaskRecord.create(data);
+    return {code: true, result};
   }
 }
