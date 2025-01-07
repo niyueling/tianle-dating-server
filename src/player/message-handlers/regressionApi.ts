@@ -43,7 +43,7 @@ export class RegressionApi extends BaseApi {
       return this.replyFail(TianleErrorCode.sessionKeyNotFound);
     }
 
-    const startTime = player.regressionTime || new Date();
+    const startTime = player.regressionTime;
     const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
     const start = moment(startTime).startOf('day').toDate()
     const end = moment(endTime).endOf('day').toDate()

@@ -290,7 +290,7 @@ export default class PlayerService extends BaseService {
             }
 
             // 判断回归时间
-            if (user.loginTime && new Date().getTime() - Date.parse(user.loginTime) > 1000 * 60 * 60 * 24 * 30) {
+            if (user.loginTime && new Date().getTime() - Date.parse(user.loginTime) > 1000 * 60 * 60 * 24 * config.game.regressionDissolveDay) {
                 user.regressionTime = new Date();
             }
 
