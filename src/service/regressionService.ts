@@ -148,19 +148,19 @@ export default class RegressionService extends BaseService {
 
     // 完成对局
     const joinGame = await this.getAchievementTask(user, RegressionTaskType.joinGame);
-    if (joinGame && joinGame.taskId) taskLists.push(joinGame);
+    if (joinGame.length) taskLists.push(...joinGame);
 
     // 开运好礼
     const beginLucky = await this.getAchievementTask(user, RegressionTaskType.beginLucky);
-    if (beginLucky && beginLucky.taskId) taskLists.push(beginLucky);
+    if (beginLucky.length) taskLists.push(...beginLucky);
 
     // 幸运抽奖
     const turntable = await this.getAchievementTask(user, RegressionTaskType.turnrable);
-    if (turntable && turntable.taskId) taskLists.push(turntable);
+    if (turntable.length) taskLists.push(...turntable);
 
     // 观看广告
     const watchAdver = await this.getAchievementTask(user, RegressionTaskType.watchAdver);
-    if (watchAdver && watchAdver.taskId) taskLists.push(watchAdver);
+    if (watchAdver.length) taskLists.push(...watchAdver);
 
     return taskLists;
   }
@@ -203,14 +203,13 @@ export default class RegressionService extends BaseService {
   }
 
   async getAchievementTask(user, typeId) {
-    let task = null;
+    let task = [];
     const tasks = await RegressionTask.find({typeId}).lean();
 
     for (let i = 0; i < tasks.length; i++) {
       const taskInfo = await this.checkTaskFinishAndReceive(tasks[i], user);
       if (!taskInfo.finish || (taskInfo.finish && !taskInfo.receive)) {
-        task = taskInfo;
-        break;
+        task.push(taskInfo);
       }
     }
 
