@@ -102,8 +102,8 @@ export default class RegressionService extends BaseService {
 
     for (let i = 0; i < prizeList.length; i++) {
       const receiveInfo = await RegressionSignPrizeRecord.findOne({playerId: user._id, day: prizeList[i].day});
-      prizeList[i].freeReceive = !receiveInfo || !receiveInfo.freeReceive;
-      prizeList[i].payReceive = !receiveInfo || !receiveInfo.payReceive;
+      prizeList[i].freeReceive = receiveInfo && receiveInfo.freeReceive;
+      prizeList[i].payReceive = receiveInfo && receiveInfo.payReceive;
     }
 
     return {isPay: !!isPay, isTodaySign: !!isTodaySign, days, prizeList, activityTimes: {startTime, endTime}};
