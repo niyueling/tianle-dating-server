@@ -563,8 +563,8 @@ export class MockDataApi extends BaseApi {
             {type: 1, taskPrizes: [{number: 200000, type: 2},{number: 2000000, type: 7}], liveness: 30},
             {type: 1, taskPrizes: [{number: 300000, type: 2},{number: 3000000, type: 7}], liveness: 50},
             {type: 1, taskPrizes: [{number: 600000, type: 2},{number: 10, type: 1}], liveness: 100},
-            {type: 2, taskPrizes: [{number: 200, type: 1},{number: 1, type: 8, propId: 1301}], liveness: 200},
-            {type: 2, taskPrizes: [{number: 200, type: 1},{number: 1, type: 8, propId: 1302}], liveness: 500},
+            {type: 2, taskPrizes: [{number: 200, type: 1},{number: 1, type: 10, propId: 1301}], liveness: 200},
+            {type: 2, taskPrizes: [{number: 200, type: 1},{number: 1, type: 10, propId: 1302}], liveness: 500},
         ];
 
         await regressionTaskTotalPrize.insertMany(datas1);
