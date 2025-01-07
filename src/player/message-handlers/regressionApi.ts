@@ -212,11 +212,7 @@ export class RegressionApi extends BaseApi {
   }
 
   // 领取回归签到奖励
-  @addApi({
-    rule: {
-      prizeId: 'string',
-    }
-  })
+  @addApi()
   async signIn(message) {
     const player = await this.service.playerService.getPlayerModel(this.player._id);
 
@@ -291,7 +287,7 @@ export class RegressionApi extends BaseApi {
 
 
     await this.player.updateResource2Client();
-    return this.replySuccess(receiveInfo);
+    return this.replySuccess({type: message.type, receiveInfo});
   }
 
   // 一键领取新手签到

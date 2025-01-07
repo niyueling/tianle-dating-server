@@ -73,50 +73,6 @@ export class TurnTableApi extends BaseApi {
     })
   }
 
-  // 转盘抽奖1万次
-  @addApi()
-  async drawTurntable() {
-    let results = [];
-    let datas = {};
-
-    const user = await this.service.playerService.getPlayerModel("66b4a981093ad41935f6fbe1");
-    if (!user) {
-      return this.replyFail(TianleErrorCode.userNotFound);
-    }
-
-    // 抽奖一万次
-    for (let i = 0; i < 10000; i++) {
-      const draw = await service.playerService.draw(user);
-      if (draw.isOk) {
-        results.push({
-          // 中奖记录 id
-          recordId: draw.record._id,
-          // 中奖 id
-          prizeId: draw.record.prizeId,
-          // 是否中奖
-          isHit: draw.record.isHit,
-          num: draw.record.prizeConfig && draw.record.prizeConfig.num,
-          type: draw.record.prizeConfig && draw.record.prizeConfig.type,
-          turntableTimes: draw.times
-        });
-
-        const title = `${draw.record.prizeConfig.num}${draw.record.prizeConfig.type === 1 ? "钻石" : "金豆"}`;
-
-        if (datas[title]) {
-          datas[title].count++;
-        } else {
-          datas[title] = {
-            probability: draw.record.prizeConfig.probability,
-            title: `${draw.record.prizeConfig.num}${draw.record.prizeConfig.type === 1 ? "钻石" : "金豆"}`,
-            count: 1
-          };
-        }
-      }
-    }
-
-    this.replySuccess({results, datas});
-  }
-
   // 领取奖品
   @addApi({
     rule: {
