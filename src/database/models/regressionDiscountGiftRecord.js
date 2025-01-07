@@ -16,6 +16,18 @@ const schema = new mongoose.Schema({
     type: Object,
     required: false,
   },
+  status: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  sn: {
+    type: String,
+    required: true
+  },
+  transactionId: {
+    type: String,
+  },
   // 创建时间
   createAt: {
     type: Date,

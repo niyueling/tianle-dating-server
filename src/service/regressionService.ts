@@ -13,6 +13,8 @@ import RegressionTaskRecord from "../database/models/regressionTaskRecord";
 import RegressionTaskTotalPrize from "../database/models/regressionTaskTotalPrize";
 import RegressionTaskTotalPrizeRecord from "../database/models/regressionTaskTotalPrizeRecord";
 import * as config from '../config'
+import Player from "../database/models/player";
+import RegressionDiscountGiftRecord from "../database/models/regressionDiscountGiftRecord";
 // 玩家信息
 export default class RegressionService extends BaseService {
   async onceReceive(player, day, isPay) {
@@ -316,5 +318,47 @@ export default class RegressionService extends BaseService {
 
     const result = await RegressionTaskRecord.create(data);
     return {code: true, result};
+  }
+
+  async playerPayRegressionSignGift(orderId, thirdOrderNo) {
+    const order = await RegressionRechargeRecord.findOne({_id: orderId});
+    if (!order) {
+      return false;
+    }
+
+    const user = await Player.findOne({_id: order.playerId});
+    if (!user) {
+      return false;
+    }
+
+    order.status = 1;
+    order.transactionId = thirdOrderNo;
+    await order.save();
+
+    return true;
+  }
+
+  async playerPayRegressionDiscountGift(orderId, thirdOrderNo) {
+    const order = await RegressionDiscountGiftRecord.findOne({_id: orderId});
+    if (!order) {
+      return false;
+    }
+
+    const user = await Player.findOne({_id: order.playerId});
+    if (!user) {
+      return false;
+    }
+
+    // 修改订单支付状态
+    order.status = 1;
+    order.transactionId = thirdOrderNo;
+    await order.save();
+
+    // 发放奖励
+    for (let i = 0; i < order.prizeConfig.prizeList.length; i++) {
+      await service.playerService.receivePrize(order.prizeConfig.prizeList[i], user._id, 1, ConsumeLogType.receiveRegressionDiscountGift);
+    }
+
+    return true;
   }
 }
