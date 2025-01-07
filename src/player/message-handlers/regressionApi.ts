@@ -425,7 +425,7 @@ export class RegressionApi extends BaseApi {
     return this.replySuccess(record);
   }
 
-  // 领取每日活跃礼包
+  // 领取累计活跃礼包
   @addApi()
   async receiveTaskTotalActivity(message) {
     const user = await Player.findOne({_id:this.player._id});
@@ -490,7 +490,7 @@ export class RegressionApi extends BaseApi {
     this.replySuccess(giftList);
   }
 
-  // 购买回归签到礼包
+  // 购买回归专属商店礼包
   @addApi()
   async payRechargeDiscountGift(message) {
     const env = message.env || 0;
@@ -607,7 +607,7 @@ export class RegressionApi extends BaseApi {
     return this.replySuccess(pay_response);
   }
 
-  // 安卓虚拟支付回调
+  // 回归专属商店回调
   @addApi()
   async wxPayRechargeDiscountGiftNotify(message) {
     const env = message.env || 0;
