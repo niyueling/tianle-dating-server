@@ -17,6 +17,7 @@ export class RegressionApi extends BaseApi {
         if (!user) {
             return this.replyFail(TianleErrorCode.userNotFound);
         }
+        console.warn(this.service.regression);
 
         const data = await this.service.regression.getRegressionSignLists(user);
 
