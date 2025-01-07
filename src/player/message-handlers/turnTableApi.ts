@@ -62,14 +62,14 @@ export class TurnTableApi extends BaseApi {
       return this.replyFail(TianleErrorCode.drawFail);
     }
 
-    let drawNum = result.record.prizeConfig && result.record.prizeConfig.num;
+    let drawNum = 0;
     const regressionStartTime = user.regressionTime;
     if (regressionStartTime) {
       const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
       const currentTime = new Date().getTime();
 
       if (currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
-        drawNum *= 1.2;
+        drawNum = drawNum * 0.2;
       }
     }
 
@@ -80,7 +80,8 @@ export class TurnTableApi extends BaseApi {
       prizeId: result.record.prizeId,
       // 是否中奖
       isHit: result.record.isHit,
-      num: Math.ceil(drawNum),
+      num: result.record.prizeConfig && result.record.prizeConfig.num,
+      drawNum: Math.ceil(drawNum),
       type: result.record.prizeConfig && result.record.prizeConfig.type,
       turntableTimes: result.times
     })
@@ -178,16 +179,26 @@ export class TurnTableApi extends BaseApi {
     }
 
     const model = await this.service.playerService.getPlayerModel(record.playerId);
+    let drawNum = record.prizeConfig.num;
+    const regressionStartTime = model.regressionTime;
+    if (regressionStartTime) {
+      const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
+      const currentTime = new Date().getTime();
+
+      if (currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
+        drawNum *= 1.2;
+      }
+    }
 
     switch (record.prizeConfig.type) {
       case TurntablePrizeType.diamond:
-        await Player.update({_id: model._id }, {$inc: { diamond: record.prizeConfig.num }});
+        await Player.update({_id: model._id }, {$inc: { diamond: Math.ceil(drawNum) }});
         await service.playerService.logGemConsume(model._id, ConsumeLogType.chargeByActive, record.prizeConfig.num,
           model.diamond + record.prizeConfig.num, `转盘抽中${record.prizeConfig.num}钻石`);
         break;
 
       case TurntablePrizeType.gold:
-        await Player.update({_id: model._id }, {$inc: { gold: record.prizeConfig.num }});
+        await Player.update({_id: model._id }, {$inc: { gold: Math.ceil(drawNum) }});
         await service.playerService.logGoldConsume(model._id, ConsumeLogType.receiveDraw, record.prizeConfig.num,
           model.diamond + record.prizeConfig.num, `转盘抽奖获得`);
         break;
