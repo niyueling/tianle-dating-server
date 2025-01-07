@@ -123,8 +123,25 @@ export default class RegressionService extends BaseService {
       livenessCount = liveness[0].sum;
     }
 
+    // 获取今日活跃奖励列表
+    const todayPrizeList = await RegressionTaskTotalPrize.find({type: 1});
+    const todayLists = [];
+
+    for (let i = 0; i < todayPrizeList.length; i++) {
+      const isReceive = await RegressionTaskTotalPrizeRecord.count({playerId: user._id, prizeId: todayPrizeList[i]._id});
+      const data = {
+        type: todayPrizeList[i].type,
+        taskPrizes: todayPrizeList[i].taskPrizes,
+        liveness: todayPrizeList[i].liveness,
+        prizeId: todayPrizeList[i]._id.toString(),
+        receive: !!isReceive
+      };
+
+      todayLists.push(data);
+    }
+
     // 获取累计活跃奖励列表
-    const totalPrizeList = await RegressionTaskTotalPrize.find();
+    const totalPrizeList = await RegressionTaskTotalPrize.find({type: 2});
     const totalLists = [];
 
     for (let i = 0; i < totalPrizeList.length; i++) {
@@ -140,7 +157,7 @@ export default class RegressionService extends BaseService {
       totalLists.push(data);
     }
 
-    return {canReceive, taskLists: sortTasks, totalLists, liveness: livenessCount};
+    return {canReceive, taskLists: sortTasks, todayLists, totalLists, liveness: livenessCount};
   }
 
   async getDailyTaskDataByType(user) {
