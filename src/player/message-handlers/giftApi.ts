@@ -52,13 +52,29 @@ export class GiftApi extends BaseApi {
     }
   })
   async payGift(message) {
+    const model = await service.playerService.getPlayerModel(this.player.model._id);
     const prizeInfo = await MonthGift.findOne({_id: message.giftId});
     if (!prizeInfo) {
       return this.replyFail(TianleErrorCode.configNotFound);
     }
 
-    const price = prizeInfo.dayList.find(item => item.day === message.day)?.price;
-    const model = await service.playerService.getPlayerModel(this.player.model._id);
+    let price = prizeInfo.dayList.find(item => item.day === message.day)?.price;
+    let isRegression = false;
+    const regressionStartTime = model.regressionTime;
+    if (regressionStartTime && message.day === 30) {
+      const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
+      const currentTime = new Date().getTime();
+      const payCount = await MonthGiftRecord.count({playerId: model._id, day: 30, isRegression: true, createAt: {$gte: regressionStartTime, $lt: regressionEndTime}});
+
+      if (payCount === 0 && currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
+        const priceIndex = prizeInfo.dayList.findIndex(p => p.day === 30);
+        if (priceIndex !== -1) {
+          price = 60;
+          isRegression = true;
+        }
+      }
+    }
+
     if (model.diamond < price) {
       const template = await GoodsModel.findOne({ isOnline: true, goodsType: 1, amount: {$gte: price} }).sort({price: 1}).lean();
       return this.replyFail(TianleErrorCode.diamondInsufficient, {goodsId: template._id});
@@ -87,6 +103,7 @@ export class GiftApi extends BaseApi {
       prizeId: prizeInfo._id,
       prizeConfig: prizeInfo,
       multiple: message.multiple,
+      isRegression,
       createAt: new Date()
     };
 
