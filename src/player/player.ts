@@ -267,7 +267,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
     }
 
     get name() {
-        return this.model && this.model.name
+        return this.model && this.model.nickname
     }
 
     get gold() {
@@ -506,8 +506,8 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
     updateGoldGemRuby(data) {
         if (this.model) {
             this.model.gold += data.gold || 0
-            this.model.gem += data.gem || 0
-            this.model.ruby += data.ruby || 0
+            this.model.diamond += data.diamond || 0
+            this.model.tlGold += data.tlGold || 0
         }
     }
 

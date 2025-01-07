@@ -1,9 +1,9 @@
 export interface IPlayerModel {
   _id: string,
-  name: string,
+  nickname: string,
   gold: number,
-  gem: number,
-  ruby: number
+  diamond: number,
+  tlGold: number
 }
 
 export interface ISocketPlayer {
