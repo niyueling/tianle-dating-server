@@ -25,6 +25,7 @@ import GoodsDailySupplement from "../../database/models/goodsDailySupplement";
 import PlayerPayDailySupplementRecord from "../../database/models/PlayerPayDailySupplementRecord";
 import PlayerReceiveDailySupplementRecord from "../../database/models/PlayerReceiveDailySupplementRecord";
 import GoodsReviveTlGold from "../../database/models/goodsReviveTlGold";
+import MonthGiftRecord from "../../database/models/MonthGiftRecord";
 
 // 商品
 export class GoodsApi extends BaseApi {
@@ -38,6 +39,7 @@ export class GoodsApi extends BaseApi {
     const tianleExchangeList = await GoodsExchangeCurrency.find({currency: TianLeGameCurrency.tianle}).sort({diamond: 1}).lean();
     const headLists = await GoodsProp.find({propType: shopPropType.headBorder}).lean();
     const propLists = await GoodsProp.find({propType: {$ne: shopPropType.headBorder}}).lean();
+    const user = await service.playerService.getPlayerModel(this.player._id);
     let param = {_id: {$ne: null}};
     if (message.numberId) {
       param["numberId"] = message.numberId;
@@ -89,6 +91,17 @@ export class GoodsApi extends BaseApi {
 
     // 判断钻石是否首充
     for (let i = 0; i < diamondRechargeList.length; i++) {
+      // 判断是否回归用户
+      const regressionStartTime = user.regressionTime;
+      if (regressionStartTime) {
+        const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
+        const currentTime = new Date().getTime();
+
+        if (currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
+          diamondRechargeList[i].originPrice = Math.ceil(diamondRechargeList[i].amount * 0.1);
+        }
+      }
+
       //判断用户是否首次充值该模板
       const orderCount = await UserRechargeOrder.count({playerId: this.player._id, status: 1, goodsId: diamondRechargeList[i]._id });
       diamondRechargeList[i].isFirst = orderCount === 0;
