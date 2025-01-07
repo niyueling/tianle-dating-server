@@ -48,7 +48,7 @@ export class BaseApi {
     this.apiRoute = apiRoute;
     this.player = player;
     this.service = service;
-    console.warn(this.service);
+    // console.warn(this.service);
     this.logger = winston;
   }
 

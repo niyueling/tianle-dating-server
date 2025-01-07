@@ -19,7 +19,7 @@ export class RegressionApi extends BaseApi {
         }
         // console.warn(this.service.playerService);
 
-        const data = await this.service.regression.getRegressionSignLists(user);
+        const data = await this.service.regressionService.getRegressionSignLists(user);
 
         return this.replySuccess(data);
     }
@@ -327,7 +327,7 @@ export class RegressionApi extends BaseApi {
         const receivePayDatas = [];
 
         for (let i = 1; i <= days; i++) {
-            const receiveResult = await this.service.regression.onceReceive(this.player, i, payCount > 0);
+            const receiveResult = await this.service.regressionService.onceReceive(this.player, i, payCount > 0);
             if (receiveResult) {
                 receiveFreeDatas.push(receiveResult.freePrizeList);
                 receivePayDatas.push(receiveResult.payPrizeList);
@@ -346,7 +346,7 @@ export class RegressionApi extends BaseApi {
             return this.replyFail(TianleErrorCode.userNotFound);
         }
 
-        const taskData = await this.service.regression.getDailyTaskData(message, user);
+        const taskData = await this.service.regressionService.getDailyTaskData(message, user);
 
         return this.replySuccess(taskData);
     }

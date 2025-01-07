@@ -36,7 +36,7 @@ export interface ServiceType {
   times: TimesService,
   qian: QianService,
   item: ItemService,
-  regression: RegressionService
+  regressionService: RegressionService
 }
 
 // 导出 service 目录下的所有 service
