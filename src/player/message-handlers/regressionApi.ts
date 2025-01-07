@@ -7,9 +7,6 @@ import RegressionRechargeRecord from "../../database/models/RegressionRechargeRe
 import crypto = require('crypto');
 import * as config from '../../config'
 import Player from "../../database/models/player";
-import TaskRecord from "../../database/models/TaskRecord";
-import TaskTotalPrize from "../../database/models/TaskTotalPrize";
-import TaskTotalPrizeRecord from "../../database/models/TaskTotalPrizeRecord";
 import {service} from "../../service/importService";
 import RegressionTaskRecord from "../../database/models/regressionTaskRecord";
 import RegressionTaskTotalPrize from "../../database/models/regressionTaskTotalPrize";
@@ -24,7 +21,6 @@ export class RegressionApi extends BaseApi {
     if (!user) {
       return this.replyFail(TianleErrorCode.userNotFound);
     }
-    // console.warn(this.service.playerService);
 
     const data = await this.service.regressionService.getRegressionSignLists(user);
 

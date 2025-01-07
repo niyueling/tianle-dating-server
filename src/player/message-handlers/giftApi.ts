@@ -10,6 +10,7 @@ import {pick} from "lodash";
 import SevenSignPrizeRecord from "../../database/models/SevenSignPrizeRecord";
 import TurntablePrizeRecord from "../../database/models/turntablePrizeRecord";
 import GoodsModel from "../../database/models/goods";
+import * as config from '../../config'
 
 export class GiftApi extends BaseApi {
   // 日卡/周卡/月卡
@@ -26,6 +27,19 @@ export class GiftApi extends BaseApi {
     const prizeInfo = await MonthGift.findOne().lean();
     prizeInfo.expireTime = user.giftExpireTime > 0 && user.giftExpireTime > new Date().getTime() ? user.giftExpireTime : 0;
     prizeInfo.exclusiveList = exclusiveList;
+    const regressionStartTime = user.regressionTime;
+    if (regressionStartTime) {
+      const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
+      const currentTime = new Date().getTime();
+      const payCount = await MonthGiftRecord.count({playerId: user._id, day: 30, isRegression: true, createAt: {$gte: regressionStartTime, $lt: regressionEndTime}});
+
+      if (payCount === 0 && currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
+        const priceIndex = prizeInfo.dayList.findIndex(p => p.day === 30);
+        if (priceIndex !== -1) {
+          prizeInfo.dayList[priceIndex].price = 60;
+        }
+      }
+    }
 
     return this.replySuccess(prizeInfo);
   }

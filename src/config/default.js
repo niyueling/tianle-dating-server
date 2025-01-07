@@ -180,6 +180,8 @@ module.exports = {
     diamondToTianLe: 1000000,
     goldToTianLe: 1,
     regressionAmount: 12,
+    regressionActivityDay: 15,
+    regressionDissolveDay: 30,
     helpCount: 5,
     initModelGoldCount: 0,
     luckyDrawNeedGold: 500,

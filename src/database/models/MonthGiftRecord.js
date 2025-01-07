@@ -26,6 +26,11 @@ const schema = new mongoose.Schema({
     required: true,
     default: 1
   },
+  isRegression: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
   // 奖品配置
   prizeConfig: {
     type: Object,
