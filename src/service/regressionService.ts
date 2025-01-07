@@ -87,6 +87,7 @@ export default class RegressionService extends BaseService {
     });
 
     const startTime = user.regressionTime || new Date();
+
     const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * 10);
     let days = await RegressionSignPrizeRecord.count({playerId: user._id});
     if (!isTodaySign) {

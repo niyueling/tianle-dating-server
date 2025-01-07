@@ -535,18 +535,18 @@ export class MockDataApi extends BaseApi {
 
         const datas = [
             // 完成对局
-            {taskName: "完成任意?场对局", taskId: 1001, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 20},
-            {taskName: "完成任意?场对局", taskId: 1002, taskTimes: 5, taskPrizes: {number: 200000, type: 2}, liveness: 20},
-            {taskName: "完成任意?场对局", taskId: 1003, taskTimes: 10, taskPrizes: {number: 500000, type: 2}, liveness: 30},
+            {taskName: "完成任意?场对局", taskId: 1001, typeId: 1, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 20},
+            {taskName: "完成任意?场对局", taskId: 1002, typeId: 1, taskTimes: 5, taskPrizes: {number: 200000, type: 2}, liveness: 20},
+            {taskName: "完成任意?场对局", taskId: 1003, typeId: 1, taskTimes: 10, taskPrizes: {number: 500000, type: 2}, liveness: 30},
 
             // 领取开运福利奖励
-            {taskName: "领取开运福利奖励?次", taskId: 1004, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 10},
+            {taskName: "领取开运福利奖励?次", taskId: 1004, typeId: 2, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 10},
 
             // 幸运抽奖
-            {taskName: "进行?次幸运抽奖", taskId: 1005, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 10},
+            {taskName: "进行?次幸运抽奖", taskId: 1005, typeId: 3, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 10},
 
             // 看广告
-            {taskName: "观看?次广告", taskId: 1006, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 10},
+            {taskName: "观看?次广告", taskId: 1006, typeId: 4, taskTimes: 1, taskPrizes: {number: 100000, type: 2}, liveness: 10},
         ];
 
         await RegressionTask.insertMany(datas);
