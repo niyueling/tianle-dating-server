@@ -1,5 +1,5 @@
 import BaseService from "./base";
-import {ConsumeLogType, RegressionTaskType} from "@fm/common/constants";
+import {ConsumeLogType, RegressionTaskType, TianleErrorCode} from "@fm/common/constants";
 import moment = require("moment");
 import RegressionSignPrize from "../database/models/RegressionSignPrize";
 import RegressionSignPrizeRecord from "../database/models/RegressionSignPrizeRecord";
@@ -39,7 +39,7 @@ export default class RegressionService extends BaseService {
       freePrizeList = [...freePrizeList, ...prizeInfo.freePrizeList];
 
       for (let i = 0; i < prizeInfo.freePrizeList.length; i++) {
-        await service.playerService.receivePrize(prizeInfo.freePrizeList[i], player._id, 1, ConsumeLogType.payRegressionSignGift);
+        await service.playerService.receivePrize(prizeInfo.freePrizeList[i], player._id, 1, ConsumeLogType.receiveRegressionSignin);
       }
     }
 
@@ -52,7 +52,7 @@ export default class RegressionService extends BaseService {
       payPrizeList = [...payPrizeList, ...prizeInfo.payPrizeList];
 
       for (let i = 0; i < prizeInfo.payPrizeList.length; i++) {
-        await service.playerService.receivePrize(prizeInfo.payPrizeList[i], player._id, 1, ConsumeLogType.payRegressionSignGift);
+        await service.playerService.receivePrize(prizeInfo.payPrizeList[i], player._id, 1, ConsumeLogType.receiveRegressionSignin);
       }
     }
 
@@ -282,5 +282,37 @@ export default class RegressionService extends BaseService {
     task.receive = !!isReceive;
 
     return task;
+  }
+
+  async finishDailyTaskOnce(message, user) {
+    // 获取任务配置
+    const taskInfo = await RegressionTask.findOne({taskId: message.taskId}).lean();
+    if (!taskInfo) {
+      return {code: false, info: TianleErrorCode.configNotFound};
+    }
+
+    // 根据不同任务类型判断是否完成任务
+    const taskResult = await this.checkTaskFinishAndReceive(taskInfo, user);
+
+    if (!taskResult.finish) {
+      return {code: false, info: TianleErrorCode.taskNotFinish};
+    }
+
+    if (taskResult.receive) {
+      return {code: false, info: TianleErrorCode.prizeIsReceive};
+    }
+
+    // 按照奖励类型领取奖励
+    await service.playerService.receivePrize(taskInfo.taskPrizes, user._id, 1, ConsumeLogType.receiveRegressionTask);
+
+    // 创建领取记录
+    const data = {
+      playerId: user._id.toString(),
+      taskId: taskInfo.taskId,
+      liveness: taskInfo.liveness,
+      taskConfig: taskInfo
+    };
+
+    return await RegressionTaskRecord.create(data);
   }
 }
