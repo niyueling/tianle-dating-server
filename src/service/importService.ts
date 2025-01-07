@@ -65,11 +65,3 @@ for (const k of Object.keys(requires)) {
         throw new Error('使用 default 导出 service' + k)
     }
 }
-
-// console.log('check limitRate');
-// service.utils.isApiRateLimit('account/login', 'test').then(res => {
-//   console.log('limit rate', res)
-//   service.utils.isApiRateLimit('account/login', 'test').then(res2 => {
-//     console.log('limit rate 2', res2)
-//   })
-// });
