@@ -631,10 +631,23 @@ export class GoodsApi extends BaseApi {
       return this.replyFail(TianleErrorCode.sessionKeyNotFound);
     }
 
+    // 判断是否回归用户
+    const regressionStartTime = player.regressionTime;
+    if (regressionStartTime) {
+      const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
+      const currentTime = new Date().getTime();
+
+      if (currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
+        template.originPrice = Math.ceil(template.amount * 0.1);
+      }
+    }
+
     const data = {
       playerId: message.userId,
       shortId: player.shortId,
-      diamond: template.amount + (orderCount > 0 ? 0 : template.firstTimeAmount) + template.originPrice,
+      diamond: template.amount,
+      firstTimeAmount: orderCount > 0 ? 0 : template.firstTimeAmount,
+      originPrice: template.originPrice,
       price: template.price,
       goodsId: template._id,
       source: "wechat",

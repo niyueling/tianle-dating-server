@@ -18,7 +18,17 @@ const schema = new mongoose.Schema({
     default: 0,
     required: true,
   },
-  //金额
+  originPrice: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
+  firstTimeAmount: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
+  //价格
   price: {
     type: Number,
     required: true,

@@ -398,7 +398,7 @@ export default class PlayerService extends BaseService {
             return false;
         }
 
-        user.diamond += order.diamond;
+        user.diamond += order.diamond + order.firstTimeAmount + order.originPrice;
         user.dominateCount = Math.floor(Math.random() * 5) + 1;
 
         order.status = 1;
