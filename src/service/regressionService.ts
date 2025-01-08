@@ -240,9 +240,7 @@ export default class RegressionService extends BaseService {
 
     for (let i = 0; i < tasks.length; i++) {
       const taskInfo = await this.checkTaskFinishAndReceive(tasks[i], user);
-      if (!taskInfo.finish || (taskInfo.finish && !taskInfo.receive)) {
-        task.push(taskInfo);
-      }
+      task.push(taskInfo);
     }
 
     return task;
