@@ -1083,14 +1083,14 @@ export default {
         // 做管理员的校验
         if (!isOwner && isAdmin) {
             if (membership.role === 'admin') {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/renameClubPlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveAdmin
                 });
             }
 
             if (message.playerId === player._id.toString()) {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/renameClubPlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveSelf
                 });
@@ -1100,28 +1100,28 @@ export default {
         // 做合伙人的校验
         if (isPartner) {
             if (membership.role === 'admin') {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/renameClubPlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveAdmin
                 });
             }
 
             if (membership.partner) {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/renameClubPlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemovePartner
                 });
             }
 
             if (membership.leader !== player.model.shortId) {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/renameClubPlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveLeader
                 });
             }
 
             if (message.playerId.toString() === player._id.toString()) {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/renameClubPlayerReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveSelf
                 });
@@ -1273,14 +1273,14 @@ export default {
         // 做管理员的校验
         if (!isOwner && isAdmin) {
             if (memberShip.role === 'admin') {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/operateBlackListReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveAdmin
                 });
             }
 
             if (message.playerId === player._id.toString()) {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/operateBlackListReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveSelf
                 });
@@ -1290,28 +1290,28 @@ export default {
         // 做合伙人的校验
         if (isPartner) {
             if (memberShip.role === 'admin') {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/operateBlackListReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveAdmin
                 });
             }
 
             if (memberShip.partner) {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/operateBlackListReply', {
                     ok: false,
                     info: TianleErrorCode.notRemovePartner
                 });
             }
 
             if (memberShip.leader !== player.model.shortId) {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/operateBlackListReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveLeader
                 });
             }
 
             if (message.playerId.toString() === player._id.toString()) {
-                return player.sendMessage('club/adminRemovePlayerReply', {
+                return player.sendMessage('club/operateBlackListReply', {
                     ok: false,
                     info: TianleErrorCode.notRemoveSelf
                 });
@@ -1384,6 +1384,13 @@ export default {
                     info: TianleErrorCode.notRemoveSelf
                 });
             }
+
+          if (memberShip.leader && memberShip.leader !== player.model.shortId) {
+            return player.sendMessage('club/adminRemovePlayerReply', {
+              ok: false,
+              info: TianleErrorCode.notRemoveLeader
+            });
+          }
         }
 
         // 做合伙人的校验
@@ -1450,6 +1457,7 @@ export default {
 
         await ClubMember.remove({member: message.playerId, club: myClub._id})
         await disbandPlayerSendEmail(myClub.name, myClub.shortId, playerInfo);
+
         player.sendMessage('club/removePlayerReply', {ok: true, data: {}});
     },
     [ClubAction.promoteAdmin]: async (player, message) => {
