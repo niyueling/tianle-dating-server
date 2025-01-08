@@ -1997,8 +1997,8 @@ export class MockDataApi extends BaseApi {
       {type: 1, taskPrizes: [{number: 200000, type: 2}, {number: 2000000, type: 7}], liveness: 30},
       {type: 1, taskPrizes: [{number: 300000, type: 2}, {number: 3000000, type: 7}], liveness: 50},
       {type: 1, taskPrizes: [{number: 600000, type: 2}, {number: 10, type: 1}], liveness: 100},
-      {type: 2, taskPrizes: [{number: 200, type: 1}, {number: 1, type: 10, propId: 1310}, {number: 1, type: 10, propId: 1311}, {number: 1, type: 10, propId: 1312}, {number: 1, type: 10, propId: 1313}], liveness: 200},
-      {type: 2, taskPrizes: [{number: 200, type: 1}, {number: 1, type: 10, propId: 1310}, {number: 1, type: 10, propId: 1311}, {number: 1, type: 10, propId: 1312}, {number: 1, type: 10, propId: 1313}], liveness: 500},
+      {type: 2, taskPrizes: [{number: 200, type: 1}, {number: 1, type: 10, propId: 1310}, {number: 1, type: 10, propId: 1311}, {number: 1, type: 10, propId: 1312}, {number: 1, type: 10, propId: 1313}], liveness: 10},
+      {type: 2, taskPrizes: [{number: 200, type: 1}, {number: 1, type: 10, propId: 1310}, {number: 1, type: 10, propId: 1311}, {number: 1, type: 10, propId: 1312}, {number: 1, type: 10, propId: 1313}], liveness: 30},
     ];
 
     await regressionTaskTotalPrize.insertMany(datas1);
