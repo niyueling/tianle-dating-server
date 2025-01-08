@@ -94,6 +94,123 @@ export const enum ClubAction {
   disband = 'club/disband',
 }
 
+export async function removeClubPlayer(player, clubShortId, playerId) {
+  let myClub = await getOwnerClub(player.model._id, clubShortId);
+  let roleType = myClub ? 1 : -1;
+  const isOwner = !!myClub;
+  const isAdmin = await playerIsAdmin(player.model._id, clubShortId);
+  const isPartner = await playerIsPartner(player.model._id, clubShortId);
+  if (!myClub) {
+    if (!isOwner && isAdmin) {
+      roleType = 2;
+      myClub = await Club.findOne({shortId: clubShortId});
+    }
+
+    if (isPartner) {
+      roleType = 3;
+      myClub = await Club.findOne({shortId: clubShortId});
+    }
+  }
+
+  const memberShip = await ClubMember.findOne({club: myClub._id, member: playerId}).lean()
+  const playerInfo = await service.playerService.getPlayerModel(playerId);
+
+  if (!myClub) {
+    return player.sendMessage('club/removePlayerReply', {ok: false, info: TianleErrorCode.noPermission});
+  }
+
+  if (myClub.owner === playerId.toString()) {
+    return player.sendMessage('club/removePlayerReply', {
+      ok: false,
+      info: TianleErrorCode.notOperateClubCreator
+    });
+  }
+
+  if (memberShip.leader && memberShip.leader !== player.model.shortId) {
+    return player.sendMessage('club/adminRemovePlayerReply', {
+      ok: false,
+      info: TianleErrorCode.notRemoveLeader
+    });
+  }
+
+  // 做管理员的校验
+  if (roleType === 2) {
+    if (memberShip.role === 'admin') {
+      return player.sendMessage('club/adminRemovePlayerReply', {
+        ok: false,
+        info: TianleErrorCode.notRemoveAdmin
+      });
+    }
+
+    if (playerId === player._id.toString()) {
+      return player.sendMessage('club/adminRemovePlayerReply', {
+        ok: false,
+        info: TianleErrorCode.notRemoveSelf
+      });
+    }
+  }
+
+  // 做合伙人的校验
+  if (roleType === 3) {
+    if (memberShip.role === 'admin') {
+      return player.sendMessage('club/adminRemovePlayerReply', {
+        ok: false,
+        info: TianleErrorCode.notRemoveAdmin
+      });
+    }
+
+    if (memberShip.partner) {
+      return player.sendMessage('club/adminRemovePlayerReply', {
+        ok: false,
+        info: TianleErrorCode.notRemovePartner
+      });
+    }
+
+    if (playerId.toString() === player._id.toString()) {
+      return player.sendMessage('club/adminRemovePlayerReply', {
+        ok: false,
+        info: TianleErrorCode.notRemoveSelf
+      });
+    }
+
+    // 发送邮件给战队主/管理员
+    const adminList = await ClubMember.find({
+      club: myClub._id,
+      role: "admin"
+    })
+    const ownerInfo = await service.playerService.getPlayerModel(myClub.owner);
+    await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, ownerInfo);
+    for (let i = 0; i < adminList.length; i++) {
+      const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
+      await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, adminInfo);
+    }
+  }
+
+  if (memberShip.partner) {
+    // 记录被踢出的用户列表
+    const leavePlayers = [{member: playerId, roleType: 1}];
+
+    // 获取合伙人
+    const clubTeamList = await ClubMember.find({club: myClub._id, leader: playerInfo.shortId});
+    for (let i = 0; i < clubTeamList.length; i++) {
+      const leavePlayerInfo = await service.playerService.getPlayerModel(clubTeamList[i].member);
+      leavePlayers.push({member: clubTeamList[i].member, roleType: 2});
+      await ClubMember.remove({member: clubTeamList[i].member, club: myClub._id});
+      await disbandPlayerSendEmail(myClub.name, myClub.shortId, leavePlayerInfo);
+    }
+
+    // 给合伙人和用户创建新的战队
+    if (leavePlayers.length > 1) {
+      await createNewClub(playerInfo, leavePlayers);
+    }
+  }
+
+  await ClubMember.remove({member: playerId, club: myClub._id})
+  await disbandPlayerSendEmail(myClub.name, myClub.shortId, playerInfo);
+
+  player.sendMessage('club/removePlayerReply', {ok: true, data: {}});
+}
+
 export async function getClubInfo(clubId, player?) {
   const playerClub = await getPlayerClub(player._id, clubId);
   if (!playerClub) {
@@ -1505,6 +1622,7 @@ export default {
     const club = await Club.findOne({shortId: message.clubShortId});
     const member = await PlayerModel.findOne({shortId: message.playerShortId});
     const memberShip = await ClubMember.findOne({club: club._id, member: member._id});
+    const model = await service.playerService.getPlayerModelByShortId(message.playerShortId);
 
     if (!memberShip) {
       return player.sendMessage('club/promotePartnerReply', {ok: false, info: TianleErrorCode.notClubMember})
@@ -1513,9 +1631,13 @@ export default {
       return player.sendMessage('club/promotePartnerReply', {ok: false, info: TianleErrorCode.notOperateClubCreator})
     }
 
-    memberShip.partner = message.type === "add";
-    await memberShip.save();
-    return player.sendMessage('club/promotePartnerReply', {ok: true, data: {}})
+    if (message.type === "add") {
+      memberShip.partner = true;
+      await memberShip.save();
+      return player.sendMessage('club/promotePartnerReply', {ok: true, data: {}})
+    }
+
+    await removeClubPlayer(player, message.clubShortId, model._id);
   },
   [ClubAction.createNewClub]: async (player, message) => {
     const ownerClub = await Club.findOne({owner: player.model._id});
