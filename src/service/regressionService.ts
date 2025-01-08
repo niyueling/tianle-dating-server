@@ -285,10 +285,10 @@ export default class RegressionService extends BaseService {
       task.finishCount = joinCount >= task.taskTimes ? task.taskTimes : joinCount;
     }
 
-    // 天道酬勤
+    // 观看战队
     if (task.typeId === RegressionTaskType.watchAdver) {
       const joinCount = await RegressionTaskRecord.count({playerId: user._id.toString(), taskId: task.taskId});
-      task.finish = joinCount >= task.taskTimes;
+      task.finish = true;
       task.finishCount = joinCount >= task.taskTimes ? task.taskTimes : joinCount;
     }
 
