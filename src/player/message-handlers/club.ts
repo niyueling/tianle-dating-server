@@ -1673,13 +1673,13 @@ export default {
             return  player.replyFail(ClubAction.deleteMessage, TianleErrorCode.systemError);
         }
 
-        const clubInfo = await Club.findOne({shortId: message.clubShortId});
+        // const clubInfo = await Club.findOne({shortId: message.clubShortId});
 
-        const isOk = await hasRulePermission(clubInfo._id, player.model._id);
-        if (!isOk) {
-            player.replyFail(ClubAction.deleteMessage, TianleErrorCode.noPermission);
-            return;
-        }
+        // const isOk = await hasRulePermission(clubInfo._id, player.model._id);
+        // if (!isOk) {
+        //     player.replyFail(ClubAction.deleteMessage, TianleErrorCode.noPermission);
+        //     return;
+        // }
 
         await result.remove();
 
