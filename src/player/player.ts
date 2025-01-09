@@ -375,8 +375,11 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
       return
     }
 
-    console.log(999);
-    this.channel = await this.connection.createChannel()
+    console.log(this.channel);
+    if (this.channel) {
+      this.channel = await this.connection.createChannel()
+    }
+
     console.log(101010);
     this.channel.on('error', error => {
       console.error('connectToBackend channel error ', this.socketId, error)
