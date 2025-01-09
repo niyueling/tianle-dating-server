@@ -646,7 +646,7 @@ export class RegressionApi extends BaseApi {
       return this.replyFail(TianleErrorCode.payFail);
     }
 
-    if (response.data.balance < order.price * 10) {
+    if (response.data.balance < order.prizeConfig.price * 10) {
       return this.replyFail(TianleErrorCode.gameBillInsufficient);
     }
 
@@ -658,7 +658,7 @@ export class RegressionApi extends BaseApi {
       zone_id: userPostBody.zone_id,
       env: userPostBody.env,
       user_ip: userPostBody.user_ip,
-      amount: order.price * 10,
+      amount: order.prizeConfig.price * 10,
       bill_no: order._id
     }
 
@@ -669,7 +669,7 @@ export class RegressionApi extends BaseApi {
     const payUrl = `https://api.weixin.qq.com/wxa/game/pay?access_token=${accessToken}&signature=${sign}&sig_method=hmac_sha256&pay_sig=${paySig}`;
     const pay_response = await this.service.base.postByJson(payUrl, payBody);
     if (pay_response.data.errcode !== 0) {
-      console.warn("2 response-%s", JSON.stringify(pay_response));
+      console.warn("payBody-%s response-%s", JSON.stringify(payBody), JSON.stringify(pay_response));
       return this.replyFail(TianleErrorCode.payFail);
     }
 
