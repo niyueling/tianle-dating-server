@@ -255,7 +255,7 @@ export class AccountApi extends BaseApi {
         const shortId = await getNewShortPlayerId()
         const index = Math.floor(Math.random() * (215 - 1 + 1)) + 1;
         const defaultAvatar = `https://tianlegame.hfdsdas.cn/uploads/images/${index}.png`;
-        console.warn("loginGame");
+        console.warn("loginGame ip-%s", this.player.getIpAddress());
 
         const data = {
             unionid: resp.unionid,
