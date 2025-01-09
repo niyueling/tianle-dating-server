@@ -779,7 +779,7 @@ export class AccountApi extends BaseApi {
     })
 
     // 判断是否回归用户
-    const regressionStartTime = user.regressionTime;
+    const regressionStartTime = user.regressionTime || null;
     let regressionEndTime = null;
     if (regressionStartTime) {
       regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
