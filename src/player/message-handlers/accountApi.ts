@@ -780,8 +780,9 @@ export class AccountApi extends BaseApi {
 
     // 判断是否回归用户
     const regressionStartTime = user.regressionTime;
+    let regressionEndTime = null;
     if (regressionStartTime) {
-      const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
+      regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
       const currentTime = new Date().getTime();
       if (currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
         user.isRegressionPlayer = true;
@@ -798,7 +799,8 @@ export class AccountApi extends BaseApi {
       discountGift: {open: payCount === 0, popOpen: payCount === 0, redDot: payCount === 0},
       rechargeParty: {open: rechargeParty.open, popOpen: rechargeParty.popOpen, redDot: rechargeParty.popOpen},
       task: {open: true, popOpen: taskInfo.canReceive, redDot: taskInfo.canReceive},
-      mail: {open: true, popOpen: false, redDot: mails.length > 0, mails}
+      mail: {open: true, popOpen: false, redDot: mails.length > 0, mails},
+      regression: {open: !!regressionStartTime, popOpen: false, redDot: false, activityTime: {start: regressionStartTime, end: regressionEndTime}}
     };
   }
 
