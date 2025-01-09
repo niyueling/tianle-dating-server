@@ -352,7 +352,6 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
     }
 
     try {
-      console.warn(this._id, this.channel);
       this.channel = await this.connection.createChannel()
     } catch (e) {
       console.warn(e);
@@ -370,12 +369,10 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
 
     await this.channel.assertExchange('userCenter', 'topic', {durable: false})
     await this.channel.assertQueue(this.myQueue, {exclusive: true, durable: false, autoDelete: true})
-    console.warn(this._id, 101010);
 
     try {
       await this.channel.bindQueue(this.myQueue, 'userCenter', `user.${this._id}`)
       const {consumerTag} = await this.channel.consume(this.myQueue, async message => {
-        console.warn("message-%s, consumerTag-%s", JSON.stringify(message), JSON.stringify(consumerTag));
         if (!message) return
 
         try {
