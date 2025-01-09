@@ -115,6 +115,12 @@ export class AccountApi extends BaseApi {
             user.headerBorderId = playerHeadBorder.propId;
         }
 
+      const connectServerFunc = async() => {
+        await this.player.connectToBackend();
+      }
+
+      setTimeout(connectServerFunc, 2000);
+
         this.replySuccess(user);
     }
 
@@ -404,12 +410,6 @@ export class AccountApi extends BaseApi {
         channel.join(this.player);
         this.player.isLoggingIn = false;
         PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
-
-        const connectServerFunc = async() => {
-          await this.player.connectToBackend();
-        }
-
-        setTimeout(connectServerFunc, 2000);
 
         this.replySuccess(model);
       } catch (e) {
