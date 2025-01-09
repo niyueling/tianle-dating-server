@@ -603,6 +603,7 @@ export class RegressionApi extends BaseApi {
     }
 
     pay_response.operate = 2;
+    pay_response.order = data;
     await this.player.updateResource2Client();
 
     return this.replySuccess(pay_response);
