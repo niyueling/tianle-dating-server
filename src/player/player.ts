@@ -391,24 +391,16 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
       }
     })
 
-    console.log(111);
-
     await this.channel.assertExchange('userCenter', 'topic', {durable: false})
     await this.channel.assertQueue(this.myQueue, {exclusive: true, durable: false, autoDelete: true})
-    console.log(222);
 
     try {
       await this.channel.bindQueue(this.myQueue, 'userCenter', `user.${this._id}`)
-      console.log(333);
       const {consumerTag} = await this.channel.consume(this.myQueue, async message => {
-        console.log(444);
         if (!message) return
-
-        console.log(555);
 
         try {
           const messageBody = JSON.parse(message.content.toString())
-          console.log(666);
 
           console.warn(`from dating [${this._id}]`, messageBody.name || messageBody.cmd, JSON.stringify(messageBody.payload))
 
@@ -494,8 +486,6 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
           console.error('backMessageFromBackend', err, message.content.toString())
         }
       }, {noAck: true})
-
-      console.log(777);
 
     } catch (e) {
       console.error('consume error', this.socketId, e)

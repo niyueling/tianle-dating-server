@@ -404,13 +404,14 @@ export class AccountApi extends BaseApi {
         channel.join(this.player);
         this.player.isLoggingIn = false;
         PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
-        console.warn("model-%s", JSON.stringify(model));
 
-        this.player.connectToBackend();
+        const connectServerFunc = async() => {
+          await this.player.connectToBackend();
+        }
+
+        setTimeout(connectServerFunc, 2000);
 
         this.replySuccess(model);
-
-
       } catch (e) {
         console.warn(e);
       }
