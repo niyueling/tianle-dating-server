@@ -406,10 +406,7 @@ export class AccountApi extends BaseApi {
         PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
         console.warn("model-%s", JSON.stringify(model));
 
-        if (!this.player.channel) {
-          await this.player.connectToBackend();
-        }
-
+        await this.player.connectToBackend();
 
         this.replySuccess(model);
 
