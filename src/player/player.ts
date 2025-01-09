@@ -485,7 +485,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
             //   JSON.stringify({type: 'cmd', cmd: 'leave', sid: this.socketId})))
 
         } catch (e) {
-            logger.error('consume error', this.socketId, e)
+            console.error('consume error', this.socketId, e)
         }
     }
 
