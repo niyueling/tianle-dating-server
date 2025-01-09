@@ -399,11 +399,11 @@ export class AccountApi extends BaseApi {
         }
 
         // 记录玩家
-        // PlayerManager.getInstance().addPlayer(this.player);
-        // const channel = ChannelManager.getInstance().getChannel();
-        // channel.join(this.player);
-        // this.player.isLoggingIn = false;
-        // PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
+        PlayerManager.getInstance().addPlayer(this.player);
+        const channel = ChannelManager.getInstance().getChannel();
+        channel.join(this.player);
+        this.player.isLoggingIn = false;
+        PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
 
         const connectServerFunc = async() => {
           await this.player.connectToBackend();

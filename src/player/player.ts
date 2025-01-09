@@ -48,27 +48,6 @@ import ClubRequest from "../database/models/clubRequest";
 import Club from "../database/models/club";
 import Player from "../database/models/player";
 
-const isTokenValid = async (apiName, token, player) => {
-  if (!config.jwt.needNotToken.includes(apiName)) {
-    if (!token) {
-      // 没传 token
-      return false;
-    }
-    const {isOk, data} = await verifyWithRecord(token);
-    if (!isOk) {
-      return false;
-    }
-
-    if (!player.model) {
-      player.model = await PlayerModel.findOne({_id: data.playerId}).lean();
-    }
-
-    return data.playerId === player.model._id.toString();
-  }
-  // 不需要检查 token
-  return true;
-}
-
 // 参数校验
 const parameter = new Parameter({
   validateRoot: true, // restrict the being validate value must be a object
@@ -374,7 +353,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
       return
     }
 
-    console.warn(this._id, this.channel, this.connection);
+    console.warn(this._id, this.channel);
     if (!this.channel) {
       try {
         this.channel = await this.connection.createChannel()
