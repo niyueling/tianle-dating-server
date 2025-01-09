@@ -411,10 +411,17 @@ export class AccountApi extends BaseApi {
 
         // 记录玩家
         PlayerManager.getInstance().addPlayer(this.player);
+        console.warn(111);
         const channel = ChannelManager.getInstance().getChannel();
+        console.warn(222);
         channel.join(this.player);
+        console.warn(333);
         this.player.isLoggingIn = false;
+        console.warn(444);
         PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
+        console.warn(555);
+
+
 
         await this.player.connectToBackend();
 
