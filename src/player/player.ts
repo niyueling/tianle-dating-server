@@ -370,18 +370,18 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
 
     async connectToBackend() {
         if (!this.connection) {
-            logger.error("connectToBackend failed:connect is null!")
+            console.error("connectToBackend failed:connect is null!")
             return
         }
 
         this.channel = await this.connection.createChannel()
         this.channel.on('error', error => {
-            logger.error('connectToBackend channel error ', this.socketId, error)
+          console.error('connectToBackend channel error ', this.socketId, error)
             try {
                 this.socket.close()
                 this.socket.terminate()
             } catch (closingSocketError) {
-                logger.error('terminating socket error', this.socketId, closingSocketError)
+              console.error('terminating socket error', this.socketId, closingSocketError)
             }
         })
 

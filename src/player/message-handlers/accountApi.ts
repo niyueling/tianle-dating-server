@@ -255,7 +255,6 @@ export class AccountApi extends BaseApi {
         const shortId = await getNewShortPlayerId()
         const index = Math.floor(Math.random() * (215 - 1 + 1)) + 1;
         const defaultAvatar = `https://tianlegame.hfdsdas.cn/uploads/images/${index}.png`;
-        console.warn("loginGame ip-%s", this.player.getIpAddress());
 
         const data = {
             unionid: resp.unionid,
@@ -271,16 +270,12 @@ export class AccountApi extends BaseApi {
             tourist: !resp.unionid,
         }
 
-        console.warn("data-%s", JSON.stringify(data));
-
         const userInfo = await service.playerService.checkUserRegist(player, data);
 
         const sendFunc = async () => {
             await this.sendInviteClubMessages(userInfo);
         }
         setTimeout(sendFunc, 1000);
-
-      console.warn("userInfo-%s", JSON.stringify(userInfo));
 
         return await this.loginSuccess(userInfo, message.mnpVersion, message.platform);
     }
@@ -305,15 +300,12 @@ export class AccountApi extends BaseApi {
     async loginSuccess(model, mnpVersion, platform) {
       try {
         this.player.model = model;
-        console.warn("this.player.model-%s", JSON.stringify(this.player.model));
-
+        this.player._id = model._id;
         model.disconnectedRoom = false
         const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
         if (disconnectedRoom) {
           model.disconnectedRoom = true;
         }
-
-        console.warn("model.disconnectedRoom-%s", JSON.stringify(model.disconnectedRoom));
 
         const allGameTypes = [GameType.mj, GameType.xueliu, GameType.guobiao, GameType.pcmj, GameType.xmmj, GameType.ddz, GameType.zd, GameType.guandan];
         for (let i = 0; i < allGameTypes.length; i++) {
@@ -407,8 +399,6 @@ export class AccountApi extends BaseApi {
           model.clubShortId = club.shortId;
         }
 
-        console.warn("playerInClub-%s", JSON.stringify(playerInClub));
-
         // 记录玩家
         PlayerManager.getInstance().addPlayer(this.player);
         const channel = ChannelManager.getInstance().getChannel();
@@ -417,9 +407,11 @@ export class AccountApi extends BaseApi {
         PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
         console.warn("model-%s", JSON.stringify(model));
 
+        await this.player.connectToBackend();
+
         this.replySuccess(model);
 
-        await this.player.connectToBackend();
+
       } catch (e) {
         console.warn(e);
       }
