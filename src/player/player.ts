@@ -374,9 +374,13 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
       return
     }
 
-    console.warn(this._id, this.channel);
+    console.warn(this._id, this.channel, this.connection);
     if (!this.channel) {
-      this.channel = await this.connection.createChannel()
+      try {
+        this.channel = await this.connection.createChannel()
+      } catch (e) {
+        console.warn(e);
+      }
     }
 
     this.channel.on('error', error => {
