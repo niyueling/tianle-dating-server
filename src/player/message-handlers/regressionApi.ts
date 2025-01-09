@@ -642,6 +642,7 @@ export class RegressionApi extends BaseApi {
     const balanceUrl = `https://api.weixin.qq.com/wxa/game/getbalance?access_token=${accessToken}&signature=${signature}&sig_method=hmac_sha256&pay_sig=${paySign}`;
     const response = await this.service.base.postByJson(balanceUrl, userPostBody);
     if (response.data.errcode !== 0) {
+      console.warn("1 response-%s", JSON.stringify(response));
       return this.replyFail(TianleErrorCode.payFail);
     }
 
@@ -668,11 +669,13 @@ export class RegressionApi extends BaseApi {
     const payUrl = `https://api.weixin.qq.com/wxa/game/pay?access_token=${accessToken}&signature=${sign}&sig_method=hmac_sha256&pay_sig=${paySig}`;
     const pay_response = await this.service.base.postByJson(payUrl, payBody);
     if (pay_response.data.errcode !== 0) {
+      console.warn("2 response-%s", JSON.stringify(pay_response));
       return this.replyFail(TianleErrorCode.payFail);
     }
 
-    const result = await this.service.regressionService.playerPayRegressionSignGift(order._id, pay_response.data.bill_no);
+    const result = await this.service.regressionService.playerPayRegressionDiscountGift(order._id, pay_response.data.bill_no);
     if (!result) {
+      console.warn("3 result-%s", JSON.stringify(result));
       return this.replyFail(TianleErrorCode.payFail);
     }
 
