@@ -300,7 +300,6 @@ export class AccountApi extends BaseApi {
     async loginSuccess(model, mnpVersion, platform) {
       try {
         this.player.model = model;
-        console.warn("_id-%s", this.player._id);
         model.disconnectedRoom = false
         const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
         if (disconnectedRoom) {
@@ -407,7 +406,10 @@ export class AccountApi extends BaseApi {
         PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
         console.warn("model-%s", JSON.stringify(model));
 
-        await this.player.connectToBackend();
+        if (!this.player.channel) {
+          await this.player.connectToBackend();
+        }
+
 
         this.replySuccess(model);
 
