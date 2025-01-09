@@ -88,6 +88,9 @@ export default class RegressionService extends BaseService {
     });
 
     const startTime = user.regressionTime;
+    if (!startTime) {
+      return {code: false, info: TianleErrorCode.notRegressionPlayer};
+    }
 
     const endTime = new Date(Date.parse(startTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
     let days = await RegressionSignPrizeRecord.count({playerId: user._id});
@@ -108,7 +111,7 @@ export default class RegressionService extends BaseService {
       prizeList[i].payReceive = receiveInfo && receiveInfo.payReceive;
     }
 
-    return {isPay: !!isPay, isTodaySign: !!isTodaySign, days, prizeList, activityTimes: {startTime, endTime}};
+    return {code: true, data: {isPay: !!isPay, isTodaySign: !!isTodaySign, days, prizeList, activityTimes: {startTime, endTime}}};
   }
 
   async getDailyTaskData(message, user) {

@@ -26,8 +26,11 @@ export class RegressionApi extends BaseApi {
     }
 
     const data = await this.service.regressionService.getRegressionSignLists(user);
+    if (!data.code) {
+      return this.replyFail(data.info)
+    }
 
-    return this.replySuccess(data);
+    return this.replySuccess(data.data);
   }
 
   // 购买回归签到礼包
