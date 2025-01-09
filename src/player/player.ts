@@ -302,6 +302,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
       this.socket.close()
       this.socket.terminate()
       await this.channel.close()
+      await this.connection.close()
       await promise
     }
   }
