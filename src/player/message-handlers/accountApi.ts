@@ -40,6 +40,7 @@ import VipConfig from "../../database/models/VipConfig";
 import ClubMember from "../../database/models/clubMember";
 import Club from "../../database/models/club";
 import ClubRequest from "../../database/models/clubRequest";
+import MonthGiftRecord from "../../database/models/MonthGiftRecord";
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -776,6 +777,18 @@ export class AccountApi extends BaseApi {
     mails.sort(function (a, b) {
       return b.createAt.getTime() - a.createAt.getTime()
     })
+
+    // 判断是否回归用户
+    const regressionStartTime = user.regressionTime;
+    if (regressionStartTime) {
+      const regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
+      const currentTime = new Date().getTime();
+      if (currentTime >= Date.parse(regressionStartTime) && currentTime <= regressionEndTime.getTime()) {
+        user.isRegressionPlayer = true;
+        user.regressionStartTime = regressionStartTime;
+        user.regressionEndTime = regressionEndTime;
+      }
+    }
 
     return {
       sevenLogin: {open: true, popOpen: sevenLoginCount === 0, redDot: sevenLoginCount === 0},
