@@ -650,7 +650,7 @@ export default class PlayerService extends BaseService {
           playerId: user._id,
           payType: 1,
           propType: 5,
-          times: -1,
+          times: new Date().getTime() + 1000 * 60 * 60 * 24 * 7,
           number: 1,
           isRegression: true
         }
@@ -663,7 +663,7 @@ export default class PlayerService extends BaseService {
         await PlayerProp.update({
           playerId: user._id,
           propId: prize.propId
-        }, {$set: {times: -1}})
+        }, {$set: {times: playerProp.times + 1000 * 60 * 60 * 24 * 7}})
       }
     }
 
