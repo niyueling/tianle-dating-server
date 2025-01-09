@@ -374,7 +374,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
       return
     }
 
-    console.log(this.channel);
+    console.warn(this._id, this.channel);
     if (!this.channel) {
       this.channel = await this.connection.createChannel()
     }
@@ -391,7 +391,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
 
     await this.channel.assertExchange('userCenter', 'topic', {durable: false})
     await this.channel.assertQueue(this.myQueue, {exclusive: true, durable: false, autoDelete: true})
-    console.log(101010);
+    console.warn(this._id, 101010);
 
     try {
       await this.channel.bindQueue(this.myQueue, 'userCenter', `user.${this._id}`)
