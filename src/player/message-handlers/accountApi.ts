@@ -1,6 +1,5 @@
 import {GameType, TianleErrorCode, UserRegistLocation, shopPropType, ConsumeLogType} from "@fm/common/constants";
 import * as moment from "moment";
-import * as mongoose from 'mongoose';
 import ChannelManager from "../../chat/channel-manager";
 import * as config from "../../config";
 import {getNewShortPlayerId} from "../../database/init";
@@ -37,14 +36,10 @@ import CombatGain from "../../database/models/combatGain";
 import GameRecord from "../../database/models/gameRecord";
 import GoodsProp from "../../database/models/GoodsProp";
 import PlayerProp from "../../database/models/PlayerProp";
-import GoodsReviveSupplement from "../../database/models/goodsReviveSupplement";
 import VipConfig from "../../database/models/VipConfig";
 import ClubMember from "../../database/models/clubMember";
 import Club from "../../database/models/club";
 import ClubRequest from "../../database/models/clubRequest";
-import RegressionSignPrize from "../../database/models/RegressionSignPrize";
-import RegressionSignPrizeRecord from "../../database/models/RegressionSignPrizeRecord";
-import RegressionRechargeRecord from "../../database/models/RegressionRechargeRecord";
 
 export class AccountApi extends BaseApi {
     // 根据 shortId 查询用户
@@ -275,7 +270,10 @@ export class AccountApi extends BaseApi {
             tourist: !resp.unionid,
         }
 
+        console.warn("data-%s", JSON.stringify(data));
+
         const userInfo = await service.playerService.checkUserRegist(player, data);
+      console.warn("userInfo-%s", JSON.stringify(userInfo));
 
         const sendFunc = async () => {
             await this.sendInviteClubMessages(userInfo);
