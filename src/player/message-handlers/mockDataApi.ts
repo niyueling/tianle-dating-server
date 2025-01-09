@@ -4319,12 +4319,12 @@ export class MockDataApi extends BaseApi {
       {cardName: "七星连珠", multiple: 8888, gameType: "guobiao", cardId: 153},
 
       // 红包麻将
-      {cardName: "清一色", multiple: 2, gameType: "redpocket", cardId: 154},
-      {cardName: "混一色", multiple: 2, gameType: "redpocket", cardId: 155},
-      {cardName: "清碰胡", multiple: 4, gameType: "redpocket", cardId: 156},
-      {cardName: "混碰胡", multiple: 4, gameType: "redpocket", cardId: 157},
-      {cardName: "小三元", multiple: 8, gameType: "redpocket", cardId: 158},
-      {cardName: "一条龙", multiple: 16, gameType: "redpocket", cardId: 159},
+      {cardName: "清一色", multiple: 2, gameType: "redpocket", cardId: 163},
+      {cardName: "混一色", multiple: 2, gameType: "redpocket", cardId: 164},
+      {cardName: "清碰胡", multiple: 4, gameType: "redpocket", cardId: 165},
+      {cardName: "混碰胡", multiple: 4, gameType: "redpocket", cardId: 166},
+      {cardName: "小三元", multiple: 8, gameType: "redpocket", cardId: 167},
+      {cardName: "一条龙", multiple: 16, gameType: "redpocket", cardId: 168},
     ];
     await CardType.insertMany(cardTypes);
   }
