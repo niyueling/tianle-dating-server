@@ -286,7 +286,7 @@ export default class RegressionService extends BaseService {
     // 观看战队
     if (task.typeId === RegressionTaskType.watchAdver) {
       const joinCount = await RegressionTaskRecord.count({playerId: user._id.toString(), taskId: task.taskId});
-      task.finish = true;
+      task.finish = joinCount >= task.taskTimes;
       task.finishCount = joinCount >= task.taskTimes ? task.taskTimes : joinCount;
     }
 
@@ -307,7 +307,7 @@ export default class RegressionService extends BaseService {
     // 根据不同任务类型判断是否完成任务
     const taskResult = await this.checkTaskFinishAndReceive(taskInfo, user);
 
-    if (!taskResult.finish) {
+    if (!taskResult.finish && taskResult.typeId !== RegressionTaskType.watchAdver) {
       return {code: false, info: TianleErrorCode.taskNotFinish};
     }
 
