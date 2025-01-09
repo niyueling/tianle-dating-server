@@ -302,105 +302,105 @@ export class AccountApi extends BaseApi {
 
     // 返回登录信息
     async loginSuccess(model, mnpVersion, platform) {
+      try {
         this.player.model = model;
 
         model.disconnectedRoom = false
         const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
         if (disconnectedRoom) {
-            model.disconnectedRoom = true;
+          model.disconnectedRoom = true;
         }
 
         const allGameTypes = [GameType.mj, GameType.xueliu, GameType.guobiao, GameType.pcmj, GameType.xmmj, GameType.ddz, GameType.zd, GameType.guandan];
         for (let i = 0; i < allGameTypes.length; i++) {
-            // 下发掉线子游戏
-            const room = await service.roomRegister.getDisconnectRoomByPlayerId(model._id.toString(), allGameTypes[i]);
-            if (room) {
-                // 掉线的子游戏类型
-                model.disconnectedRoom = true;
-                model.disconnectedRoomId = room;
-                model.continueGameType = allGameTypes[i];
-            }
+          // 下发掉线子游戏
+          const room = await service.roomRegister.getDisconnectRoomByPlayerId(model._id.toString(), allGameTypes[i]);
+          if (room) {
+            // 掉线的子游戏类型
+            model.disconnectedRoom = true;
+            model.disconnectedRoomId = room;
+            model.continueGameType = allGameTypes[i];
+          }
         }
 
         // add token
         model.token = await signAndRecord({playerId: model._id.toString()}, model._id.toString());
         if (mnpVersion) {
-            // 是否开启商店
-            const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
-            // 1 = 开启全部商店
-            const open = await service.utils.getGlobalConfigByName('openMnpRecharge');
-            let iosRoomCount = 0;
-            let iosLotteryCount = 0;
-            let openIosShopFunc = mnpVersion && open === 1 && (mnpVersion !== checkVersion)
+          // 是否开启商店
+          const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
+          // 1 = 开启全部商店
+          const open = await service.utils.getGlobalConfigByName('openMnpRecharge');
+          let iosRoomCount = 0;
+          let iosLotteryCount = 0;
+          let openIosShopFunc = mnpVersion && open === 1 && (mnpVersion !== checkVersion)
 
-            // 如果机型是ios，查询抽奖次数和开房数
-            if (platform && platform === "iOS") {
-                const roomScoreCount = await RoomScoreRecord.count({
-                    creatorId: model.shortId
-                })
-                const roomCount = await RoomRecord.count({
-                    creatorId: model.shortId
-                })
+          // 如果机型是ios，查询抽奖次数和开房数
+          if (platform && platform === "iOS") {
+            const roomScoreCount = await RoomScoreRecord.count({
+              creatorId: model.shortId
+            })
+            const roomCount = await RoomRecord.count({
+              creatorId: model.shortId
+            })
 
-                iosRoomCount = roomScoreCount + roomCount;
+            iosRoomCount = roomScoreCount + roomCount;
 
-                iosLotteryCount = await TurntablePrizeRecord.count({
-                    playerId: model._id
-                })
+            iosLotteryCount = await TurntablePrizeRecord.count({
+              playerId: model._id
+            })
 
-                const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
+            const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
 
-                openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
-            }
+            openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
+          }
 
-            model.openIosShopFunc = openIosShopFunc;
-            // model.openIosShopFunc = true;
+          model.openIosShopFunc = openIosShopFunc;
         }
 
         const mails = await Mail.findOne({to: model._id}).lean()
         if (!mails) {
-            await Mail.create({
-                type: "message",
-                state: 1,
-                giftState: 1,
-                to: model._id,
-                title: "欢迎来到天乐麻将",
-                content: "欢迎来到天乐麻将,如果您在游戏过程中遇到任何问题，可以通过客服联系我们，我们会第一时间给您提供必要的帮助!",
-                gift: {diamond: 0, gold: 0},
-                createAt: new Date()
-            });
+          await Mail.create({
+            type: "message",
+            state: 1,
+            giftState: 1,
+            to: model._id,
+            title: "欢迎来到天乐麻将",
+            content: "欢迎来到天乐麻将,如果您在游戏过程中遇到任何问题，可以通过客服联系我们，我们会第一时间给您提供必要的帮助!",
+            gift: {diamond: 0, gold: 0},
+            createAt: new Date()
+          });
         }
 
         // 获取用户称号
         const playerMedal = await PlayerMedal.findOne({playerId: model._id, isUse: true});
         if (playerMedal && (playerMedal.times === -1 || playerMedal.times > new Date().getTime())) {
-            model.medalId = playerMedal.propId;
+          model.medalId = playerMedal.propId;
         }
 
         // 获取用户头像框
         const playerHeadBorder = await PlayerHeadBorder.findOne({playerId: model._id, isUse: true});
         if (playerHeadBorder && (playerHeadBorder.times === -1 || playerHeadBorder.times > new Date().getTime())) {
-            model.headerBorderId = playerHeadBorder.propId;
+          model.headerBorderId = playerHeadBorder.propId;
         }
 
         // 判断用户最后一次参与游戏类型
         const roomInfo = await CombatGain.findOne({playerId: model._id}).sort({time: -1});
         if (roomInfo) {
-            const roomrecord = await RoomRecord.findOne({room: roomInfo.room});
-            if (roomrecord) {
-                model.lastGame = {
-                    gameType: roomrecord.category,
-                    gameName: roomInfo.gameName,
-                    categoryId: roomrecord.rule.categoryId,
-                    categoryName: roomInfo.caregoryName
-                }
+          const roomrecord = await RoomRecord.findOne({room: roomInfo.room});
+          if (roomrecord) {
+            model.lastGame = {
+              gameType: roomrecord.category,
+              gameName: roomInfo.gameName,
+              categoryId: roomrecord.rule.categoryId,
+              categoryName: roomInfo.caregoryName
             }
+          }
         }
 
         const playerInClub = await ClubMember.findOne({member: model._id});
         if (playerInClub) {
-            const club = await Club.findOne({_id: playerInClub.club});
-            model.clubShortId = club.shortId;
+          const club = await Club.findOne({_id: playerInClub.club});
+          model.clubShortId = club.shortId;
         }
 
         // 记录玩家
@@ -412,7 +412,13 @@ export class AccountApi extends BaseApi {
 
         await this.player.connectToBackend();
 
+        console.warn("model-%s", JSON.stringify(model));
+
         this.replySuccess(model);
+      } catch (e) {
+        console.warn(e);
+      }
+
     }
 
     async shareRecord(roomNum: number) {
