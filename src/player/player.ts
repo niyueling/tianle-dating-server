@@ -152,7 +152,6 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
   currentRoom: string
   clubId: number
   model: IPlayerModel
-  gameName: GameTypes
 
   constructor(socket, connection) {
     super()
@@ -169,7 +168,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
     this.debugMessage = config.debug.message
     this.location = null
     this.socketId = uuid()
-    logger.info('socket start ===>', this.socketId)
+    logger.info('socket start ===> %s ip %s', this.socketId, this.getIpAddress())
   }
 
   getDebugMessage(data) {
@@ -273,6 +272,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
     this.socket.player = null
     this.socket = NullSocket
     if (this.channel) {
+      console.warn("userId-%s, type-%s, cmd-%s, sid-%s", this._id, 'cmd', 'leave', "close");
       this.channel.publish('userCenter', `user.${this._id}`, new Buffer(
         JSON.stringify({type: 'cmd', cmd: 'leave', sid: "close"})))
     }
@@ -297,12 +297,8 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
         this.once('disconnect', () => resolve())
       })
 
-      rediClient.decrAsync(`gameCounter.${this.gameName}`)
-        .then()
       this.socket.close()
       this.socket.terminate()
-      await this.channel.close()
-      await this.connection.close()
       await promise
     }
   }
@@ -355,8 +351,8 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
       return
     }
 
-    console.warn(this._id, this.channel);
     try {
+      console.warn(this._id, this.channel);
       this.channel = await this.connection.createChannel()
     } catch (e) {
       console.warn(e);
@@ -379,6 +375,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
     try {
       await this.channel.bindQueue(this.myQueue, 'userCenter', `user.${this._id}`)
       const {consumerTag} = await this.channel.consume(this.myQueue, async message => {
+        console.warn("message-%s, consumerTag-%s", JSON.stringify(message), JSON.stringify(consumerTag));
         if (!message) return
 
         try {
@@ -505,28 +502,6 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
   }
 
   requestToCurrentRoom(name, message = {}) {
-  }
-
-// 前端强制解散
-// forceCloseRoom(gameName, roomNum){
-//   this.channel.publish(
-//     'exGameCenter',
-//     `${gameName}.${roomNum}`,
-//     this.toBuffer({name:'forceDissolve'}),
-//     {replyTo: this.myQueue})
-// }
-
-  setGameName(gameType) {
-    this.gameName = gameType || 'paodekuai';
-  }
-
-  requestToRoom(roomId, name, message) {
-    const playerIp = this.getIpAddress()
-    this.channel.publish(
-      'exGameCenter',
-      `${this.gameName}.${roomId}`,
-      this.toBuffer({name, from: this._id, payload: message, ip: playerIp}),
-      {replyTo: this.myQueue})
   }
 
   emit(event: string, message): boolean {
