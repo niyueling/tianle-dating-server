@@ -300,7 +300,7 @@ export class AccountApi extends BaseApi {
     async loginSuccess(model, mnpVersion, platform) {
       try {
         this.player.model = model;
-        this.player._id = model._id;
+        console.warn("_id-%s", this.player._id);
         model.disconnectedRoom = false
         const disconnectedRoom = Lobby.getInstance().getDisconnectedRoom(model._id.toString());
         if (disconnectedRoom) {
