@@ -20,6 +20,7 @@ import GoodsDailySupplement from "../../database/models/goodsDailySupplement";
 import RegressionTask from "../../database/models/regressionTask";
 import regressionTaskTotalPrize from "../../database/models/regressionTaskTotalPrize";
 import RegressionDiscountGift from "../../database/models/regressionDiscountGift";
+import WithdrawConfig from "../../database/models/withdrawConfig";
 
 export class MockDataApi extends BaseApi {
   // 录入转盘数据
@@ -4081,6 +4082,38 @@ export class MockDataApi extends BaseApi {
     ];
 
     await GoodsDailySupplement.insertMany(datas);
+
+    return this.replySuccess(datas);
+  }
+
+  // 录入红包配置
+  @addApi()
+  async saveRedPocketConfig() {
+    const result = await WithdrawConfig.find();
+
+    if (result.length) {
+      await WithdrawConfig.remove({_id: {$ne: null}}).exec();
+    }
+
+    const datas = [
+      {
+        amount: 0.12,
+        limitCount: 1,
+        juShu: 5
+      },
+      {
+        amount: 888,
+        limitCount: 1,
+        juShu: 0
+      },
+      {
+        amount: 1088,
+        limitCount: 1,
+        juShu: 0
+      },
+    ];
+
+    await WithdrawConfig.insertMany(datas);
 
     return this.replySuccess(datas);
   }
