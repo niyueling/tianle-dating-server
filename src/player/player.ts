@@ -516,6 +516,6 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
 
   async updateResource2Client() {
     const playerInfo = await service.playerService.getPlayerModel(this.model._id);
-    this.sendMessage('resource/update', {ok: true, data: pick(playerInfo, ['gold', 'diamond', 'tlGold'])})
+    this.sendMessage('resource/update', {ok: true, data: pick(playerInfo, ['gold', 'diamond', 'tlGold', 'redPocket'])})
   }
 }

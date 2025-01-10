@@ -143,7 +143,7 @@ export class GiftApi extends BaseApi {
 
       await PlayerFreeGoldRecord.create(data);
 
-      this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'tlGold'])});
+      this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'tlGold', 'redPocket'])});
       return this.replySuccess({gold: gold, freeAdverCount: freeAdverCount + 1, totalCount: user.freeAdverCount + freeAdverCount + 1, lastReceiveTime});
     }
 

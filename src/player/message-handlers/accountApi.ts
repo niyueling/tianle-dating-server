@@ -197,7 +197,7 @@ export class AccountApi extends BaseApi {
 
       await PlayerBenefitRecord.create(data);
 
-      this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'tlGold'])})
+      this.player.sendMessage('resource/update', {ok: true, data: pick(user, ['gold', 'diamond', 'tlGold', 'redPocket'])})
       return this.replySuccess({
         gold: gold,
         helpCount: helpCount + 1,

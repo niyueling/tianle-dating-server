@@ -1189,7 +1189,7 @@ export class GoodsApi extends BaseApi {
     await service.playerService.logGoldConsume(model._id, ConsumeLogType.receiveDailySupplement, exchangeConf.todayReceiveGold, model.tlGold, `领取每日专享补充包`);
 
     this.replySuccess({tlGold: exchangeConf.todayReceiveGold});
-    this.player.sendMessage('resource/update', {ok: true, data: {gold: model.gold, diamond: model.diamond, tlGold: model.tlGold}})
+    this.player.sendMessage('resource/update', {ok: true, data: {gold: model.gold, diamond: model.diamond, tlGold: model.tlGold, redPocket: model.redPocket}})
   }
 
   // 每日补充包列表
@@ -1444,6 +1444,6 @@ export class GoodsApi extends BaseApi {
     await service.playerService.logGoldConsume(model._id, ConsumeLogType.payReviveTlGold, exchangeConf.gold, model.gold, `兑换天乐币`);
 
     this.replySuccess({tlGold: exchangeConf.tlGold, gold: exchangeConf.gold});
-    this.player.sendMessage('resource/update', {ok: true, data: {gold: model.gold, diamond: model.diamond, tlGold: model.tlGold}})
+    this.player.sendMessage('resource/update', {ok: true, data: {gold: model.gold, diamond: model.diamond, tlGold: model.tlGold, redPocket: model.redPocket}})
   }
 }
