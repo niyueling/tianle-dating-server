@@ -47,7 +47,7 @@ export default class RegressionService extends BaseService {
     }
 
     // 领取付费奖品
-    if (!receiveInfo || (receiveInfo && !receiveInfo.payReceive) && isPay) {
+    if ((!receiveInfo || (receiveInfo && !receiveInfo.payReceive)) && isPay) {
       if (receiveInfo) {
         receiveInfo.payReceive = true;
       }
