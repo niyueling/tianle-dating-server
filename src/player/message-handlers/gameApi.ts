@@ -13,6 +13,7 @@ import CombatGain from "../../database/models/combatGain";
 import GameRecord from "../../database/models/gameRecord";
 import {service} from "../../service/importService";
 import LuckyBless from "../../database/models/luckyBless";
+import WithdrawConfig from "../../database/models/withdrawConfig";
 
 const getGameName = {
   [GameType.mj]: '十二星座',
@@ -216,5 +217,13 @@ export class GameApi extends BaseApi {
   async enterQian() {
     const resp = await service.qian.qianList(this.player);
     this.replySuccess(resp);
+  }
+
+  // 红包麻将数据接口
+  @addApi({})
+  async redPocketData() {
+    const player = await service.playerService.getPlayerModel(this.player._id);
+    const configs = await WithdrawConfig.find();
+    this.replySuccess({redPocket: player.redPocket, configs});
   }
 }
