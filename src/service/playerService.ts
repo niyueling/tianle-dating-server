@@ -669,7 +669,7 @@ export default class PlayerService extends BaseService {
 
     // 红包
     if (prize.type === 11) {
-      user.helpCount += prize.number * multiple;
+      user.redPocket += prize.number * multiple;
     }
 
     await user.save();
