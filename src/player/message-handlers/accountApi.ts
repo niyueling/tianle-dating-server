@@ -1,5 +1,6 @@
 import {GameType, TianleErrorCode, UserRegistLocation, shopPropType, ConsumeLogType} from "@fm/common/constants";
 import * as moment from "moment";
+import * as path from "path";
 import ChannelManager from "../../chat/channel-manager";
 import * as config from "../../config";
 import {getNewShortPlayerId} from "../../database/init";
@@ -40,6 +41,13 @@ import VipConfig from "../../database/models/VipConfig";
 import ClubMember from "../../database/models/clubMember";
 import Club from "../../database/models/club";
 import ClubRequest from "../../database/models/clubRequest";
+import {createLock, withLock} from "../../utils/lock";
+import PlayerModel from "../../database/models/player";
+import {batches_transfer} from "../../wechatPay/batches_transfer";
+import WithdrawConfig from "../../database/models/withdrawConfig";
+import WithdrawRecord from "../../database/models/withdrawRecord";
+
+const locker = createLock()
 
 export class AccountApi extends BaseApi {
   // 根据 shortId 查询用户
@@ -525,6 +533,68 @@ export class AccountApi extends BaseApi {
     }
     await record.save();
     return this.replySuccessWithInfo('移除成功');
+  }
+
+  // 红包提现
+  @addApi()
+  async withdrawRedPocket(message) {
+    await withLock('red-pocket-withdraw', 7000, async () => {
+      const playerModel = await PlayerModel.findById(this.player._id);
+
+      if (playerModel && !playerModel.openId) {
+        return this.replyFail(TianleErrorCode.playerIsTourist);
+      }
+
+      const withdrawConfig = await WithdrawConfig.findOne({_id: message.configId});
+
+      if (playerModel.redPocket < withdrawConfig.amount) {
+        return this.replyFail(TianleErrorCode.redPocketInsufficient);
+      }
+
+      const record = await WithdrawRecord.create({
+        playerId: playerModel._id,
+        configId: withdrawConfig._id,
+        config: withdrawConfig,
+        sn: await this.service.utils.generateOrderNumber()
+      })
+
+      let tem_batch_no = record._id.toString().concat("12345678");
+      const wechatPayMent = new batches_transfer({
+        mchId: config.wx.mchId,
+        appId: config.wx.app_id,
+        key: config.wx.sign_key,
+        serial_no: config.wx.serial_no,
+        certFilePath: path.join(__dirname, "..", "..", "..", "apiclient_cert.pem"),
+        keyFilePath: path.join(__dirname, "..", "..", "..", "apiclient_key.pem")
+      });
+      const tranRes = await wechatPayMent.batches_transfer({
+        out_batch_no: tem_batch_no,
+        batch_name: '天乐麻将红包提现',
+        batch_remark: '天乐麻将红包提现',
+        total_amount: withdrawConfig.amount * 100,
+        total_num: 1,
+        transfer_detail_list: [
+          {
+            out_detail_no: tem_batch_no,
+            transfer_amount: withdrawConfig.amount * 100,
+            transfer_remark: '天乐麻将红包提现',
+            openid: playerModel.openId,
+          },
+        ],
+      });
+
+      if (tranRes["status"] == '200') {
+        const updated = await PlayerModel.findByIdAndUpdate(this.player._id, {$inc: {redPocket: -withdrawConfig.amount}}, {'new': true})
+        record.info = '完成';
+        record.status = 1;
+        record.paymentId = tranRes["batch_id"]
+        await record.save()
+        return this.replySuccess({redPocket: updated.redPocket});
+      }
+      record.info = tranRes["err_code_des"];
+      await record.save();
+      return this.replyFail(TianleErrorCode.withdrawFail);
+    }, locker)
   }
 
   //更新用户头像，昵称

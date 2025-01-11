@@ -14,6 +14,8 @@ import GameRecord from "../../database/models/gameRecord";
 import {service} from "../../service/importService";
 import LuckyBless from "../../database/models/luckyBless";
 import WithdrawConfig from "../../database/models/withdrawConfig";
+import roomRecord from "../../database/models/roomRecord";
+import WithdrawRecord from "../../database/models/withdrawRecord";
 
 const getGameName = {
   [GameType.mj]: '十二星座',
@@ -223,7 +225,18 @@ export class GameApi extends BaseApi {
   @addApi({})
   async redPocketData() {
     const player = await service.playerService.getPlayerModel(this.player._id);
-    const configs = await WithdrawConfig.find();
+    const configs = await WithdrawConfig.find().lean();
+
+    for (let i = 0; i < configs.length; i++) {
+      const config = configs[i];
+      if (config.juShu > 0) {
+        config.joinRoomCount = await roomRecord.count({players: this.player._id, scores: {$ne: []}, category: GameType.redpocket});
+      }
+
+      // 提现次数
+      config.withdrawCount = await WithdrawRecord.count({playerId: this.player._id, configId: config._id, status: 1});
+    }
+
     this.replySuccess({redPocket: player.redPocket, configs});
   }
 }

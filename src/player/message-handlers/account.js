@@ -6,7 +6,7 @@ import PlayerModel from '../../database/models/player';
 import PlayerManager from '../../player/player-manager';
 import * as config from '../../config';
 import GameRecord from '../../database/models/gameRecord'
-import RoomRecord, {SELF_CATEGORY} from '../../database/models/roomRecord'
+import RoomRecord from '../../database/models/roomRecord'
 import RankList from '../../database/models/rankList'
 import GM from '../../database/models/gm'
 import Product from '../../database/models/product'
