@@ -8,6 +8,7 @@ import DebrisRecord from "../../database/models/DebrisRecord";
 import DebrisTotalPrize from "../../database/models/DebrisTotalPrize";
 import DebrisTotalPrizeRecord from "../../database/models/DebrisTotalPrizeRecord";
 import Notice from "../../database/models/notice";
+import RedPocketDebrisRecord from "../../database/models/RedPocketDebrisRecord";
 
 export class DebrisApi extends BaseApi {
   @addApi()
@@ -108,7 +109,11 @@ export class DebrisApi extends BaseApi {
   async getDailyTaskData(message, user) {
     const taskLists = await this.getDailyTaskDataByType(message, user);
     const sortTasks = this.sortTasks(taskLists);
-    const canReceive = this.checkDailyTaskReceive(taskLists);
+    let canReceive = this.checkDailyTaskReceive(taskLists);
+    const receiveCount = await RedPocketDebrisRecord.count({playerId: user._id.toString(), taskType: message.taskType});
+    if (!canReceive && receiveCount > 0 && message.taskType === CardTypeCategory.redpocket) {
+      canReceive = true;
+    }
 
     // 计算活跃度
     const liveness = await PlayerCardTypeRecord.find({playerId: user._id, type: {$in: [1, 2]}});
@@ -311,7 +316,7 @@ export class DebrisApi extends BaseApi {
     let canReceive = false;
 
     for (const task of tasks) {
-      if (task.finish && !task.receive) {
+      if (task.taskType !== 3 && task.finish && !task.receive) {
         canReceive = true;
         break;
       }
@@ -398,17 +403,17 @@ export class DebrisApi extends BaseApi {
     }
 
     // 按照奖励类型领取奖励
-    await service.playerService.receivePrize({type: 11, number: 100}, this.player._id, 1, ConsumeLogType.receiveTask);
+    const prizeInfo = await this.checkRedPocketTaskPrize(message.taskType);
+    console.warn("prizeInfo-%s", JSON.stringify(prizeInfo));
+    await service.playerService.receivePrize(prizeInfo, this.player._id, 1, ConsumeLogType.receiveTask);
 
     // 创建领取记录
     const data = {
       playerId: user._id.toString(),
-      taskId: taskInfo.taskId,
-      taskConfig: taskInfo,
-      createAt: new Date()
+      taskType: message.taskType
     };
 
-    return await DebrisRecord.create(data);
+    return await RedPocketDebrisRecord.create(data);
   }
 
   async checkRedPocketTaskFinish(user, taskType) {
@@ -422,5 +427,16 @@ export class DebrisApi extends BaseApi {
     }
 
     return true;
+  }
+
+  async checkRedPocketTaskPrize(taskType) {
+    const tasks = await Debris.find({taskType}).lean();
+    let number = 0;
+
+    for (let i = 0; i < tasks.length; i++) {
+      number += tasks[i].taskPrizes.number;
+    }
+
+    return {type: tasks[0].taskPrizes.type, number};
   }
 }
