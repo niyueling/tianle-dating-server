@@ -38,6 +38,19 @@ export class DebrisApi extends BaseApi {
   }
 
   @addApi()
+  async finishRedPocketTask(message) {
+    const user = await Player.findOne({_id: this.player._id});
+
+    if (!user) {
+      return this.replyFail(TianleErrorCode.userNotFound);
+    }
+
+    const result = await this.finishRedPocketTaskOnce(message, user);
+    await this.player.updateResource2Client();
+    return this.replySuccess(result);
+  }
+
+  @addApi()
   async receiveTaskTotalActivity(message) {
     const user = await Player.findOne({_id:this.player._id});
 
@@ -241,7 +254,7 @@ export class DebrisApi extends BaseApi {
     }
 
     // 番型
-    if(message.taskType === CardTypeCategory.constellate) {
+    if(message.taskType === CardTypeCategory.redpocket) {
       // 清一色
       const qingYiSe = await this.getAchievementTask(user, debrisType.qingYiSe, CardTypeCategory.redpocket);
       if (qingYiSe && qingYiSe.taskId) taskLists.push(qingYiSe);
@@ -368,5 +381,46 @@ export class DebrisApi extends BaseApi {
     };
 
     return await DebrisRecord.create(data);
+  }
+
+  async finishRedPocketTaskOnce(message, user) {
+    // 获取任务配置
+    const taskInfo = await Debris.findOne({taskType: message.taskType}).lean();
+    if (!taskInfo) {
+      return this.replyFail(TianleErrorCode.configNotFound);
+    }
+
+    // 根据不同任务类型判断是否完成任务
+    const taskResult = await this.checkRedPocketTaskFinish(user, message.taskType);
+
+    if (!taskResult) {
+      return this.replyFail(TianleErrorCode.taskNotFinish);
+    }
+
+    // 按照奖励类型领取奖励
+    await service.playerService.receivePrize({type: 11, number: 100}, this.player._id, 1, ConsumeLogType.receiveTask);
+
+    // 创建领取记录
+    const data = {
+      playerId: user._id.toString(),
+      taskId: taskInfo.taskId,
+      taskConfig: taskInfo,
+      createAt: new Date()
+    };
+
+    return await DebrisRecord.create(data);
+  }
+
+  async checkRedPocketTaskFinish(user, taskType) {
+    const tasks = await Debris.find({taskType}).lean();
+
+    for (let i = 0; i < tasks.length; i++) {
+      const taskInfo = await this.checkTaskFinishAndReceive(tasks[i], user);
+      if (!taskInfo.finish) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

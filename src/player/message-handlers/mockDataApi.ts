@@ -3660,7 +3660,7 @@ export class MockDataApi extends BaseApi {
         taskId: 1163,
         taskTimes: 3,
         typeId: 163,
-        taskPrizes: {}
+        taskPrizes: {number: 9, type: 11}
       },
       {
         taskName: "混一色",
@@ -3669,7 +3669,7 @@ export class MockDataApi extends BaseApi {
         taskId: 1164,
         taskTimes: 3,
         typeId: 164,
-        taskPrizes: {}
+        taskPrizes: {number: 6, type: 11}
       },
       {
         taskName: "清碰胡",
@@ -3678,7 +3678,7 @@ export class MockDataApi extends BaseApi {
         taskId: 1165,
         taskTimes: 3,
         typeId: 165,
-        taskPrizes: {}
+        taskPrizes: {number: 18, type: 11}
       },
       {
         taskName: "混碰胡",
@@ -3687,7 +3687,7 @@ export class MockDataApi extends BaseApi {
         taskId: 1166,
         taskTimes: 3,
         typeId: 166,
-        taskPrizes: {}
+        taskPrizes: {number: 12, type: 11}
       },
       {
         taskName: "小三元",
@@ -3696,7 +3696,7 @@ export class MockDataApi extends BaseApi {
         taskId: 1167,
         taskTimes: 3,
         typeId: 167,
-        taskPrizes: {}
+        taskPrizes: {number: 30, type: 11}
       },
       {
         taskName: "一条龙",
@@ -3705,7 +3705,7 @@ export class MockDataApi extends BaseApi {
         taskId: 1168,
         taskTimes: 3,
         typeId: 168,
-        taskPrizes: {}
+        taskPrizes: {number: 24, type: 11}
       },
     ];
 
