@@ -98,7 +98,7 @@ export class DebrisApi extends BaseApi {
     const canReceive = this.checkDailyTaskReceive(taskLists);
 
     // 计算活跃度
-    const liveness = await PlayerCardTypeRecord.find({playerId: user._id});
+    const liveness = await PlayerCardTypeRecord.find({playerId: user._id, type: {$in: [1, 2]}});
     let livenessCount = 0;
     liveness.map(v => livenessCount += v.count);
 
@@ -241,30 +241,30 @@ export class DebrisApi extends BaseApi {
     }
 
     // 番型
-    if(message.taskType === CardTypeCategory.redpocket) {
+    if(message.taskType === CardTypeCategory.constellate) {
       // 清一色
       const qingYiSe = await this.getAchievementTask(user, debrisType.qingYiSe, CardTypeCategory.redpocket);
       if (qingYiSe && qingYiSe.taskId) taskLists.push(qingYiSe);
 
       // 混一色
-      const moJieZhiWen = await this.getAchievementTask(user, debrisType.hunYiSe, CardTypeCategory.redpocket);
-      if (moJieZhiWen && moJieZhiWen.taskId) taskLists.push(moJieZhiWen);
+      const hunYiSe = await this.getAchievementTask(user, debrisType.hunYiSe, CardTypeCategory.redpocket);
+      if (hunYiSe && hunYiSe.taskId) taskLists.push(hunYiSe);
 
       // 清碰胡
-      const zhongXingPengYue = await this.getAchievementTask(user, debrisType.qingPengHu, CardTypeCategory.redpocket);
-      if (zhongXingPengYue && zhongXingPengYue.taskId) taskLists.push(zhongXingPengYue);
+      const qingPengHu = await this.getAchievementTask(user, debrisType.qingPengHu, CardTypeCategory.redpocket);
+      if (qingPengHu && qingPengHu.taskId) taskLists.push(qingPengHu);
 
       // 混碰胡
-      const yueLuoXingChen = await this.getAchievementTask(user, debrisType.hunPengHu, CardTypeCategory.redpocket);
-      if (yueLuoXingChen && yueLuoXingChen.taskId) taskLists.push(yueLuoXingChen);
+      const hunPengHu = await this.getAchievementTask(user, debrisType.hunPengHu, CardTypeCategory.redpocket);
+      if (hunPengHu && hunPengHu.taskId) taskLists.push(hunPengHu);
 
       // 小三元
-      const daBuLiuXing = await this.getAchievementTask(user, debrisType.xiaoSanYuan, CardTypeCategory.redpocket);
-      if (daBuLiuXing && daBuLiuXing.taskId) taskLists.push(daBuLiuXing);
+      const xiaoSanYuan = await this.getAchievementTask(user, debrisType.xiaoSanYuan, CardTypeCategory.redpocket);
+      if (xiaoSanYuan && xiaoSanYuan.taskId) taskLists.push(xiaoSanYuan);
 
       // 一条龙
-      const xingLiuYingJi = await this.getAchievementTask(user, debrisType.yiTiaoLong, CardTypeCategory.redpocket);
-      if (xingLiuYingJi && xingLiuYingJi.taskId) taskLists.push(xingLiuYingJi);
+      const yiTiaoLong = await this.getAchievementTask(user, debrisType.yiTiaoLong, CardTypeCategory.redpocket);
+      if (yiTiaoLong && yiTiaoLong.taskId) taskLists.push(yiTiaoLong);
     }
 
     return taskLists;
@@ -317,6 +317,10 @@ export class DebrisApi extends BaseApi {
         task = taskInfo;
         break;
       }
+    }
+
+    if (!task) {
+      task = tasks[tasks.length - 1];
     }
 
     return task;
