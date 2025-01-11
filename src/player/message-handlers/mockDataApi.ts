@@ -3651,6 +3651,62 @@ export class MockDataApi extends BaseApi {
         typeId: 52,
         taskPrizes: {name: "20万天乐豆", number: 200000, type: 7}
       },
+
+      // 红包麻将
+      {
+        taskName: "清一色",
+        taskDescribe: "胡清一色番型次数达到?次",
+        taskType: 3,
+        taskId: 1163,
+        taskTimes: 3,
+        typeId: 163,
+        taskPrizes: {}
+      },
+      {
+        taskName: "混一色",
+        taskDescribe: "胡混一色番型次数达到?次",
+        taskType: 3,
+        taskId: 1164,
+        taskTimes: 3,
+        typeId: 164,
+        taskPrizes: {}
+      },
+      {
+        taskName: "清碰胡",
+        taskDescribe: "胡清碰胡番型次数达到?次",
+        taskType: 3,
+        taskId: 1165,
+        taskTimes: 3,
+        typeId: 165,
+        taskPrizes: {}
+      },
+      {
+        taskName: "混碰胡",
+        taskDescribe: "胡混碰胡番型次数达到?次",
+        taskType: 3,
+        taskId: 1166,
+        taskTimes: 3,
+        typeId: 166,
+        taskPrizes: {}
+      },
+      {
+        taskName: "小三元",
+        taskDescribe: "胡小三元番型次数达到?次",
+        taskType: 3,
+        taskId: 1167,
+        taskTimes: 3,
+        typeId: 167,
+        taskPrizes: {}
+      },
+      {
+        taskName: "一条龙",
+        taskDescribe: "胡一条龙番型次数达到?次",
+        taskType: 3,
+        taskId: 1168,
+        taskTimes: 3,
+        typeId: 168,
+        taskPrizes: {}
+      },
     ];
 
     await Debris.insertMany(datas);

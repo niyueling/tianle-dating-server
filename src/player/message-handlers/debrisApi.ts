@@ -1,6 +1,6 @@
 import {addApi, BaseApi} from "./baseApi";
 import Player from "../../database/models/player";
-import {ConsumeLogType, TaskCategory, debrisType, TianleErrorCode} from "@fm/common/constants";
+import {ConsumeLogType, TaskCategory, debrisType, TianleErrorCode, CardTypeCategory} from "@fm/common/constants";
 import {service} from "../../service/importService";
 import Debris from "../../database/models/debris";
 import PlayerCardTypeRecord from "../../database/models/playerCardTypeRecord";
@@ -127,7 +127,7 @@ export class DebrisApi extends BaseApi {
     let taskLists = [];
 
     // 番型
-    if(message.taskType === TaskCategory.develop) {
+    if(message.taskType === CardTypeCategory.constellate) {
       // 星蝎交辉
       const xingHeJiaoHui = await this.getAchievementTask(user, debrisType.xingHeJiaoHui, TaskCategory.develop);
       if (xingHeJiaoHui && xingHeJiaoHui.taskId) taskLists.push(xingHeJiaoHui);
@@ -190,7 +190,7 @@ export class DebrisApi extends BaseApi {
     }
 
     // 星座杠
-    if(message.taskType === TaskCategory.game) {
+    if(message.taskType === CardTypeCategory.gang) {
       // 白羊座
       const baiYang = await this.getAchievementTask(user, debrisType.baiYang, TaskCategory.game);
       if (baiYang && baiYang.taskId) taskLists.push(baiYang);
@@ -238,6 +238,33 @@ export class DebrisApi extends BaseApi {
       // 双鱼座
       const shuangYu = await this.getAchievementTask(user, debrisType.shuangYu, TaskCategory.game);
       if (shuangYu && shuangYu.taskId) taskLists.push(shuangYu);
+    }
+
+    // 番型
+    if(message.taskType === CardTypeCategory.redpocket) {
+      // 清一色
+      const qingYiSe = await this.getAchievementTask(user, debrisType.qingYiSe, CardTypeCategory.redpocket);
+      if (qingYiSe && qingYiSe.taskId) taskLists.push(qingYiSe);
+
+      // 混一色
+      const moJieZhiWen = await this.getAchievementTask(user, debrisType.hunYiSe, CardTypeCategory.redpocket);
+      if (moJieZhiWen && moJieZhiWen.taskId) taskLists.push(moJieZhiWen);
+
+      // 清碰胡
+      const zhongXingPengYue = await this.getAchievementTask(user, debrisType.qingPengHu, CardTypeCategory.redpocket);
+      if (zhongXingPengYue && zhongXingPengYue.taskId) taskLists.push(zhongXingPengYue);
+
+      // 混碰胡
+      const yueLuoXingChen = await this.getAchievementTask(user, debrisType.hunPengHu, CardTypeCategory.redpocket);
+      if (yueLuoXingChen && yueLuoXingChen.taskId) taskLists.push(yueLuoXingChen);
+
+      // 小三元
+      const daBuLiuXing = await this.getAchievementTask(user, debrisType.xiaoSanYuan, CardTypeCategory.redpocket);
+      if (daBuLiuXing && daBuLiuXing.taskId) taskLists.push(daBuLiuXing);
+
+      // 一条龙
+      const xingLiuYingJi = await this.getAchievementTask(user, debrisType.yiTiaoLong, CardTypeCategory.redpocket);
+      if (xingLiuYingJi && xingLiuYingJi.taskId) taskLists.push(xingLiuYingJi);
     }
 
     return taskLists;
