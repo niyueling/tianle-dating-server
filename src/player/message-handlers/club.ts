@@ -364,23 +364,6 @@ export async function requestToAllClubMember(channel, name, clubId, info) {
     toBuffer({name, payload: info}))
 }
 
-export async function requestToAllClubMemberUserCenter(channel, name, clubId, info) {
-  const club = await Club.findOne({_id: clubId});
-
-  if (!club) {
-    return;
-  }
-
-  const members = await ClubMember.find({club: clubId});
-
-  for (const member of members) {
-    channel.publish(
-      `userCenter`,
-      `user.${member.member}`,
-      toBuffer({name, payload: info}))
-  }
-}
-
 export async function requestToUserCenter(channel, name, playerId, info) {
 
   const player = await Player.findOne({_id: playerId});
@@ -699,7 +682,8 @@ export default {
         clubGold: 0,
       })
 
-      await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
+      await requestToUserCenter(player.channel, 'club/newPlayerJoinClub', message.requestId, {playerId: message.requestId, clubShortId: myClub.shortId})
+      // await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
 
       return player.replySuccess(ClubAction.dealRequest, {});
     }
@@ -911,6 +895,7 @@ export default {
       await notifyNewPlayerJoin(adminInfo, clubInfo.shortId, playerInfo);
     }
 
+    await player.listenClub(clubInfo._id);
     await requestToAllClubMember(player.channel, 'club/updateClubRoom', clubInfo._id.toString(), {})
 
     return player.replySuccess(ClubAction.dealClubInviteRequest, {});

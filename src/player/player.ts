@@ -413,6 +413,15 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
             return;
           }
 
+          // 新用户加入战队
+          if (messageBody.name === 'club/newPlayerJoinClub') {
+            console.warn("_id-%s messageBody-%s", this._id, JSON.stringify(messageBody))
+
+            this.sendMessage("account/newPlayerJoinClubReply", {ok: true, data: {clubShortId: messageBody.payload.clubShortId}});
+
+            return;
+          }
+
           // 通知战队主合并结果
           if (messageBody.name === 'club/sendMergeResult') {
             let msg = '';
