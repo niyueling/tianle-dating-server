@@ -540,6 +540,17 @@ export default {
 
     await ClubMember.remove({member: leaveId, club: club._id});
     await player.cancelListenClub(club.clubId);
+
+    // 发送邮件给战队主/管理员
+    const adminList = await ClubMember.find({
+      club: club._id,
+      role: "admin"
+    })
+    await requestToUserCenter(player.channel, 'club/clubPlayerChanged', club.owner, {clubShortId: club.shortId})
+    for (let i = 0; i < adminList.length; i++) {
+      await requestToUserCenter(player.channel, 'club/clubPlayerChanged', adminList[i].member, {clubShortId: club.shortId})
+    }
+
     return player.replySuccess(ClubAction.leave, {});
   },
   [ClubAction.getRequestInfo]: async (player, message) => {
@@ -617,7 +628,16 @@ export default {
       await globalSendEmailMessage(message.requestId, "加入成功通知", `申请加入战队${club.name}(${club.shortId})成功`);
 
       await requestToUserCenter(player.channel, 'club/newPlayerJoinClub', message.requestId, {playerId: message.requestId, clubId: myClub._id})
-      // await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
+
+      // 发送邮件给战队主/管理员
+      const adminList = await ClubMember.find({
+        club: myClub._id,
+        role: "admin"
+      })
+      await requestToUserCenter(player.channel, 'club/clubPlayerChanged', myClub.owner, {clubShortId: myClub.shortId})
+      for (let i = 0; i < adminList.length; i++) {
+        await requestToUserCenter(player.channel, 'club/clubPlayerChanged', adminList[i].member, {clubShortId: myClub.shortId})
+      }
 
       return player.replySuccess(ClubAction.dealRequest, {});
     }
@@ -754,6 +774,16 @@ export default {
 
       await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
 
+      // 发送邮件给战队主/管理员
+      const adminList = await ClubMember.find({
+        club: toClub._id,
+        role: "admin"
+      })
+      await requestToUserCenter(player.channel, 'club/clubPlayerChanged', toClub.owner, {clubShortId: toClub.shortId})
+      for (let i = 0; i < adminList.length; i++) {
+        await requestToUserCenter(player.channel, 'club/clubPlayerChanged', adminList[i].member, {clubShortId: toClub.shortId})
+      }
+
       return player.replySuccess(ClubAction.dealClubRequest, {});
     }
 
@@ -824,6 +854,7 @@ export default {
     // 发送邮件给战队主
     const ownerInfo = await service.playerService.getPlayerModel(clubInfo.owner);
     await notifyNewPlayerJoin(ownerInfo, clubInfo.shortId, playerInfo);
+    await requestToUserCenter(player.channel, 'club/clubPlayerChanged', clubInfo.owner, {clubShortId: clubInfo.shortId})
 
     const clubPartnerMember = await ClubMember.findOne({
       club: clubInfo._id,
@@ -837,6 +868,7 @@ export default {
     for (let i = 0; i < adminList.length; i++) {
       const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
       await notifyNewPlayerJoin(adminInfo, clubInfo.shortId, playerInfo);
+      await requestToUserCenter(player.channel, 'club/clubPlayerChanged', adminList[i].member, {clubShortId: clubInfo.shortId})
     }
 
     await player.listenClub(clubInfo._id);
