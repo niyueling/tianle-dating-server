@@ -1649,7 +1649,7 @@ export default {
       return player.sendMessage('club/promotePartnerReply', {ok: true, data: {}})
     }
 
-    await globalSendClubMessage(club.shortId, member._id, `你被取消合伙人身份`);
+    await globalSendEmailMessage(member._id, "取消合伙人通知", `你被${club.name}(${club.shortId})取消合伙人身份`);
     await removeClubPlayer(player, message.clubShortId, model._id);
   },
   [ClubAction.createNewClub]: async (player, message) => {
