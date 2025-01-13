@@ -620,7 +620,7 @@ export default {
       messageLists = [...messageLists, ...clubRequestInfo, ...clubMergeInfo];
     }
 
-    messageLists = messageLists.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+    messageLists = messageLists.sort((a, b) => Date.parse(b.createAt) - Date.parse(a.createAt));
 
     return player.replySuccess(ClubAction.getRequestInfo, {requestList: messageLists});
   },
