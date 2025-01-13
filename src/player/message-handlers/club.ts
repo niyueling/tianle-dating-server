@@ -1482,7 +1482,7 @@ export default {
       await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, adminInfo);
     }
 
-    await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
+    await requestToAllClubMember(player.channel, 'club/updateClubRoom', myClub._id.toString(), {})
 
     player.sendMessage('club/removePlayerReply', {ok: true, data: {}});
   },
