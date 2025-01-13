@@ -682,7 +682,7 @@ export default {
         clubGold: 0,
       })
 
-      await requestToUserCenter(player.channel, 'club/newPlayerJoinClub', message.requestId, {playerId: message.requestId, clubShortId: myClub.shortId})
+      await requestToUserCenter(player.channel, 'club/newPlayerJoinClub', message.requestId, {playerId: message.requestId, clubId: myClub._id})
       // await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
 
       return player.replySuccess(ClubAction.dealRequest, {});

@@ -415,11 +415,18 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
 
           // 新用户加入战队
           if (messageBody.name === 'club/newPlayerJoinClub') {
-            console.warn("_id-%s messageBody-%s", this._id, JSON.stringify(messageBody))
+            const sendFunc = async () => {
+              const clubInfo = await getClubInfo(messageBody.payload.clubId, this);
+              console.warn("clubInfo-%s, redis-%s", JSON.stringify(clubInfo), config.redis);
 
-            this.sendMessage("account/newPlayerJoinClubReply", {ok: true, data: {clubShortId: messageBody.payload.clubShortId}});
+              if (clubInfo.ok) {
+                this.sendMessage('club/getClubInfoReply', clubInfo);
+              }
 
-            return;
+              return;
+            }
+
+            setTimeout(sendFunc, 1000);
           }
 
           // 通知战队主合并结果
