@@ -1787,13 +1787,19 @@ export default {
     const applyDiamond = applyClubConfig ? Number(applyClubConfig.value) : 100;
     const mergeClubConfig = await GlobalConfig.findOne({name: "mergeClubDiamond"}).lean();
     const mergeDiamond = mergeClubConfig ? Number(mergeClubConfig.value) : 200;
+    const mergeRule = [
+      "1. 合并后合伙人，管理员取消身份，从属于战队主旗下",
+      "2. 合并后战队主自动获得合伙人身份",
+      "3. 已经在合并战队俱乐部成员将不在从属名单中"
+    ];
 
     player.replySuccess(ClubAction.clubConfig, {
       apply: applyDiamond,
       rename: renameDiamond,
       transferOut: outDiamond,
       transferIn: inDiamond,
-      merge: mergeDiamond
+      merge: mergeDiamond,
+      mergeRule
     });
   },
   [ClubAction.mergeClub]: async (player, message) => {
