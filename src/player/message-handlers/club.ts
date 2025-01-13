@@ -116,61 +116,40 @@ export async function removeClubPlayer(player, clubShortId, playerId) {
   const playerInfo = await service.playerService.getPlayerModel(playerId);
 
   if (!myClub) {
-    return player.sendMessage('club/removePlayerReply', {ok: false, info: TianleErrorCode.noPermission});
+    return;
   }
 
   if (myClub.owner === playerId.toString()) {
-    return player.sendMessage('club/removePlayerReply', {
-      ok: false,
-      info: TianleErrorCode.notOperateClubCreator
-    });
+    return;
   }
 
   if (memberShip.leader && memberShip.leader !== player.model.shortId) {
-    return player.sendMessage('club/adminRemovePlayerReply', {
-      ok: false,
-      info: TianleErrorCode.notRemoveLeader
-    });
+    return;
   }
 
   // 做管理员的校验
   if (roleType === 2) {
     if (memberShip.role === 'admin') {
-      return player.sendMessage('club/adminRemovePlayerReply', {
-        ok: false,
-        info: TianleErrorCode.notRemoveAdmin
-      });
+      return;
     }
 
     if (playerId === player._id.toString()) {
-      return player.sendMessage('club/adminRemovePlayerReply', {
-        ok: false,
-        info: TianleErrorCode.notRemoveSelf
-      });
+      return;
     }
   }
 
   // 做合伙人的校验
   if (roleType === 3) {
     if (memberShip.role === 'admin') {
-      return player.sendMessage('club/adminRemovePlayerReply', {
-        ok: false,
-        info: TianleErrorCode.notRemoveAdmin
-      });
+      return;
     }
 
     if (memberShip.partner) {
-      return player.sendMessage('club/adminRemovePlayerReply', {
-        ok: false,
-        info: TianleErrorCode.notRemovePartner
-      });
+      return;
     }
 
     if (playerId.toString() === player._id.toString()) {
-      return player.sendMessage('club/adminRemovePlayerReply', {
-        ok: false,
-        info: TianleErrorCode.notRemoveSelf
-      });
+      return;
     }
 
     // 发送邮件给战队主/管理员
@@ -1652,7 +1631,7 @@ export default {
     memberShip.partner = false;
     await memberShip.save();
     await globalSendEmailMessage(member._id, "取消合伙人通知", `你被${club.name}(${club.shortId})取消合伙人身份`);
-    await removeClubPlayer(player, message.clubShortId, model._id);
+    // await removeClubPlayer(player, message.clubShortId, model._id);
   },
   [ClubAction.createNewClub]: async (player, message) => {
     const ownerClub = await Club.findOne({owner: player.model._id});
