@@ -787,6 +787,10 @@ export default {
           playerShortId: memberInfo.shortId,
           message: `成功加入战队${toClub.name}(${toClub.shortId})`
         });
+
+        // 通知用户从属关系变更
+        await globalSendClubMessage(toClub.shortId, member.member, `从属关系变更，当前从属${ownerInfo.nickname}(${ownerInfo.shortId})`);
+        await globalSendEmailMessage(member.member, "从属关系变更", `从属关系变更，当前从属${ownerInfo.nickname}(${ownerInfo.shortId})`);
       }
 
       // 通知小战队主合并结果
