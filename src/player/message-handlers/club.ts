@@ -1645,11 +1645,11 @@ export default {
     if (message.type === "add") {
       memberShip.partner = true;
       await memberShip.save();
+      await globalSendClubMessage(club.shortId, member._id, `你被设置成合伙人身份`);
       return player.sendMessage('club/promotePartnerReply', {ok: true, data: {}})
     }
 
-    await globalSendClubMessage(club.shortId, member._id, `你被${message.type === "add" ? "设置" : "取消"}合伙人身份`);
-
+    await globalSendClubMessage(club.shortId, member._id, `你被取消合伙人身份`);
     await removeClubPlayer(player, message.clubShortId, model._id);
   },
   [ClubAction.createNewClub]: async (player, message) => {
