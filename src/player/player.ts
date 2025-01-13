@@ -8,7 +8,7 @@ import * as ws from 'ws';
 import {pick} from 'lodash'
 import {serializeMessage, deserializeMessage} from '../network/utils';
 import accountHandlers from './message-handlers/account';
-import clubHandlers, {getClubInfo} from './message-handlers/club';
+import clubHandlers, {getClubInfo, getClubMembers} from './message-handlers/club';
 import matchHandlers from './message-handlers/match';
 import resourceHandlers from './message-handlers/resource';
 import gameHandlers from './message-handlers/game';
@@ -422,6 +422,19 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
               if (clubInfo.ok) {
                 this.sendMessage('club/getClubInfoReply', clubInfo);
               }
+
+              return;
+            }
+
+            setTimeout(sendFunc, 1000);
+          }
+
+          // 战队用户变化
+          if (messageBody.name === 'club/clubPlayerChanged') {
+            const sendFunc = async () => {
+              const data = getClubMembers(this, message);
+
+              this.sendMessage('club/getClubMembersReply', {ok: true, data});
 
               return;
             }

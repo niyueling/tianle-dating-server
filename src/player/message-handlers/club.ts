@@ -365,6 +365,55 @@ export async function getUnReadMessage(player) {
   return unReadMessageIds;
 }
 
+export async function getClubMembers(player, message) {
+  let myClub = await getOwnerClub(player.model._id, message.clubShortId);
+  const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
+  const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
+
+  if (!myClub && (isAdmin || isPartner)) {
+    myClub = await Club.findOne({shortId: message.clubShortId});
+  }
+  if (!myClub) {
+    player.sendMessage('club/getClubMembersReply', {ok: false, info: TianleErrorCode.notClubAdmin});
+    return
+  }
+  const params = {club: myClub._id};
+  if (message.playerShortId) {
+    const searchInfo = await PlayerModel.findOne({shortId: message.playerShortId});
+    params["member"] = searchInfo._id;
+  }
+
+  const isClubOwner = myClub.owner === player._id.toString();
+  const clubExtra = await getClubExtra(myClub._id);
+  const clubMembers = await ClubMember.find(params);
+  const clubMembersInfo = [];
+  for (const clubMember of clubMembers) {
+    const memberInfo = await PlayerModel.findOne({_id: clubMember.member})
+    if (memberInfo) {
+      if ((isPartner && !isAdmin && clubMember.leader === player.model.shortId) || isAdmin) {
+        clubMembersInfo.push({
+          name: memberInfo.nickname,
+          id: memberInfo._id,
+          isPartnerBlack: clubExtra.partnerBlacklist.includes(memberInfo._id.toString()),
+          isBlack: clubExtra.blacklist.includes(memberInfo._id.toString()),
+          rename: clubExtra.renameList[clubMember.member] || "",
+          partnerRename: clubExtra.partnerRenameList[clubMember.member] || "",
+          headImage: memberInfo.avatar,
+          diamond: memberInfo.diamond,
+          clubGold: clubMember.clubGold,
+          leader: clubMember.leader,
+          shortId: memberInfo.shortId,
+          isAdmin: clubMember.role === 'admin',
+          isPartner: clubMember.partner,
+          isClubOwner: clubMember.member.toString() === myClub.owner.toString()
+        })
+      }
+    }
+  }
+
+  return {isClubOwner, isAdmin, isPartner, clubMembersInfo};
+}
+
 export default {
   [ClubAction.request]: async (player, message) => {
     const alreadyJoinedClubs = await ClubMember.count({member: player.model._id}).lean()
@@ -960,54 +1009,11 @@ export default {
     }
   },
   [ClubAction.getClubMembers]: async (player, message) => {
-    let myClub = await getOwnerClub(player.model._id, message.clubShortId);
-    const isAdmin = await playerIsAdmin(player.model._id, message.clubShortId);
-    const isPartner = await playerIsPartner(player.model._id, message.clubShortId);
-
-    if (!myClub && (isAdmin || isPartner)) {
-      myClub = await Club.findOne({shortId: message.clubShortId});
-    }
-    if (!myClub) {
-      player.sendMessage('club/getClubMembersReply', {ok: false, info: TianleErrorCode.notClubAdmin});
-      return
-    }
-    const params = {club: myClub._id};
-    if (message.playerShortId) {
-      const searchInfo = await PlayerModel.findOne({shortId: message.playerShortId});
-      params["member"] = searchInfo._id;
-    }
-
-    const isClubOwner = myClub.owner === player._id.toString();
-    const clubExtra = await getClubExtra(myClub._id);
-    const clubMembers = await ClubMember.find(params);
-    const clubMembersInfo = [];
-    for (const clubMember of clubMembers) {
-      const memberInfo = await PlayerModel.findOne({_id: clubMember.member})
-      if (memberInfo) {
-        if ((isPartner && !isAdmin && clubMember.leader === player.model.shortId) || isAdmin) {
-          clubMembersInfo.push({
-            name: memberInfo.nickname,
-            id: memberInfo._id,
-            isPartnerBlack: clubExtra.partnerBlacklist.includes(memberInfo._id.toString()),
-            isBlack: clubExtra.blacklist.includes(memberInfo._id.toString()),
-            rename: clubExtra.renameList[clubMember.member] || "",
-            partnerRename: clubExtra.partnerRenameList[clubMember.member] || "",
-            headImage: memberInfo.avatar,
-            diamond: memberInfo.diamond,
-            clubGold: clubMember.clubGold,
-            leader: clubMember.leader,
-            shortId: memberInfo.shortId,
-            isAdmin: clubMember.role === 'admin',
-            isPartner: clubMember.partner,
-            isClubOwner: clubMember.member.toString() === myClub.owner.toString()
-          })
-        }
-      }
-    }
+    const data = getClubMembers(player, message);
 
     player.sendMessage('club/getClubMembersReply', {
       ok: true,
-      data: {isClubOwner, isAdmin, isPartner, clubMembersInfo}
+      data:data
     });
   },
   [ClubAction.checkPlayerIsBlack]: async (player, message) => {
@@ -1477,9 +1483,11 @@ export default {
     })
     const ownerInfo = await service.playerService.getPlayerModel(myClub.owner);
     await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, ownerInfo);
+    await requestToUserCenter(player.channel, 'club/clubPlayerChanged', ownerInfo._id, {clubId: myClub._id})
     for (let i = 0; i < adminList.length; i++) {
       const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
       await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, adminInfo);
+      await requestToUserCenter(player.channel, 'club/clubPlayerChanged', adminInfo._id, {clubId: myClub._id})
     }
 
     await requestToAllClubMember(player.channel, 'club/updateClubRoom', myClub._id.toString(), {})
