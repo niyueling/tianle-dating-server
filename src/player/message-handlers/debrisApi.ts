@@ -419,7 +419,7 @@ export class DebrisApi extends BaseApi {
       taskType: message.taskType
     };
 
-    return await RedPocketDebrisRecord.create(data);
+    return await RedPocketDebrisRecord.create(prizeInfo);
   }
 
   async checkRedPocketTaskFinish(user, taskType) {
