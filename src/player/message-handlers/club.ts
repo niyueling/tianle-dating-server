@@ -851,11 +851,13 @@ export default {
     }
 
     const partnerInfo = await Player.findOne({shortId: clubRequest.partner});
+    const playerInfo = await service.playerService.getPlayerModel(player._id);
 
     clubRequest.status = (message.refuse ? 2 : 1);
     await clubRequest.save();
 
     if (message.refuse) {
+      await globalSendClubMessage(clubInfo.shortId, partnerInfo._id, `${playerInfo.nickname}(${playerInfo.shortId})拒绝了你的战队邀请`);
       return player.replyFail(ClubAction.dealClubInviteRequest, TianleErrorCode.refuseClubApply);
     }
 
@@ -889,7 +891,6 @@ export default {
 
     // 发送邮件给战队主
     const ownerInfo = await service.playerService.getPlayerModel(clubInfo.owner);
-    const playerInfo = await service.playerService.getPlayerModel(player._id);
     await notifyNewPlayerJoin(ownerInfo, clubInfo.shortId, playerInfo);
 
     const clubPartnerMember = await ClubMember.findOne({
