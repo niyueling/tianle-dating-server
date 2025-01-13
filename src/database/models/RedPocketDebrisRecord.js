@@ -13,6 +13,11 @@ const schema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  // 奖励
+  prize: {
+    type: Object,
+    required: true,
+  },
   // 创建时间
   createAt: {
     type: Date,

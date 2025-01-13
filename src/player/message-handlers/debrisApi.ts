@@ -416,10 +416,11 @@ export class DebrisApi extends BaseApi {
     // 创建领取记录
     const data = {
       playerId: user._id.toString(),
-      taskType: message.taskType
+      taskType: message.taskType,
+      prize: prizeInfo
     };
 
-    return await RedPocketDebrisRecord.create(prizeInfo);
+    return await RedPocketDebrisRecord.create(data);
   }
 
   async checkRedPocketTaskFinish(user, taskType) {
