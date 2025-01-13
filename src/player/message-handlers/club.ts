@@ -1283,9 +1283,9 @@ export default {
     await PlayerModel.update({_id: player.model._id}, {$set: {diamond: playerInfo.diamond - outDiamond}}).exec();
     await PlayerModel.update({_id: transferee._id}, {$set: {diamond: transferee.diamond - inDiamond}}).exec();
     // 添加被转移人为成员
-    const member = await ClubMember.findOne({member: transferee._id, club: myClub._id});
+    let member = await ClubMember.findOne({member: transferee._id, club: myClub._id});
     if (!member) {
-      await ClubMember.create({
+      member = await ClubMember.create({
         club: myClub._id,
         member: transferee._id,
         joinAt: new Date()
@@ -1304,6 +1304,11 @@ export default {
     let blacklist = clubExtra.blacklist;
     blacklist = blacklist.filter(x => x !== transferee._id.toString());
     await ClubExtra.update({clubId: myClub._id}, {$set: {blacklist}})
+
+    // 如果在黑名单，取消黑名单
+    let partnerBlacklist = clubExtra.partnerBlacklist;
+    partnerBlacklist = partnerBlacklist.filter(x => x !== transferee._id.toString());
+    await ClubExtra.update({clubId: myClub._id}, {$set: {partnerBlacklist}})
 
     player.replySuccess(ClubAction.transfer, {diamond: playerInfo.diamond - outDiamond});
     await player.updateResource2Client();
