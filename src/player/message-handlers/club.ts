@@ -1649,6 +1649,8 @@ export default {
       return player.sendMessage('club/promotePartnerReply', {ok: true, data: {}})
     }
 
+    memberShip.partner = false;
+    await memberShip.save();
     await globalSendEmailMessage(member._id, "取消合伙人通知", `你被${club.name}(${club.shortId})取消合伙人身份`);
     await removeClubPlayer(player, message.clubShortId, model._id);
   },
