@@ -699,6 +699,8 @@ export default {
         clubGold: 0,
       })
 
+      await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
+
       return player.replySuccess(ClubAction.dealRequest, {});
     }
 
@@ -823,6 +825,8 @@ export default {
         message: `战队${fromClub.name}(${fromClub.shortId})合并成功`
       });
 
+      await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
+
       return player.replySuccess(ClubAction.dealClubRequest, {});
     }
 
@@ -906,6 +910,8 @@ export default {
       const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
       await notifyNewPlayerJoin(adminInfo, clubInfo.shortId, playerInfo);
     }
+
+    await requestToAllClubMember(player.channel, 'club/updateClubRoom', clubInfo._id.toString(), {})
 
     return player.replySuccess(ClubAction.dealClubInviteRequest, {});
   },
