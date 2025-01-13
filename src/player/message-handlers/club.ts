@@ -789,10 +789,15 @@ export default {
         });
       }
 
+      // 通知小战队主合并结果
       await mergeFailClubMessage(toClub.name, toClub.shortId, fromClub.owner, alreadyJoinClubs);
 
-      await requestToAllClubMember(player.channel, 'club/updateClubRoom', toClub._id.toString(), {});
+      // 通知小战队主合并战队消息
+      await globalSendClubMessage(toClub.shortId, fromClub.owner, `你的战队${fromClub.name}(${fromClub.shortId})合并至${toClub.name}(${toClub.shortId})`);
+      await globalSendEmailMessage(fromClub.owner, "战队合并通知", `你的战队${fromClub.name}(${fromClub.shortId})合并至${toClub.name}(${toClub.shortId})`);
 
+      // 更新俱乐部数据
+      await requestToAllClubMember(player.channel, 'club/updateClubRoom', toClub._id.toString(), {});
       if (alreadyJoinClubs.length > 0) {
         await requestToUserCenter(player.channel, 'club/sendMergeResult', fromClub.owner, {
           alreadyJoinClubs,
