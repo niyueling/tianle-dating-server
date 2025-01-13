@@ -620,6 +620,8 @@ export default {
       messageLists = [...messageLists, ...clubRequestInfo, ...clubMergeInfo];
     }
 
+    messageLists.sort((a, b) => b.createdAt - a.createdAt);
+
     return player.replySuccess(ClubAction.getRequestInfo, {requestList: messageLists});
   },
   [ClubAction.dealRequest]: async (player, message) => {
