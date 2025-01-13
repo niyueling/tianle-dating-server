@@ -1009,7 +1009,7 @@ export default {
     }
   },
   [ClubAction.getClubMembers]: async (player, message) => {
-    const data = getClubMembers(player, message);
+    const data = await getClubMembers(player, message);
 
     player.sendMessage('club/getClubMembersReply', {
       ok: true,
