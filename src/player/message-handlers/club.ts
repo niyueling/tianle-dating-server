@@ -653,8 +653,7 @@ export default {
       await requestInfo.save();
 
       if (message.refuse) {
-        const playerInfo = await service.playerService.getPlayerModel(message.requestId);
-        await refuseNewPlayerJoin(myClub.name, myClub.shortId, playerInfo);
+        await globalSendEmailMessage(message.requestId, "加入失败通知", `申请加入战队${club.name}(${club.shortId})被管理员拒绝`);
         return player.replyFail(ClubAction.dealRequest, TianleErrorCode.refuseClubApply);
       }
 
@@ -681,6 +680,9 @@ export default {
         member: message.requestId,
         clubGold: 0,
       })
+
+      await globalSendClubMessage(myClub.shortId, message.requestId, `申请加入战队${club.name}(${club.shortId})成功`);
+      await globalSendEmailMessage(message.requestId, "加入成功通知", `申请加入战队${club.name}(${club.shortId})成功`);
 
       await requestToUserCenter(player.channel, 'club/newPlayerJoinClub', message.requestId, {playerId: message.requestId, clubId: myClub._id})
       // await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
@@ -1943,6 +1945,33 @@ export default {
   },
 }
 
+// 通用消息通知
+async function globalSendClubMessage(clubId, playerId, message) {
+  const playerInfo = await service.playerService.getPlayerModel(playerId);
+  await clubMessage.create({
+    playerId: playerId,
+    clubShortId: clubId,
+    playerName: playerInfo.nickname,
+    avatar: playerInfo.avatar,
+    playerShortId: playerInfo.shortId,
+    message: message
+  });
+}
+
+// 通用邮件通知
+async function globalSendEmailMessage(playerId, title, message) {
+  const mail = new MailModel({
+    to: playerId,
+    type: MailType.MESSAGE,
+    title,
+    content: message,
+    state: MailState.UNREAD,
+    createAt: new Date(),
+    gift: {diamond: 0, tlGold: 0, gold: 0}
+  })
+  await mail.save();
+}
+
 // 邮件通知战队解散
 async function clubDisbandMessage(clubName, clubId, playerId) {
   const clubOwnerInfo = await Player.findOne({_id: playerId});
@@ -1956,7 +1985,7 @@ async function clubDisbandMessage(clubName, clubId, playerId) {
   });
 }
 
-// 邮件通知成员合并失败
+// 消息通知成员合并失败
 async function mergeFailClubMessage(clubName, clubId, playerId, alreadyJoinClubs) {
   let msg = '';
   for (let i = 0; i < alreadyJoinClubs.length; i++) {
