@@ -1446,18 +1446,6 @@ export default {
           info: TianleErrorCode.notRemoveSelf
         });
       }
-
-      // 发送邮件给战队主/管理员
-      const adminList = await ClubMember.find({
-        club: myClub._id,
-        role: "admin"
-      })
-      const ownerInfo = await service.playerService.getPlayerModel(myClub.owner);
-      await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, ownerInfo);
-      for (let i = 0; i < adminList.length; i++) {
-        const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
-        await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, adminInfo);
-      }
     }
 
     if (memberShip.partner) {
@@ -1481,6 +1469,20 @@ export default {
 
     await ClubMember.remove({member: message.playerId, club: myClub._id})
     await globalSendEmailMessage(playerInfo._id, "踢出战队通知", `你被${myClub.name}(${myClub.shortId})的${roleType === 1 ? "战队主" : (roleType === 2 ? "管理员" : "合伙人")}踢出战队`);
+
+    // 发送邮件给战队主/管理员
+    const adminList = await ClubMember.find({
+      club: myClub._id,
+      role: "admin"
+    })
+    const ownerInfo = await service.playerService.getPlayerModel(myClub.owner);
+    await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, ownerInfo);
+    for (let i = 0; i < adminList.length; i++) {
+      const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
+      await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, adminInfo);
+    }
+
+    await requestToAllClubMember(player.channel, 'club/updateClubRoom', club._id.toString(), {})
 
     player.sendMessage('club/removePlayerReply', {ok: true, data: {}});
   },
@@ -1910,7 +1912,7 @@ async function mergeFailClubMessage(clubName, clubId, playerId, alreadyJoinClubs
   });
 }
 
-// 用户被合伙人踢出战队给战队主，管理员发送邮件
+// 用户被踢出战队给战队主，管理员发送邮件
 async function disbandPlayerSendAdminEmail(clubId, playerInfo, adminInfo) {
   await clubMessage.create({
     playerId: adminInfo._id,
@@ -1918,7 +1920,7 @@ async function disbandPlayerSendAdminEmail(clubId, playerInfo, adminInfo) {
     playerName: playerInfo.nickname,
     avatar: playerInfo.avatar,
     playerShortId: playerInfo.shortId,
-    message: `${playerInfo.nickname}(${playerInfo.shortId})被合伙人踢出战队`
+    message: `${playerInfo.nickname}(${playerInfo.shortId})被踢出战队`
   });
 }
 
