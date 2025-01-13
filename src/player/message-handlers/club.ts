@@ -1468,8 +1468,8 @@ export default {
       }
       await ClubExtra.update({clubId: myClub._id}, {$set: {partnerBlacklist: clubExtra.partnerBlacklist}})
 
-      await globalSendClubMessage(myClub.shortId, message.playerId, `你被战队${myClub.name}(${myClub.shortId})管理员${message.operate === 'add' ? "移入" : "解除"}黑名单`);
-      await globalSendEmailMessage(message.playerId, `${message.operate === 'add' ? "移入" : "解除"}黑名单`, `你被战队${myClub.name}(${myClub.shortId})管理员${message.operate === 'add' ? "移入" : "解除"}黑名单`);
+      await globalSendClubMessage(myClub.shortId, message.playerId, `你被战队${myClub.name}(${myClub.shortId})合伙人${message.operate === 'add' ? "移入" : "解除"}黑名单`);
+      await globalSendEmailMessage(message.playerId, `${message.operate === 'add' ? "移入" : "解除"}黑名单`, `你被战队${myClub.name}(${myClub.shortId})合伙人${message.operate === 'add' ? "移入" : "解除"}黑名单`);
     } else {
       if (message.operate === 'add') {
         clubExtra.blacklist.push(message.playerId);
@@ -1478,8 +1478,8 @@ export default {
       }
       await ClubExtra.update({clubId: myClub._id}, {$set: {blacklist: clubExtra.blacklist}})
 
-      await globalSendClubMessage(myClub.shortId, message.playerId, `你被战队${myClub.name}(${myClub.shortId})合伙人${message.operate === 'add' ? "移入" : "解除"}黑名单`);
-      await globalSendEmailMessage(message.playerId, `${message.operate === 'add' ? "移入" : "解除"}黑名单`, `你被战队${myClub.name}(${myClub.shortId})合伙人${message.operate === 'add' ? "移入" : "解除"}黑名单`);
+      await globalSendClubMessage(myClub.shortId, message.playerId, `你被战队${myClub.name}(${myClub.shortId})管理员${message.operate === 'add' ? "移入" : "解除"}黑名单`);
+      await globalSendEmailMessage(message.playerId, `${message.operate === 'add' ? "移入" : "解除"}黑名单`, `你被战队${myClub.name}(${myClub.shortId})管理员${message.operate === 'add' ? "移入" : "解除"}黑名单`);
     }
 
     player.sendMessage('club/operateBlackListReply', {ok: true, data: {}});
