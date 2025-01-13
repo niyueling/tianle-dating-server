@@ -411,7 +411,7 @@ export async function getClubMembers(player, message) {
     }
   }
 
-  return {isClubOwner, isAdmin, isPartner, clubMembersInfo};
+  return {ok: true, data: {isClubOwner, isAdmin, isPartner, clubMembersInfo}};
 }
 
 export default {
@@ -1011,10 +1011,7 @@ export default {
   [ClubAction.getClubMembers]: async (player, message) => {
     const data = await getClubMembers(player, message);
 
-    player.sendMessage('club/getClubMembersReply', {
-      ok: true,
-      data:data
-    });
+    player.sendMessage('club/getClubMembersReply', data);
   },
   [ClubAction.checkPlayerIsBlack]: async (player, message) => {
     let myClub = await Club.findOne({shortId: message.clubShortId});
@@ -1483,11 +1480,11 @@ export default {
     })
     const ownerInfo = await service.playerService.getPlayerModel(myClub.owner);
     await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, ownerInfo);
-    await requestToUserCenter(player.channel, 'club/clubPlayerChanged', ownerInfo._id, {clubId: myClub._id})
+    await requestToUserCenter(player.channel, 'club/clubPlayerChanged', ownerInfo._id, {clubShortId: myClub.shortId})
     for (let i = 0; i < adminList.length; i++) {
       const adminInfo = await service.playerService.getPlayerModel(adminList[i].member);
       await disbandPlayerSendAdminEmail(myClub.shortId, playerInfo, adminInfo);
-      await requestToUserCenter(player.channel, 'club/clubPlayerChanged', adminInfo._id, {clubId: myClub._id})
+      await requestToUserCenter(player.channel, 'club/clubPlayerChanged', adminInfo._id, {clubShortId: myClub.shortId})
     }
 
     await requestToAllClubMember(player.channel, 'club/updateClubRoom', myClub._id.toString(), {})

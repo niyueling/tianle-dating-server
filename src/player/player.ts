@@ -432,7 +432,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
           // 战队用户变化
           if (messageBody.name === 'club/clubPlayerChanged') {
             const sendFunc = async () => {
-              const data = await getClubMembers(this, message);
+              const data = await getClubMembers(this, messageBody.payload);
 
               this.sendMessage('club/getClubMembersReply', {ok: true, data});
 
