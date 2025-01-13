@@ -1372,8 +1372,10 @@ export default {
 
     player.replySuccess(ClubAction.transfer, {diamond: playerInfo.diamond - outDiamond});
     await player.updateResource2Client();
-    // 通知被转移人
-    await notifyTransfer(playerInfo, transferee, myClub.name, myClub.shortId);
+    // 消息通知
+    await globalSendClubMessage(myClub.shortId, playerInfo._id, `你成为了${myClub.name}(${myClub.shortId})的战队主`);
+    await globalSendEmailMessage(playerInfo._id, "战队转移通知", `你成为了${myClub.name}(${myClub.shortId})的战队主`);
+
     // 添加日志
     await logTransfer(myClub._id, playerInfo._id, transferee._id);
 
@@ -2031,20 +2033,6 @@ async function disbandPlayerSendEmail(clubName, clubId, playerInfo) {
   await mail.save();
 }
 
-// 邮件通知拒绝成员加入
-async function refuseNewPlayerJoin(clubName, clubId, playerInfo) {
-  const mail = new MailModel({
-    to: playerInfo._id,
-    type: MailType.MESSAGE,
-    title: '拒绝加入通知',
-    content: `${playerInfo.nickname}(${playerInfo.shortId})申请加入战队${clubName}(${clubId})被管理员拒绝`,
-    state: MailState.UNREAD,
-    createAt: new Date(),
-    gift: {diamond: 0, tlGold: 0, gold: 0}
-  })
-  await mail.save();
-}
-
 // 邮件通知新成员加入
 async function notifyNewPlayerJoin(ownerInfo, clubId, playerInfo) {
   await clubMessage.create({
@@ -2055,20 +2043,6 @@ async function notifyNewPlayerJoin(ownerInfo, clubId, playerInfo) {
     playerShortId: playerInfo.shortId,
     message: `${playerInfo.nickname}(${playerInfo.shortId})成功加入战队`
   });
-}
-
-// 邮件通知战队转移
-async function notifyTransfer(oldOwner, newOwner, clubName, clubId) {
-  const mail = new MailModel({
-    to: newOwner._id,
-    type: MailType.MESSAGE,
-    title: '战队转移通知',
-    content: `${oldOwner.nickname}(${oldOwner.shortId})将战队${clubName}(${clubId})转移给您`,
-    state: MailState.UNREAD,
-    createAt: new Date(),
-    gift: {diamond: 0, tlGold: 0, gold: 0}
-  })
-  await mail.save();
 }
 
 /**
