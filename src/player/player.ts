@@ -8,7 +8,7 @@ import * as ws from 'ws';
 import {pick} from 'lodash'
 import {serializeMessage, deserializeMessage} from '../network/utils';
 import accountHandlers from './message-handlers/account';
-import clubHandlers, {getClubInfo, getClubMembers} from './message-handlers/club';
+import clubHandlers, {getClubInfo, getClubMembers, updatePlayerClubInfo} from './message-handlers/club';
 import matchHandlers from './message-handlers/match';
 import resourceHandlers from './message-handlers/resource';
 import gameHandlers from './message-handlers/game';
@@ -19,12 +19,11 @@ import errorHandlers from './message-handlers/error';
 import PlayerModel from '../database/models/player';
 import {QueryApi} from "./message-handlers/query";
 import * as Parameter from 'parameter';
-import {Errors, GameError} from "@fm/common/errors";
+import {GameError} from "@fm/common/errors";
 import {Region} from "./message-handlers/region";
 import {service} from "../service/importService";
 import {GoodsApi} from "./message-handlers/goodsApi";
 import {AccountApi} from "./message-handlers/accountApi";
-import {verifyWithRecord} from "../utils/jwt";
 import {InviteApi} from "./message-handlers/inviteApi";
 import {LotteryApi} from "./message-handlers/lotteryApi";
 import {GameApi} from "./message-handlers/gameApi";
@@ -416,11 +415,9 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
           // 新用户加入战队
           if (messageBody.name === 'club/newPlayerJoinClub') {
             const sendFunc = async () => {
-              const clubInfo = await getClubInfo(messageBody.payload.clubId, this);
-              console.warn("clubInfo-%s, redis-%s", JSON.stringify(clubInfo), config.redis);
-
-              if (clubInfo.ok) {
-                this.sendMessage('club/getClubInfoReply', clubInfo);
+              const data = await updatePlayerClubInfo(this);
+              if (data.ok) {
+                this.sendMessage('club/updatePlayerInfoReply', data);
               }
 
               return;

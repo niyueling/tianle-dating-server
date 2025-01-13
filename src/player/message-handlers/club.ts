@@ -414,6 +414,54 @@ export async function getClubMembers(player, message) {
   return {ok: true, data: {isClubOwner, isAdmin, isPartner, clubMembersInfo}};
 }
 
+export async function updatePlayerClubInfo(player) {
+  const ownerClub = await Club.find({owner: player.model._id});
+  const tempClub = [];
+  if (ownerClub && ownerClub.length > 0) {
+    // 存在俱乐部
+    ownerClub.forEach(c => {
+      tempClub.push(c.shortId);
+    })
+  }
+
+  player.model.myClub = tempClub;
+  player.model.joinClubShortIds = [];
+
+  const playerShortIds = await getPlayerJoinClub(player.model._id);
+  if (playerShortIds) {
+    player.model.joinClubShortIds = playerShortIds;
+  }
+
+  const totalClubdIds = [...new Set([...player.model.joinClubShortIds, ...player.model.myClub])];
+  // 获取是否有未读消息
+  const unReadMessageIds = [];
+  for (let i = 0; i < totalClubdIds.length; i++) {
+    const clubShortId = totalClubdIds[i];
+    const isAdmin = await playerIsAdmin(player.model._id, clubShortId);
+    let messageLists = [];
+    const clubMessageInfo = await ClubMessage.find({clubShortId, playerId: player.model._id, state: 1});
+    messageLists = [...messageLists, ...clubMessageInfo];
+
+    if (isAdmin) {
+      const clubRequestInfo = await ClubRequest.find({clubShortId, type: 1, status: 0});
+      const clubMergeInfo = await ClubMerge.find({fromClubId: clubShortId, status: 0});
+      messageLists = [...messageLists, ...clubRequestInfo, ...clubMergeInfo];
+    }
+
+    if (messageLists.length > 0) {
+      unReadMessageIds.push(clubShortId);
+    }
+  }
+
+  return {
+    ok: true, data: {
+      joinClubShortId: player.model.joinClubShortIds,
+      myClub: player.model.myClub,
+      unReadMessageIds
+    }
+  }
+}
+
 export default {
   [ClubAction.request]: async (player, message) => {
     const alreadyJoinedClubs = await ClubMember.count({member: player.model._id}).lean()
@@ -876,7 +924,7 @@ export default {
 
     return player.replySuccess(ClubAction.dealClubInviteRequest, {});
   },
-  [ClubAction.updatePlayerInfo]: async (player, message) => {
+  [ClubAction.updatePlayerInfo]: async (player) => {
     if (!player.model) {
       return player.sendMessage('club/updatePlayerInfoReply', {
         ok: true, data: {
@@ -887,51 +935,8 @@ export default {
       });
     }
 
-    const ownerClub = await Club.find({owner: player.model._id});
-    const tempClub = [];
-    if (ownerClub && ownerClub.length > 0) {
-      // 存在俱乐部
-      ownerClub.forEach(c => {
-        tempClub.push(c.shortId);
-      })
-    }
-
-    player.model.myClub = tempClub;
-    player.model.joinClubShortIds = [];
-
-    const playerShortIds = await getPlayerJoinClub(player.model._id);
-    if (playerShortIds) {
-      player.model.joinClubShortIds = playerShortIds;
-    }
-
-    const totalClubdIds = [...new Set([...player.model.joinClubShortIds, ...player.model.myClub])];
-    // 获取是否有未读消息
-    const unReadMessageIds = [];
-    for (let i = 0; i < totalClubdIds.length; i++) {
-      const clubShortId = totalClubdIds[i];
-      const isAdmin = await playerIsAdmin(player.model._id, clubShortId);
-      let messageLists = [];
-      const clubMessageInfo = await ClubMessage.find({clubShortId, playerId: player.model._id, state: 1});
-      messageLists = [...messageLists, ...clubMessageInfo];
-
-      if (isAdmin) {
-        const clubRequestInfo = await ClubRequest.find({clubShortId, type: 1, status: 0});
-        const clubMergeInfo = await ClubMerge.find({fromClubId: clubShortId, status: 0});
-        messageLists = [...messageLists, ...clubRequestInfo, ...clubMergeInfo];
-      }
-
-      if (messageLists.length > 0) {
-        unReadMessageIds.push(clubShortId);
-      }
-    }
-
-    player.sendMessage('club/updatePlayerInfoReply', {
-      ok: true, data: {
-        joinClubShortId: player.model.joinClubShortIds,
-        myClub: player.model.myClub,
-        unReadMessageIds
-      }
-    });
+    const data = await updatePlayerClubInfo(player);
+    player.sendMessage('club/updatePlayerInfoReply', data);
   },
   [ClubAction.recordList]: async (player, message) => {
     return getRecordListZD(player, message);
