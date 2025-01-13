@@ -1373,8 +1373,8 @@ export default {
     player.replySuccess(ClubAction.transfer, {diamond: playerInfo.diamond - outDiamond});
     await player.updateResource2Client();
     // 消息通知
-    await globalSendClubMessage(myClub.shortId, playerInfo._id, `你成为了${myClub.name}(${myClub.shortId})的战队主`);
-    await globalSendEmailMessage(playerInfo._id, "战队转移通知", `你成为了${myClub.name}(${myClub.shortId})的战队主`);
+    await globalSendClubMessage(myClub.shortId, transferee._id, `你成为了${myClub.name}(${myClub.shortId})的战队主`);
+    await globalSendEmailMessage(transferee._id, "战队转移通知", `你成为了${myClub.name}(${myClub.shortId})的战队主`);
 
     // 添加日志
     await logTransfer(myClub._id, playerInfo._id, transferee._id);
