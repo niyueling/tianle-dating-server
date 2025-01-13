@@ -303,6 +303,7 @@ export class GameApi extends BaseApi {
         await record.save();
         return this.replySuccess({redPocket: updated.redPocket});
       }
+      console.warn("res-%s", JSON.stringify(tranRes));
       record.info = tranRes["err_code_des"];
       await record.save();
       return this.replyFail(TianleErrorCode.withdrawFail);

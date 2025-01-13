@@ -1,42 +1,17 @@
 'use strict';
-
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const schema = new mongoose.Schema({
-  playerId: {
-    type: String,
-    required: true
-  },
-  configId: {
-    type: mongoose.Schema.ObjectId,
-    required: false,
-  },
-  config: {
-    type: Object,
-    required: false,
-  },
-  status: {
-    type: Number,
-    required: true,
-    default: 0
-  },
-  sn: {
-    type: String,
-    required: true
-  },
-  info: {
-    type: String
-  },
-  paymentId: {
-    type: String
-  },
-  // 创建时间
-  createAt: {
-    type: Date,
-    required: true,
-    default: Date.now,
-  },
+const schema = new Schema({
+  amount: {type: Number},//提现金额
+  limitCount: {type: Number},// 限制提现次数
+  juShu: {type: Number, default: 0},// 提现需完成局数
+  type: {type: Number, default: 2},// 提现类型，1允许提现，2不允许提现
+  createAt: {type: Date, default: Date.now}
 });
 
-const WithdrawRecord = mongoose.model('WithdrawRecord', schema);
-export default WithdrawRecord
+schema.index({price: 1});
+
+const WithdrawConfig = mongoose.model('WithdrawConfig', schema);
+
+export default WithdrawConfig
