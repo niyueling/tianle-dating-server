@@ -398,19 +398,18 @@ export class DebrisApi extends BaseApi {
     // 根据不同任务类型判断是否完成任务
     const taskResult = await this.checkRedPocketTaskFinish(user, message.taskType);
 
-    // if (!taskResult) {
-    //   return this.replyFail(TianleErrorCode.taskNotFinish);
-    // }
+    if (!taskResult) {
+      return this.replyFail(TianleErrorCode.taskNotFinish);
+    }
 
     // 判断是否领过
     const receiveCount = RedPocketDebrisRecord.count({playerId: user._id.toString(), taskType: message.taskType});
-    // if (receiveCount > 0) {
-    //   return this.replyFail(TianleErrorCode.prizeIsReceive);
-    // }
+    if (receiveCount > 0) {
+      return this.replyFail(TianleErrorCode.prizeIsReceive);
+    }
 
     // 按照奖励类型领取奖励
     const prizeInfo = await this.checkRedPocketTaskPrize(message.taskType);
-    console.warn("prizeInfo-%s", JSON.stringify(prizeInfo));
     await service.playerService.receivePrize(prizeInfo, this.player._id, 1, ConsumeLogType.receiveTask);
 
     // 创建领取记录
