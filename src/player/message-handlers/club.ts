@@ -196,7 +196,8 @@ export async function removeClubPlayer(player, clubShortId, playerId) {
       const leavePlayerInfo = await service.playerService.getPlayerModel(clubTeamList[i].member);
       leavePlayers.push({member: clubTeamList[i].member, roleType: 2});
       await ClubMember.remove({member: clubTeamList[i].member, club: myClub._id});
-      await disbandPlayerSendEmail(myClub.name, myClub.shortId, leavePlayerInfo);
+      await globalSendClubMessage(myClub.shortId, leavePlayerInfo._id, `你被${myClub.name}(${myClub.shortId})的${roleType === 1 ? "战队主" : (roleType === 2 ? "管理员" : "合伙人")}踢出战队`);
+      await globalSendEmailMessage(leavePlayerInfo._id, "踢出战队通知", `你被${myClub.name}(${myClub.shortId})的${roleType === 1 ? "战队主" : (roleType === 2 ? "管理员" : "合伙人")}踢出战队`);
     }
 
     // 给合伙人和用户创建新的战队
@@ -206,7 +207,8 @@ export async function removeClubPlayer(player, clubShortId, playerId) {
   }
 
   await ClubMember.remove({member: playerId, club: myClub._id})
-  await disbandPlayerSendEmail(myClub.name, myClub.shortId, playerInfo);
+  await globalSendClubMessage(myClub.shortId, playerInfo._id, `你被${myClub.name}(${myClub.shortId})的${roleType === 1 ? "战队主" : (roleType === 2 ? "管理员" : "合伙人")}踢出战队`);
+  await globalSendEmailMessage(playerInfo._id, "踢出战队通知", `你被${myClub.name}(${myClub.shortId})的${roleType === 1 ? "战队主" : (roleType === 2 ? "管理员" : "合伙人")}踢出战队`);
 
   player.sendMessage('club/removePlayerReply', {ok: true, data: {}});
 }
@@ -1580,7 +1582,8 @@ export default {
         const leavePlayerInfo = await service.playerService.getPlayerModel(clubTeamList[i].member);
         leavePlayers.push({member: clubTeamList[i].member, roleType: 2});
         await ClubMember.remove({member: clubTeamList[i].member, club: myClub._id});
-        await disbandPlayerSendEmail(myClub.name, myClub.shortId, leavePlayerInfo);
+        await globalSendClubMessage(myClub.shortId, leavePlayerInfo._id, `你被${myClub.name}(${myClub.shortId})的${roleType === 1 ? "战队主" : (roleType === 2 ? "管理员" : "合伙人")}踢出战队`);
+        await globalSendEmailMessage(leavePlayerInfo._id, "踢出战队通知", `你被${myClub.name}(${myClub.shortId})的${roleType === 1 ? "战队主" : (roleType === 2 ? "管理员" : "合伙人")}踢出战队`);
       }
 
       // 给合伙人和用户创建新的战队
@@ -1590,7 +1593,8 @@ export default {
     }
 
     await ClubMember.remove({member: message.playerId, club: myClub._id})
-    await disbandPlayerSendEmail(myClub.name, myClub.shortId, playerInfo);
+    await globalSendClubMessage(myClub.shortId, playerInfo._id, `你被${myClub.name}(${myClub.shortId})的${roleType === 1 ? "战队主" : (roleType === 2 ? "管理员" : "合伙人")}踢出战队`);
+    await globalSendEmailMessage(playerInfo._id, "踢出战队通知", `你被${myClub.name}(${myClub.shortId})的${roleType === 1 ? "战队主" : (roleType === 2 ? "管理员" : "合伙人")}踢出战队`);
 
     player.sendMessage('club/removePlayerReply', {ok: true, data: {}});
   },
@@ -2026,20 +2030,6 @@ async function disbandPlayerSendAdminEmail(clubId, playerInfo, adminInfo) {
     playerShortId: playerInfo.shortId,
     message: `${playerInfo.nickname}(${playerInfo.shortId})被合伙人踢出战队`
   });
-}
-
-// 用户被踢出战队给用户发送邮件
-async function disbandPlayerSendEmail(clubName, clubId, playerInfo) {
-  const mail = new MailModel({
-    to: playerInfo._id,
-    type: MailType.MESSAGE,
-    title: '踢出战队通知',
-    content: `你已被踢出战队${clubName}(${clubId})`,
-    state: MailState.UNREAD,
-    createAt: new Date(),
-    gift: {diamond: 0, tlGold: 0, gold: 0}
-  })
-  await mail.save();
 }
 
 // 邮件通知新成员加入
