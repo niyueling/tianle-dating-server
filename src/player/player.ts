@@ -434,7 +434,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
             const sendFunc = async () => {
               const data = await getClubMembers(this, messageBody.payload);
 
-              this.sendMessage('club/getClubMembersReply', {ok: true, data});
+              this.sendMessage('club/getClubMembersReply', data);
 
               return;
             }
