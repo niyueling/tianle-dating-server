@@ -109,14 +109,15 @@ export class batches_transfer {
       timestamp = parseInt(+new Date() / 1000 + '').toString();
 
     const signature = this.getSignature(method, nonce_str, timestamp, url.replace('https://api.mch.weixin.qq.com', ''), params);
-    const authorization = this.getAuthorization(nonce_str, timestamp, signature);
-    return authorization;
+    return this.getAuthorization(nonce_str, timestamp, signature);
   }
 
   /**
    * post 请求 V2
    * @param url  请求接口
    * @param params 请求参数
+   * @param authorization
+   * @param headers
    */
   protected async postRequestV2(url: string, params: Record<string, any>, authorization: string, headers = {}): Promise<object> {
     try {
@@ -149,16 +150,20 @@ export class batches_transfer {
    * @documentation 请看文档https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter4_3_1.shtml
    */
   public async batches_transfer(params: object): Promise<object> {
-    const url = 'https://api.mch.weixin.qq.com/v3/transfer/batches';
+    const url = 'https://api.mch.weixin.qq.com//v3/fund-app/mch-transfer/transfer-bills';
     // 请求参数
     const _params = {
       appid: this.appid,
       ...params,
     };
 
+    console.warn("params-%s", JSON.stringify(_params));
+
     const authorization = this.init('POST', url, _params);
 
-    return await this.postRequestV2(url, _params, authorization, { 'Wechatpay-Serial': this.serial_no });
+    return await this.postRequestV2(url, _params, authorization, {
+      'Wechatpay-Serial': this.serial_no
+    });
   }
 
 }

@@ -280,19 +280,11 @@ export class GameApi extends BaseApi {
         keyFilePath: path.join(__dirname, "..", "..", "..", "apiclient_key.pem")
       });
       const tranRes = await wechatPayMent.batches_transfer({
-        out_batch_no: tem_batch_no,
-        batch_name: '天乐麻将红包提现',
-        batch_remark: '天乐麻将红包提现',
-        total_amount: withdrawConfig.amount * 100,
-        total_num: 1,
-        transfer_detail_list: [
-          {
-            out_detail_no: tem_batch_no,
-            transfer_amount: withdrawConfig.amount * 100,
-            transfer_remark: '天乐麻将红包提现',
-            openid: playerModel.openid,
-          },
-        ],
+        out_bill_no: tem_batch_no,
+        transfer_scene_id: '1000',
+        openid: playerModel.openid,
+        transfer_amount: withdrawConfig.amount * 100,
+        transfer_remark: '天乐麻将红包提现',
       });
 
       if (tranRes["status"] == '200') {
