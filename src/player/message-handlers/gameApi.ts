@@ -315,7 +315,7 @@ export class GameApi extends BaseApi {
 
   // 提现成功回调
   @addApi({})
-  async withdrawDrawNotify(msg) {
+  async withdrawNotify(msg) {
     const record = await WithdrawRecord.findOne({_id: msg._id});
     if (!record) {
       return this.replyFail(TianleErrorCode.recordNotFound);
