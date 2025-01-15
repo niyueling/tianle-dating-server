@@ -300,12 +300,12 @@ export class GameApi extends BaseApi {
       console.warn("res-%s", JSON.stringify(tranRes));
 
       if (tranRes["status"] == '200') {
-        const updated = await Player.findByIdAndUpdate(this.player._id, {$inc: {redPocket: -withdrawConfig.amount}}, {'new': true})
+        await Player.findByIdAndUpdate(this.player._id, {$inc: {redPocket: -withdrawConfig.amount}}, {'new': true})
         record.info = '完成';
         record.status = 1;
         record.paymentId = tranRes["batch_id"];
         await record.save();
-        return this.replySuccess({redPocket: updated.redPocket});
+        return this.replySuccess({record, response: tranRes});
       }
 
       record.info = tranRes["err_code_des"];
