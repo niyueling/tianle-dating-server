@@ -79,8 +79,8 @@ module.exports = {
     bundleId: 'game.tianle.majiang',
   },
   wx: {
-    "app_id": "wxe1a7858e201773c9",
-    "app_secret": "40ef04587f65bc7a074bba051ef3971d",
+    "app_id": "wxb5e48d0993c3a40c",
+    "app_secret": "7b5fb7ef42de397e4e1c3933542abf18",
     "mchId": "1632720964",
     "serial_no": "5D9A17286800617024A05A88C9DCACD12298D8F2",
     "token": "ulong_wechat",
