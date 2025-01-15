@@ -157,9 +157,8 @@ export class batches_transfer {
       ...params,
     };
 
-    console.warn("params-%s", JSON.stringify(_params));
-
     const authorization = this.init('POST', url, _params);
+    console.warn("params-%s, authorization-%s, serial_no-%s", JSON.stringify(_params), authorization, this.serial_no);
 
     return await this.postRequestV2(url, _params, authorization, {
       'Wechatpay-Serial': this.serial_no
