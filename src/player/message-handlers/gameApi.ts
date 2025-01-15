@@ -285,6 +285,16 @@ export class GameApi extends BaseApi {
         openid: playerModel.openid,
         transfer_amount: withdrawConfig.amount * 100,
         transfer_remark: '天乐麻将红包提现',
+        transfer_scene_report_infos : [
+          {
+            info_type: "活动名称",
+            info_content: "对局有礼"
+          },
+          {
+            info_type: "奖励说明",
+            info_content: "对局可以获得现金红包"
+          }
+        ]
       });
 
       if (tranRes["status"] == '200') {
