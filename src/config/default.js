@@ -33,8 +33,8 @@ module.exports = {
   // 微信支付配置
   wechat: {
     // 微信支付 appid
-    appId: 'wxe1a7858e201773c9',
-    secret: '40ef04587f65bc7a074bba051ef3971d',
+    appId: 'wxb5e48d0993c3a40c',
+    secret: '7b5fb7ef42de397e4e1c3933542abf18',
     // 商户号 id
     mchId: '1632720964',
     // app微信支付
