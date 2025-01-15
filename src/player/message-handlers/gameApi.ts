@@ -312,4 +312,19 @@ export class GameApi extends BaseApi {
       return this.replyFail(TianleErrorCode.withdrawFail);
     }, locker)
   }
+
+  // 提现成功回调
+  @addApi({})
+  async withdrawDrawNotify(msg) {
+    const record = await WithdrawRecord.findOne({_id: msg._id});
+    if (!record) {
+      return this.replyFail(TianleErrorCode.recordNotFound);
+    }
+
+    record.status = 1;
+    record.info = "提现成功";
+    await record.save();
+
+    this.replySuccess({});
+  }
 }
