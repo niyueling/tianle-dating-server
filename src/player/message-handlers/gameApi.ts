@@ -301,14 +301,13 @@ export class GameApi extends BaseApi {
 
       if (tranRes["status"] == '200') {
         await Player.findByIdAndUpdate(this.player._id, {$inc: {redPocket: -withdrawConfig.amount}}, {'new': true})
-        record.info = '完成';
-        record.status = 1;
-        record.paymentId = tranRes["batch_id"];
+        record.info = tranRes["data"]["state"];
+        record.paymentId = tranRes["data"]["transfer_bill_no"];
         await record.save();
         return this.replySuccess({record, response: tranRes});
       }
 
-      record.info = tranRes["err_code_des"];
+      record.info = tranRes["data"]["state"];
       await record.save();
       return this.replyFail(TianleErrorCode.withdrawFail);
     }, locker)
