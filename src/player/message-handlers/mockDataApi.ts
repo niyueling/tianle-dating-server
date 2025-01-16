@@ -4174,13 +4174,6 @@ export class MockDataApi extends BaseApi {
         type: 2
       },
       {
-        amount: 0.12,
-        limitCount: 1,
-        juShu: 5,
-        first: false,
-        type: 1
-      },
-      {
         amount: 588,
         limitCount: 1,
         juShu: 0,

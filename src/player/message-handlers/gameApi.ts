@@ -232,19 +232,33 @@ export class GameApi extends BaseApi {
   @addApi({})
   async redPocketData() {
     const player = await service.playerService.getPlayerModel(this.player._id);
-    const configs = await WithdrawConfig.find().lean();
+    const joinRoomCount = await roomRecord.count({creatorId: player.shortId, category: GameType.redpocket});
+    const configs = await WithdrawConfig.find({}).lean();
+    const configList = [];
 
     for (let i = 0; i < configs.length; i++) {
       const config = configs[i];
       if (config.juShu > 0) {
-        config.joinRoomCount = await roomRecord.count({creatorId: player.shortId, category: GameType.redpocket});
+        config.joinRoomCount = joinRoomCount;
       }
 
       // 提现次数
       config.withdrawCount = await WithdrawRecord.count({playerId: this.player._id, configId: config._id, status: 1});
+
+      if (config.type === 1) {
+        configList.push(config);
+      }
+
+      if (config.type === 2 && joinRoomCount <= 1 && config.first) {
+        configList.push(config);
+      }
+
+      if (config.type === 2 && joinRoomCount > 1 && !config.first) {
+        configList.push(config);
+      }
     }
 
-    this.replySuccess({redPocket: player.redPocket, configs});
+    this.replySuccess({first: joinRoomCount <= 1, redPocket: player.redPocket, configs: configList});
   }
 
   // 红包提现
