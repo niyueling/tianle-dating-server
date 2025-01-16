@@ -43,7 +43,7 @@ export class GameApi extends BaseApi {
       gameType: 'string'
     }
   })
-  async getPublicRoomCategory(message) {
+  async getPublicRoomCategory(message: any) {
     const resp = await this.service.gameConfig.getPublicRoomCategory(message);
     this.replySuccess(resp);
   }

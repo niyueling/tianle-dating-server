@@ -7,6 +7,7 @@ const schema = new Schema({
   limitCount: {type: Number},// 限制提现次数
   juShu: {type: Number, default: 0},// 提现需完成局数
   type: {type: Number, default: 2},// 提现类型，1允许提现，2不允许提现
+  first: {type: Boolean, default: false},// 是否首局配置
   createAt: {type: Date, default: Date.now}
 });
 
