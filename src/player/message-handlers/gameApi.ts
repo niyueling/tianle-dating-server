@@ -21,6 +21,7 @@ import WithdrawRecord from "../../database/models/withdrawRecord";
 import {createLock, withLock} from "../../utils/lock";
 import Player from "../../database/models/player";
 import {batches_transfer} from "../../wechatPay/batches_transfer";
+import PushWithdrawRecord from "../../database/models/pushWithdrawRecord";
 
 const getGameName = {
   [GameType.mj]: '十二星座',
@@ -331,6 +332,83 @@ export class GameApi extends BaseApi {
   @addApi({})
   async withdrawNotify(msg) {
     const record = await WithdrawRecord.findOne({_id: msg._id});
+    if (!record) {
+      return this.replyFail(TianleErrorCode.recordNotFound);
+    }
+
+    record.status = 1;
+    record.info = "提现成功";
+    await record.save();
+
+    this.replySuccess({});
+  }
+
+  // 消息推送提现
+  @addApi()
+  async pushWithdrawRedPocket() {
+    await withLock('red-pocket-withdraw', 7000, async () => {
+      const playerModel = await Player.findById(this.player._id);
+
+      if (playerModel && !playerModel.openid) {
+        return this.replyFail(TianleErrorCode.playerIsTourist);
+      }
+
+      const receiveCount = await PushWithdrawRecord.count({ playerId: playerModel._id })
+      if (receiveCount > 0) {
+        return this.replyFail(TianleErrorCode.withdrawFail);
+      }
+
+      const record = await PushWithdrawRecord.create({
+        playerId: playerModel._id,
+        sn: await this.service.utils.generateOrderNumber()
+      })
+
+      let tem_batch_no = record._id.toString().concat("12345678");
+      const wechatPayMent = new batches_transfer({
+        mchId: config.wx.mchId,
+        appId: config.wx.app_id,
+        key: config.wx.sign_key,
+        serial_no: config.wx.serial_no,
+        certFilePath: path.join(__dirname, "..", "..", "..", "apiclient_cert.pem"),
+        keyFilePath: path.join(__dirname, "..", "..", "..", "apiclient_key.pem")
+      });
+      const tranRes = await wechatPayMent.batches_transfer({
+        out_bill_no: tem_batch_no,
+        transfer_scene_id: '1000',
+        openid: playerModel.openid,
+        transfer_amount: 12,
+        transfer_remark: '天乐麻将红包提现',
+        transfer_scene_report_infos : [
+          {
+            info_type: "活动名称",
+            info_content: "关注有礼"
+          },
+          {
+            info_type: "奖励说明",
+            info_content: "接收通知可以获得现金红包"
+          }
+        ]
+      });
+
+      console.warn("res-%s", JSON.stringify(tranRes));
+
+      if (tranRes["status"] == '200') {
+        record.info = tranRes["data"]["state"];
+        record.paymentId = tranRes["data"]["transfer_bill_no"];
+        await record.save();
+        return this.replySuccess({record, response: tranRes});
+      }
+
+      record.info = tranRes["data"]["state"];
+      await record.save();
+      return this.replyFail(TianleErrorCode.withdrawFail);
+    }, locker)
+  }
+
+  // 提现成功回调
+  @addApi({})
+  async pushWithdrawNotify(msg) {
+    const record = await PushWithdrawRecord.findOne({_id: msg._id});
     if (!record) {
       return this.replyFail(TianleErrorCode.recordNotFound);
     }
