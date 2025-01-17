@@ -790,6 +790,13 @@ export class AccountApi extends BaseApi {
       }
     }
 
+    // 判断新人宝典开关
+    let redpocket = {
+      open: new Date().getTime() <= Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 30,
+      popOpen: false,
+      activityTime: {start: user.createAt, end: new Date(Date.parse(user.createAt) + 1000 * 60 * 60 * 24 * 30)}
+    };
+
     return {
       sevenLogin: {open: true, popOpen: sevenLoginCount === 0, redDot: sevenLoginCount === 0},
       turnTable: {popOpen: user.turntableTimes > 0, open: true, redDot: user.turntableTimes > 0},
@@ -799,7 +806,8 @@ export class AccountApi extends BaseApi {
       rechargeParty: {open: rechargeParty.open, popOpen: rechargeParty.popOpen, redDot: rechargeParty.popOpen},
       task: {open: true, popOpen: taskInfo.canReceive, redDot: taskInfo.canReceive},
       mail: {open: true, popOpen: false, redDot: mails.length > 0, mails},
-      regression: {open: !!regressionStartTime, popOpen: false, redDot: false, activityTime: {start: regressionStartTime, end: regressionEndTime}}
+      regression: {open: !!regressionStartTime, popOpen: false, redDot: false, activityTime: {start: regressionStartTime, end: regressionEndTime}},
+      redpocket
     };
   }
 
