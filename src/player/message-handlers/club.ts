@@ -462,6 +462,30 @@ export async function updatePlayerClubInfo(player) {
   }
 }
 
+export async function getClubMessages(player, clubShortId) {
+  let myClub = await Club.findOne({shortId: clubShortId});
+
+  if (!myClub) {
+    return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.clubNotExists);
+  }
+
+  const isAdmin = await playerIsAdmin(player.model._id, clubShortId);
+
+  let messageLists = [];
+  const clubMessageInfo = await ClubMessage.find({clubShortId: clubShortId, playerId: player.model._id});
+  messageLists = [...messageLists, ...clubMessageInfo];
+
+  if (isAdmin) {
+    const clubRequestInfo = await ClubRequest.find({clubShortId: clubShortId, type: 1});
+    const clubMergeInfo = await ClubMerge.find({fromClubId: clubShortId});
+    messageLists = [...messageLists, ...clubRequestInfo, ...clubMergeInfo];
+  }
+
+  messageLists = messageLists.sort((a, b) => Date.parse(b.createAt) - Date.parse(a.createAt));
+
+  return {ok: true, data: {requestList: messageLists}};
+}
+
 export default {
   [ClubAction.request]: async (player, message) => {
     const alreadyJoinedClubs = await ClubMember.count({member: player.model._id}).lean()
@@ -869,6 +893,7 @@ export default {
     await clubRequest.save();
 
     if (message.refuse) {
+      await requestToUserCenter(player.channel, 'club/clubMessageChanged', partnerInfo._id, {playerId: partnerInfo._id, clubShortId: clubInfo.shortId})
       await globalSendClubMessage(clubInfo.shortId, partnerInfo._id, `${playerInfo.nickname}(${playerInfo.shortId})拒绝了你的战队邀请`);
       return player.replyFail(ClubAction.dealClubInviteRequest, TianleErrorCode.refuseClubApply);
     }

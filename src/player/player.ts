@@ -8,7 +8,12 @@ import * as ws from 'ws';
 import {pick} from 'lodash'
 import {serializeMessage, deserializeMessage} from '../network/utils';
 import accountHandlers from './message-handlers/account';
-import clubHandlers, {getClubInfo, getClubMembers, updatePlayerClubInfo} from './message-handlers/club';
+import clubHandlers, {
+  getClubInfo,
+  getClubMembers,
+  getClubMessages,
+  updatePlayerClubInfo
+} from './message-handlers/club';
 import matchHandlers from './message-handlers/match';
 import resourceHandlers from './message-handlers/resource';
 import gameHandlers from './message-handlers/game';
@@ -432,6 +437,19 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
               const data = await getClubMembers(this, messageBody.payload);
 
               this.sendMessage('club/getClubMembersReply', data);
+
+              return;
+            }
+
+            setTimeout(sendFunc, 1000);
+          }
+
+          // 战队消息变化
+          if (messageBody.name === 'club/clubMessageChanged') {
+            const sendFunc = async () => {
+              const data = await getClubMessages(this, messageBody.payload.clubShortId);
+
+              this.sendMessage('club/getRequestInfoReply', data);
 
               return;
             }
