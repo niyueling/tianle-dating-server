@@ -1800,9 +1800,9 @@ export default {
     const mergeClubConfig = await GlobalConfig.findOne({name: "mergeClubDiamond"}).lean();
     const mergeDiamond = mergeClubConfig ? Number(mergeClubConfig.value) : 200;
     const mergeRule = [
-      "1. 合并后合伙人，管理员取消身份，从属于战队主旗下",
-      "2. 合并后战队主自动获得合伙人身份",
-      "3. 已经在合并战队俱乐部成员将不在从属名单中"
+      "1.战队合并进入新战队后，用户按加入新战队的时间顺序来确定从属关系",
+      "2.战队内含有合伙人的，在合并进入新战队后，合伙人会被接触，用户从属关系统一归属到战队主名下。",
+      "3.合伙人离开战队，名下用户会一并跟着离开战队。"
     ];
 
     player.replySuccess(ClubAction.clubConfig, {
