@@ -779,6 +779,7 @@ export class AccountApi extends BaseApi {
 
     // 判断是否回归用户
     const regressionStartTime = user.regressionTime || null;
+    let regressionOpen = false;
     let regressionEndTime = null;
     if (regressionStartTime) {
       regressionEndTime = new Date(Date.parse(regressionStartTime) + 1000 * 60 * 60 * 24 * config.game.regressionActivityDay);
@@ -787,6 +788,7 @@ export class AccountApi extends BaseApi {
         user.isRegressionPlayer = true;
         user.regressionStartTime = regressionStartTime;
         user.regressionEndTime = regressionEndTime;
+        regressionOpen = true;
       }
     }
 
@@ -806,7 +808,7 @@ export class AccountApi extends BaseApi {
       rechargeParty: {open: rechargeParty.open, popOpen: rechargeParty.popOpen, redDot: rechargeParty.popOpen},
       task: {open: true, popOpen: taskInfo.canReceive, redDot: taskInfo.canReceive},
       mail: {open: true, popOpen: false, redDot: mails.length > 0, mails},
-      regression: {open: !!regressionStartTime, popOpen: false, redDot: false, activityTime: {start: regressionStartTime, end: regressionEndTime}},
+      regression: {open: regressionOpen, popOpen: false, redDot: false, activityTime: {start: regressionStartTime, end: regressionEndTime}},
       redpocket
     };
   }
