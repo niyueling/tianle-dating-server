@@ -462,6 +462,30 @@ export async function updatePlayerClubInfo(player) {
   }
 }
 
+export async function getClubMessages(player, clubShortId) {
+  let myClub = await Club.findOne({shortId: clubShortId});
+
+  if (!myClub) {
+    return player.replyFail(ClubAction.getRequestInfo, TianleErrorCode.clubNotExists);
+  }
+
+  const isAdmin = await playerIsAdmin(player.model._id, clubShortId);
+
+  let messageLists = [];
+  const clubMessageInfo = await ClubMessage.find({clubShortId: clubShortId, playerId: player.model._id});
+  messageLists = [...messageLists, ...clubMessageInfo];
+
+  if (isAdmin) {
+    const clubRequestInfo = await ClubRequest.find({clubShortId: clubShortId, type: 1});
+    const clubMergeInfo = await ClubMerge.find({fromClubId: clubShortId});
+    messageLists = [...messageLists, ...clubRequestInfo, ...clubMergeInfo];
+  }
+
+  messageLists = messageLists.sort((a, b) => Date.parse(b.createAt) - Date.parse(a.createAt));
+
+  return {ok: true, data: {requestList: messageLists}};
+}
+
 export default {
   [ClubAction.request]: async (player, message) => {
     const alreadyJoinedClubs = await ClubMember.count({member: player.model._id}).lean()
@@ -869,6 +893,7 @@ export default {
     await clubRequest.save();
 
     if (message.refuse) {
+      await requestToUserCenter(player.channel, 'club/clubMessageChanged', partnerInfo._id, {playerId: partnerInfo._id, clubShortId: clubInfo.shortId})
       await globalSendClubMessage(clubInfo.shortId, partnerInfo._id, `${playerInfo.nickname}(${playerInfo.shortId})拒绝了你的战队邀请`);
       return player.replyFail(ClubAction.dealClubInviteRequest, TianleErrorCode.refuseClubApply);
     }
@@ -1800,9 +1825,9 @@ export default {
     const mergeClubConfig = await GlobalConfig.findOne({name: "mergeClubDiamond"}).lean();
     const mergeDiamond = mergeClubConfig ? Number(mergeClubConfig.value) : 200;
     const mergeRule = [
-      "1. 合并后合伙人，管理员取消身份，从属于战队主旗下",
-      "2. 合并后战队主自动获得合伙人身份",
-      "3. 已经在合并战队俱乐部成员将不在从属名单中"
+      "1.战队合并进入新战队后，用户按加入新战队的时间顺序来确定从属关系",
+      "2.战队内含有合伙人的，在合并进入新战队后，合伙人会被接触，用户从属关系统一归属到战队主名下。",
+      "3.合伙人离开战队，名下用户会一并跟着离开战队。"
     ];
 
     player.replySuccess(ClubAction.clubConfig, {

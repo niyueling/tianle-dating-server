@@ -48,9 +48,9 @@ export class batches_transfer {
   /**
    * 构建请求签名参数
    * @param method Http 请求方式
+   * @param nonce_str
    * @param url 请求接口 例如/v3/certificates
    * @param timestamp 获取发起请求时的系统当前时间戳
-   * @param nonceStr 随机字符串
    * @param body 请求报文主体
    */
   public getSignature(method: string, nonce_str: string, timestamp: string, url: string, body?: string | Record<string, any>): string {
@@ -63,7 +63,6 @@ export class batches_transfer {
   /**
    * SHA256withRSA
    * @param data 待加密字符
-   * @param privatekey 私钥key  key.pem   fs.readFileSync(keyPath)
    */
   public sha256WithRsa(data: string): string {
     if (!this.privateKey) throw new Error('缺少秘钥文件');
@@ -75,7 +74,7 @@ export class batches_transfer {
 
   /**
    * 获取授权认证信息
-   * @param nonceStr  请求随机串
+   * @param nonce_str
    * @param timestamp 时间戳
    * @param signature 签名值
    */
@@ -107,6 +106,7 @@ export class batches_transfer {
         .toString(36)
         .substr(2, 15),
       timestamp = parseInt(+new Date() / 1000 + '').toString();
+    console.warn("nonce_str-%s timestamp-%s", nonce_str, timestamp);
 
     const signature = this.getSignature(method, nonce_str, timestamp, url.replace('https://api.mch.weixin.qq.com', ''), params);
     return this.getAuthorization(nonce_str, timestamp, signature);
