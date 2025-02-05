@@ -581,11 +581,11 @@ export class AccountApi extends BaseApi {
 
         const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
 
-        plainObject.openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
+        openShop = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
       }
     }
 
-    this.replySuccess(plainObject);
+    this.replySuccess({...plainObject, openIosShopFunc: openShop});
   }
 
   // 记录观看视频日志
