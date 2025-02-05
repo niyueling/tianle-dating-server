@@ -534,8 +534,8 @@ export class AccountApi extends BaseApi {
       avatar: "string?",
       nickname: "string?",
       sex: "number?",
-      mnpVersion: "number?",
-      platform: "number?",
+      mnpVersion: "string?",
+      platform: "string?",
     }
   })
   async updateUserInfo(msg) {
