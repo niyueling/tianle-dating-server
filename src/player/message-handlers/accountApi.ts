@@ -534,10 +534,12 @@ export class AccountApi extends BaseApi {
       avatar: "string?",
       nickname: "string?",
       sex: "number?",
+      mnpVersion: "number?",
+      platform: "number?",
     }
   })
   async updateUserInfo(msg) {
-    const model = await service.playerService.getPlayerModel(this.player.model._id)
+    const model = await service.playerService.getPlayerModel(this.player.model._id);
     if (msg.avatar) {
       model.avatar = msg.avatar;
     }
@@ -549,8 +551,40 @@ export class AccountApi extends BaseApi {
     }
 
     model.isBindWechat = true;
+    let openShop = true;
+
+    if (msg.mnpVersion) {
+      // 是否开启商店
+      const checkVersion = await service.utils.getGlobalConfigByName('mnpRechargeVersion');
+      // 1 = 开启全部商店
+      const open = await service.utils.getGlobalConfigByName('openMnpRecharge');
+      let iosRoomCount = 0;
+      let iosLotteryCount = 0;
+      let openIosShopFunc = msg.mnpVersion && open === 1 && (msg.mnpVersion !== checkVersion)
+
+      // 如果机型是ios，查询抽奖次数和开房数
+      if (msg.platform && msg.platform === "iOS") {
+        const roomScoreCount = await RoomScoreRecord.count({
+          creatorId: model.shortId
+        })
+        const roomCount = await RoomRecord.count({
+          creatorId: model.shortId
+        })
+
+        iosRoomCount = roomScoreCount + roomCount;
+
+        iosLotteryCount = await TurntablePrizeRecord.count({
+          playerId: model._id
+        })
+
+        const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
+
+        openShop = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
+      }
+    }
+
     await model.save();
-    this.replySuccess(model);
+    this.replySuccess({...model, openShop});
   }
 
   // 记录观看视频日志
