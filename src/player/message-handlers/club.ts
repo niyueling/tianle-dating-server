@@ -1318,10 +1318,10 @@ export default {
     }
 
     if (member && member.role === "admin") {
-      await ClubMember.update({club: myClub._id, member: member._id}, {$set: {role: null}}).exec();
+      await ClubMember.update({club: myClub._id, member: member.member}, {$set: {role: null}}).exec();
     }
     if (member && member.partner) {
-      await ClubMember.update({club: myClub._id, member: member._id}, {$set: {partner: false}}).exec();
+      await ClubMember.update({club: myClub._id, member: member.member}, {$set: {partner: false}}).exec();
     }
 
     // 如果在黑名单，取消黑名单
