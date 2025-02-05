@@ -551,7 +551,6 @@ export class AccountApi extends BaseApi {
     }
 
     model.isBindWechat = true;
-    let openShop = true;
 
     if (msg.mnpVersion) {
       // 是否开启商店
