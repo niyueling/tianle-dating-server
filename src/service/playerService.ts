@@ -280,7 +280,7 @@ export default class PlayerService extends BaseService {
       if (!user.province || !user.city) {
         const result = await this.getLocation(user.ip, data.ip);
         console.warn("location-%s", JSON.stringify(result));
-        if (result.code === 200) {
+        if (result.code === 100) {
           user.province = result.data.result.prov;
           user.city = result.data.result.city;
         }
@@ -309,7 +309,7 @@ export default class PlayerService extends BaseService {
     } else {
       const result = await this.getLocation(null, data.ip);
       console.warn("location-%s", JSON.stringify(result));
-      if (result.code === 200) {
+      if (result.code === 100) {
         data["province"] = result.data.result.prov;
         data["city"] = result.data.result.city;
       }
