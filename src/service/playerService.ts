@@ -281,8 +281,8 @@ export default class PlayerService extends BaseService {
         const result = await this.getLocation(user.ip, data.ip);
         console.warn("location-%s", JSON.stringify(result));
         if (result.code === 100) {
-          user.province = result.data.result.prov;
-          user.city = result.data.result.city;
+          user.province = result.result.province;
+          user.city = result.result.city;
         }
       }
 
@@ -310,8 +310,8 @@ export default class PlayerService extends BaseService {
       const result = await this.getLocation(null, data.ip);
       console.warn("location-%s", JSON.stringify(result));
       if (result.code === 100) {
-        data["province"] = result.data.result.prov;
-        data["city"] = result.data.result.city;
+        data["province"] = result.result.province;
+        data["city"] = result.result.city;
       }
       user = await Player.create(data);
       const playerManager = PlayerManager.getInstance();
