@@ -551,6 +551,8 @@ export class AccountApi extends BaseApi {
     }
 
     model.isBindWechat = true;
+    await model.save();
+    const plainObject = model.toObject();
     let openShop = true;
 
     if (msg.mnpVersion) {
@@ -579,12 +581,11 @@ export class AccountApi extends BaseApi {
 
         const isTest = model.nickname.indexOf("test") !== -1 || model.nickname.indexOf("tencent_game") !== -1;
 
-        openShop = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
+        plainObject.openIosShopFunc = openIosShopFunc && iosRoomCount >= 3 && iosLotteryCount >= 2 && !isTest;
       }
     }
 
-    await model.save();
-    this.replySuccess({...model, openShop});
+    this.replySuccess(plainObject);
   }
 
   // 记录观看视频日志
