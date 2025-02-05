@@ -279,6 +279,7 @@ export default class PlayerService extends BaseService {
       // 判断是否有省市ip信息
       if (!user.province || !user.city) {
         const result = await this.getLocation(user.ip, data.ip);
+        console.warn("location-%s", JSON.stringify(result));
         if (result.code === 200) {
           user.province = result.data.result.prov;
           user.city = result.data.result.city;
@@ -307,6 +308,7 @@ export default class PlayerService extends BaseService {
       }
     } else {
       const result = await this.getLocation(null, data.ip);
+      console.warn("location-%s", JSON.stringify(result));
       if (result.code === 200) {
         data["province"] = result.data.result.prov;
         data["city"] = result.data.result.city;
