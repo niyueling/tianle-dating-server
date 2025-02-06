@@ -276,7 +276,6 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
     this.socket.player = null
     this.socket = NullSocket
     if (this.channel) {
-      console.warn("userId-%s, type-%s, cmd-%s, sid-%s", this._id, 'cmd', 'leave', "close");
       this.channel.publish('userCenter', `user.${this._id}`, new Buffer(
         JSON.stringify({type: 'cmd', cmd: 'leave', sid: "close"})))
     }

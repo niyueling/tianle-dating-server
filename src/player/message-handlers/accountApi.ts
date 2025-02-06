@@ -410,7 +410,7 @@ export class AccountApi extends BaseApi {
         await this.player.connectToBackend();
       }
 
-      setTimeout(connectServerFunc, 2000);
+      setTimeout(connectServerFunc, 200);
 
       this.replySuccess(model);
     } catch (e) {
