@@ -406,11 +406,7 @@ export class AccountApi extends BaseApi {
       this.player.isLoggingIn = false;
       PlayerManager.getInstance().removeLoggingInPlayer(model._id.toString());
 
-      const connectServerFunc = async () => {
-        await this.player.connectToBackend();
-      }
-
-      setTimeout(connectServerFunc, 200);
+      await this.player.connectToBackend();
 
       this.replySuccess(model);
     } catch (e) {
