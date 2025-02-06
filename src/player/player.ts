@@ -513,6 +513,7 @@ export default class SocketPlayer extends EventEmitter implements ISocketPlayer 
   }
 
   async listenClub(clubId = -1) {
+    console.warn("channel-%s, clubId-%s", JSON.stringify(this.channel), clubId);
     if (this.channel && clubId) {
       await this.channel.assertExchange(`exClubCenter`, 'topic', {durable: false})
       await this.channel.bindQueue(this.myQueue, `exClubCenter`, `club:${clubId}`)
