@@ -1011,9 +1011,9 @@ export default {
           }
         }
         // 最后一局解散，出现多余战绩bug(例如共12局出现13.14局战绩)，用规则限制个数
-        if (playerInfos.length >= allJuShu) {
-          return;
-        }
+        // if (playerInfos.length >= allJuShu && message.gameType !== GameType.guandan) {
+        //   return;
+        // }
         roomInfos.ju.push(record.juShu);
         playerInfos.push(playerInfo);
       })
